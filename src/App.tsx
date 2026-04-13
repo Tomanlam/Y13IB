@@ -37,6 +37,7 @@ import {
   Beaker,
   Wind,
   Droplets,
+  Waves,
   Flame,
   TrendingUp,
   QrCode,
@@ -73,6 +74,7 @@ export default function App() {
   const [activeCategory, setActiveCategory] = useState<'structure' | 'reactivity'>('structure');
   const [isQRModalOpen, setIsQRModalOpen] = useState(false);
   const [sessionStats, setSessionStats] = useState<SessionStats>({});
+  const [s11Temp, setS11Temp] = useState(25); // Celsius
 
   const allConcepts = useMemo(() => units.flatMap(unit => unit.concepts), []);
   const [randomConcept, setRandomConcept] = useState(() => 
@@ -794,6 +796,222 @@ export default function App() {
     );
   };
 
+  const AtomicTransitionDrawing = ({ view, from, to }: { view: 'circles' | 'lines', from: number, to: number }) => {
+    const levels = [1, 2, 3, 4, 5, 6];
+    // Spaced out levels for better visualization
+    const getY = (n: number) => 170 - (n - 1) * 24;
+    const getRadius = (n: number) => 25 + (n - 1) * 13;
+
+    const isEmission = from > to;
+    const isAbsorption = from < to;
+    const isIonization = from === 1 && to === 7;
+
+    return (
+      <div className="relative w-full h-56 bg-gray-950 rounded-2xl overflow-hidden border-2 border-gray-800 flex items-center justify-center">
+        <svg className="w-full h-full" viewBox="0 0 200 200">
+          <defs>
+            <marker id="arrowhead-yellow" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+              <polygon points="0 0, 10 3.5, 0 7" fill="#fbbf24" />
+            </marker>
+            <marker id="arrowhead-blue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+              <polygon points="0 0, 10 3.5, 0 7" fill="#60a5fa" />
+            </marker>
+            <filter id="glow">
+              <feGaussianBlur stdDeviation="1.5" result="coloredBlur"/>
+              <feMerge>
+                <feMergeNode in="coloredBlur"/>
+                <feMergeNode in="SourceGraphic"/>
+              </feMerge>
+            </filter>
+          </defs>
+          {view === 'circles' ? (
+            <>
+              <circle cx="100" cy="100" r="8" fill="#ef4444" filter="url(#glow)" />
+              {levels.map(n => (
+                <circle
+                  key={n}
+                  cx="100"
+                  cy="100"
+                  r={getRadius(n)}
+                  fill="none"
+                  stroke="rgba(255,255,255,0.1)"
+                  strokeWidth="1"
+                  strokeDasharray={n === 1 ? "none" : "4 4"}
+                />
+              ))}
+              {to !== 7 && (
+                <motion.path
+                  d={`M ${100 + getRadius(from)} 100 L ${100 + getRadius(to)} 100`}
+                  stroke={isEmission ? "#fbbf24" : "#60a5fa"}
+                  strokeWidth="2.5"
+                  markerEnd={isEmission ? "url(#arrowhead-yellow)" : "url(#arrowhead-blue)"}
+                  initial={{ pathLength: 0 }}
+                  animate={{ pathLength: 1 }}
+                  key={`${from}-${to}-${view}`}
+                />
+              )}
+              {isIonization && (
+                <motion.line
+                  x1={100 + getRadius(1)}
+                  y1="100"
+                  x2="190"
+                  y2="100"
+                  stroke="#60a5fa"
+                  strokeWidth="2.5"
+                  markerEnd="url(#arrowhead-blue)"
+                  initial={{ pathLength: 0 }}
+                  animate={{ pathLength: 1 }}
+                />
+              )}
+              <motion.circle
+                r="4"
+                fill="#3b82f6"
+                filter="url(#glow)"
+                animate={to === 7 ? { cx: 220, opacity: 0 } : { cx: 100 + getRadius(to), cy: 100 }}
+                transition={{ duration: 0.8, ease: "easeInOut" }}
+              />
+            </>
+          ) : (
+            <>
+              {levels.map(n => (
+                <g key={n}>
+                  <line x1="40" y1={getY(n)} x2="160" y2={getY(n)} stroke="rgba(255,255,255,0.15)" strokeWidth="1" />
+                  <text x="15" y={getY(n) + 3} fill="rgba(255,255,255,0.4)" fontSize="8" fontWeight="black">n={n}</text>
+                </g>
+              ))}
+              <line x1="40" y1="20" x2="160" y2="20" stroke="rgba(255,255,255,0.4)" strokeWidth="1" strokeDasharray="4 2" />
+              <text x="15" y="23" fill="rgba(255,255,255,0.5)" fontSize="8" fontWeight="black">n=∞</text>
+              
+              <motion.line
+                x1="100"
+                y1={getY(from)}
+                x2="100"
+                y2={to === 7 ? 20 : getY(to)}
+                stroke={isEmission ? "#fbbf24" : "#60a5fa"}
+                strokeWidth="2.5"
+                markerEnd={isEmission ? "url(#arrowhead-yellow)" : "url(#arrowhead-blue)"}
+                initial={{ pathLength: 0 }}
+                animate={{ pathLength: 1 }}
+                key={`${from}-${to}-${view}`}
+              />
+              <motion.circle
+                r="4"
+                fill="#3b82f6"
+                filter="url(#glow)"
+                animate={{ cx: 100, cy: to === 7 ? 20 : getY(to) }}
+                transition={{ duration: 0.8, ease: "easeInOut" }}
+              />
+            </>
+          )}
+        </svg>
+
+        <AnimatePresence>
+          {(isEmission || isAbsorption) && (
+            <motion.div
+              key={isEmission ? 'emission' : 'absorption'}
+              initial={isAbsorption ? { x: -150, opacity: 0 } : { x: 0, opacity: 0 }}
+              animate={isAbsorption ? { x: 0, opacity: [0, 1, 0] } : { x: 150, opacity: [0, 1, 0] }}
+              transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+              className="absolute pointer-events-none"
+            >
+              <div className="flex items-center gap-1">
+                <svg width="40" height="20" viewBox="0 0 40 20" className={isAbsorption ? "text-blue-400" : "text-yellow-400"}>
+                  <motion.path
+                    d="M 0 10 Q 5 0 10 10 T 20 10 T 30 10 T 40 10"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeDasharray="100"
+                    animate={{ strokeDashoffset: [0, -100] }}
+                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                  />
+                </svg>
+                <div className={`w-2 h-2 rounded-full ${isAbsorption ? "bg-blue-400 shadow-[0_0_10px_#60a5fa]" : "bg-yellow-400 shadow-[0_0_10px_#fbbf24]"}`} />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <div className="absolute top-4 right-4 flex flex-col items-end gap-1">
+          <div className="bg-black/60 px-3 py-1 rounded-full border border-white/10 backdrop-blur-md">
+            <p className="text-[10px] font-black text-white uppercase tracking-widest">
+              {isIonization ? 'Ionization' : isEmission ? 'Emission' : 'Absorption'}
+            </p>
+          </div>
+          {isEmission && (
+            <div className={`text-[8px] font-black uppercase px-2 py-0.5 rounded ${
+              to === 1 ? 'bg-purple-500 text-white' : 
+              to === 2 ? 'bg-emerald-500 text-white' : 
+              to === 3 ? 'bg-red-500 text-white' : 'bg-gray-500 text-white'
+            }`}>
+              {to === 1 ? 'UV (Lyman)' : to === 2 ? 'Visible (Balmer)' : to === 3 ? 'IR (Paschen)' : ''}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  const EmissionSpectrum = () => {
+    const lines = [
+      { color: '#ff0000', label: '656nm', n: 'n=3 → n=2', pos: 85, name: 'H-alpha' },
+      { color: '#00ffff', label: '486nm', n: 'n=4 → n=2', pos: 45, name: 'H-beta' },
+      { color: '#0000ff', label: '434nm', n: 'n=5 → n=2', pos: 30, name: 'H-gamma' },
+      { color: '#4b0082', label: '410nm', n: 'n=6 → n=2', pos: 20, name: 'H-delta' },
+    ];
+    return (
+      <div className="mt-4 bg-black p-6 rounded-3xl border border-gray-800 shadow-2xl">
+        <div className="flex justify-between items-center mb-4">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Hydrogen Emission Spectrum</p>
+          </div>
+          <span className="text-[8px] font-black text-emerald-400 bg-emerald-400/10 px-3 py-1 rounded-full border border-emerald-400/20 uppercase tracking-widest">Balmer Series</span>
+        </div>
+        <div className="relative h-16 w-full bg-gray-900 rounded-2xl overflow-hidden flex items-center border-2 border-white/5">
+          <div className="absolute inset-0 bg-gradient-to-r from-purple-900/30 via-blue-900/10 to-red-900/30" />
+          {lines.map((line, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, scaleY: 0 }}
+              animate={{ opacity: 1, scaleY: 1 }}
+              transition={{ delay: i * 0.15 }}
+              className="absolute h-full w-0.5 group cursor-help"
+              style={{ 
+                backgroundColor: line.color,
+                left: `${line.pos}%`,
+                boxShadow: `0 0 15px ${line.color}`
+              }}
+            >
+              <div className="absolute -top-10 left-1/2 -translate-x-1/2 flex flex-col items-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+                <div className="bg-gray-800 text-white text-[8px] font-black px-2 py-1 rounded-lg border border-gray-700 whitespace-nowrap shadow-xl">
+                  {line.n} ({line.label})
+                </div>
+                <div className="w-0.5 h-2 bg-gray-700" />
+              </div>
+              
+              {/* Permanent label below */}
+              <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center">
+                <p className="text-[7px] font-black text-white/60 uppercase tracking-tighter whitespace-nowrap">{line.n.split(' → ')[0]}</p>
+                <p className="text-[6px] font-bold text-white/30">{line.label}</p>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+        <div className="flex justify-between mt-12 px-2">
+          <div className="flex flex-col items-start">
+            <span className="text-[8px] text-gray-600 font-black uppercase tracking-widest">Violet</span>
+            <span className="text-[10px] text-gray-400 font-black">400nm</span>
+          </div>
+          <div className="flex flex-col items-end">
+            <span className="text-[8px] text-gray-600 font-black uppercase tracking-widest">Red</span>
+            <span className="text-[10px] text-gray-400 font-black">700nm</span>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const GiantIonicDrawing = () => (
     <div className="relative w-full h-24 bg-gray-50 rounded-xl overflow-hidden border border-gray-100 p-2">
       <div className="grid grid-cols-5 grid-rows-3 gap-1 h-full">
@@ -1508,26 +1726,29 @@ export default function App() {
     const [sigmaPiStep, setSigmaPiStep] = useState<'before' | 'after'>('before');
     const [vseprDomains, setVseprDomains] = useState(4);
     const [vseprLonePairs, setVseprLonePairs] = useState(0);
+    const [lewisExample, setLewisExample] = useState('NH3');
+    const [atomicTransitionView, setAtomicTransitionView] = useState<'circles' | 'lines'>('lines');
+    const [atomicFrom, setAtomicFrom] = useState(2);
+    const [atomicTo, setAtomicTo] = useState(1);
     const [selectedSolubilitySalt, setSelectedSolubilitySalt] = useState<string | null>(null);
     const [electrolyteState, setElectrolyteState] = useState<'solid' | 'molten' | 'aqueous'>('solid');
     const [leChatelierState, setLeChatelierState] = useState({
       n2: 40,
       h2: 60,
       nh3: 20,
-      temp: 'optimal' as 'low' | 'optimal' | 'high',
-      pressure: 'optimal' as 'low' | 'optimal' | 'high',
+      temp: 50, // 0 to 100
+      pressure: 1.0, // 0.5 to 2.0
       history: [] as any[],
       kc: 1.0
     });
-    const [lastAction, setLastAction] = useState<string | null>(null);
 
     useEffect(() => {
       const interval = setInterval(() => {
         setLeChatelierState(prev => {
           // K_c is only affected by temperature
-          let targetKc = 0.0001; // Base K_c for 'optimal'
-          if (prev.temp === 'high') targetKc = 0.00002; // Exothermic: high T shifts left, K_c decreases
-          if (prev.temp === 'low') targetKc = 0.0005;  // Low T shifts right, K_c increases
+          // Exothermic: high T shifts left, K_c decreases
+          const tempFactor = Math.pow(0.2, (prev.temp - 50) / 50);
+          const targetKc = 0.0001 * tempFactor;
 
           // Current reaction quotient Q_c = [NH3]^2 / ([N2] * [H2]^3)
           // We use the current concentrations to calculate Q_c
@@ -2488,6 +2709,256 @@ export default function App() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.395 }}
+            className="bg-white border-2 border-gray-200 rounded-[2.5rem] p-8 shadow-[0_8px_0_0_rgba(0,0,0,0.05)]"
+          >
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center gap-4">
+                <div className="bg-emerald-100 p-3 rounded-2xl text-emerald-600">
+                  <List size={24} />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-black text-gray-800 uppercase tracking-tight">Lewis Structure</h2>
+                  <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest">Step-by-Step Bond Calculation</p>
+                </div>
+              </div>
+              <div className="flex bg-gray-100 p-1 rounded-xl overflow-x-auto max-w-[200px] sm:max-w-none">
+                {['NH3', 'CH4', 'H2O', 'CO2', 'SF6'].map((ex) => (
+                  <button
+                    key={ex}
+                    onClick={() => setLewisExample(ex)}
+                    className={`px-4 py-2 rounded-lg font-black text-[10px] uppercase transition-all whitespace-nowrap
+                      ${lewisExample === ex ? 'bg-white text-emerald-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}
+                    `}
+                  >
+                    <span dangerouslySetInnerHTML={{ __html: ex.replace(/(\d+)/g, '<sub>$1</sub>') }} />
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div className="space-y-4">
+                {(() => {
+                  const data: Record<string, { v: number, i: number, b: number, nb: number, note?: string }> = {
+                    'NH3': { v: 5 + 3*1, i: 8 + 3*2, b: 6, nb: 2 },
+                    'CH4': { v: 4 + 4*1, i: 8 + 4*2, b: 8, nb: 0 },
+                    'H2O': { v: 2*1 + 6, i: 2*2 + 8, b: 4, nb: 4 },
+                    'CO2': { v: 4 + 2*6, i: 8 + 2*8, b: 8, nb: 8 },
+                    'SF6': { v: 6 + 6*7, i: 8 + 6*8, b: 12, nb: 36, note: "Expanded Octet: Borrowed 4e⁻ from lone pairs to form 2 extra bonds" }
+                  };
+                  const d = data[lewisExample];
+                  
+                  return (
+                    <>
+                      {[
+                        { step: 1, title: "Total Valence Electrons (V)", calc: `Step 1: ${d.v} e⁻` },
+                        { step: 2, title: "Ideal Valence Electrons (I)", calc: `Step 2: ${d.i} e⁻ (Octet/Duet)` },
+                        { step: 3, title: "Bonding Electrons & Bonds", calc: `Step 3: (${d.i} - ${d.v}) = ${d.b} e⁻ → ${d.b/2} Bonds` },
+                        { step: 4, title: "Non-Bonding Electrons & Lone Pairs", calc: `Step 4: (${d.v} - ${d.b}) = ${d.nb} e⁻ → ${d.nb/2} Lone Pairs` }
+                      ].map((s) => (
+                        <div key={s.step} className="bg-gray-50 p-4 rounded-2xl border-2 border-gray-100 flex gap-4 items-start">
+                          <div className="w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center font-black text-xs shrink-0">
+                            {s.step}
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{s.title}</p>
+                            <p className="text-sm font-black text-gray-800">{s.calc}</p>
+                          </div>
+                        </div>
+                      ))}
+                      {d.note && (
+                        <div className="p-3 bg-amber-50 border border-amber-100 rounded-xl flex items-center gap-3">
+                          <Info size={16} className="text-amber-500" />
+                          <p className="text-[10px] font-bold text-amber-700">{d.note}</p>
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
+              </div>
+
+              <div className="flex flex-col justify-center space-y-6">
+                <div className="bg-emerald-50 p-6 rounded-[2rem] border-2 border-emerald-100 relative overflow-hidden">
+                  <div className="absolute top-0 right-0 p-4 opacity-10">
+                    <FlaskConical size={40} className="text-emerald-600" />
+                  </div>
+                  <div className="relative z-10 text-center">
+                    <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-4">Summary for <span dangerouslySetInnerHTML={{ __html: lewisExample.replace(/(\d+)/g, '<sub>$1</sub>') }} /></p>
+                    <div className="flex justify-center gap-8">
+                      <div>
+                        <p className="text-4xl font-black text-gray-800">
+                          {(() => {
+                            const data: any = { 'NH3': 3, 'CH4': 4, 'H2O': 2, 'CO2': 4, 'SF6': 6 };
+                            return data[lewisExample];
+                          })()}
+                        </p>
+                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Bonds</p>
+                      </div>
+                      <div className="w-[2px] h-12 bg-emerald-200" />
+                      <div>
+                        <p className="text-4xl font-black text-emerald-500">
+                          {(() => {
+                            const data: any = { 'NH3': 1, 'CH4': 0, 'H2O': 2, 'CO2': 4, 'SF6': 18 };
+                            return data[lewisExample];
+                          })()}
+                        </p>
+                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Lone Pairs</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <LewisVisuals formula={lewisExample} />
+
+                <div className="bg-white border-2 border-gray-100 p-6 rounded-[2rem]">
+                  <h4 className="text-xs font-black text-gray-800 uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <CheckCircle2 size={14} className="text-emerald-500" />
+                    Limitations
+                  </h4>
+                  <ul className="space-y-3">
+                    <li className="flex items-start gap-2 text-[10px] font-bold text-gray-600">
+                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-1 shrink-0" />
+                      Does not apply to incomplete octets (e.g., BeCl₂, BF₃).
+                    </li>
+                    <li className="flex items-start gap-2 text-[10px] font-bold text-gray-600">
+                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-1 shrink-0" />
+                      For expanded octets, "borrow" lone pairs to form extra bonds.
+                    </li>
+                    <li className="flex items-start gap-2 text-[10px] font-bold text-gray-600">
+                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-1 shrink-0" />
+                      Always check formal charges for the most stable structure.
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.398 }}
+            className="bg-white border-2 border-gray-200 rounded-[2.5rem] p-8 shadow-[0_8px_0_0_rgba(0,0,0,0.05)]"
+          >
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center gap-4">
+                <div className="bg-yellow-100 p-3 rounded-2xl text-yellow-600">
+                  <Zap size={24} />
+                </div>
+                <div>
+                  <p className="text-[10px] font-black text-yellow-600 uppercase tracking-widest">Atomic Physics</p>
+                  <h2 className="text-2xl font-black text-gray-800 uppercase tracking-tight">Absorption & Emission</h2>
+                </div>
+              </div>
+              <div className="flex bg-gray-100 p-1 rounded-xl">
+                <button 
+                  onClick={() => setAtomicTransitionView('lines')}
+                  className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${atomicTransitionView === 'lines' ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+                >
+                  Energy Levels
+                </button>
+                <button 
+                  onClick={() => setAtomicTransitionView('circles')}
+                  className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${atomicTransitionView === 'circles' ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+                >
+                  Bohr Model
+                </button>
+              </div>
+            </div>
+
+            <div className="grid lg:grid-cols-2 gap-12">
+              <div className="space-y-6">
+                <AtomicTransitionDrawing view={atomicTransitionView} from={atomicFrom} to={atomicTo} />
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Initial State (n)</p>
+                    <div className="flex flex-wrap gap-2">
+                      {[1, 2, 3, 4, 5, 6].map(n => (
+                        <button
+                          key={n}
+                          onClick={() => setAtomicFrom(n)}
+                          className={`w-8 h-8 rounded-lg font-black text-xs transition-all border-2 ${atomicFrom === n ? 'bg-indigo-600 text-white border-indigo-700' : 'bg-white text-gray-400 border-gray-100 hover:border-gray-200'}`}
+                        >
+                          {n}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Final State (n)</p>
+                    <div className="flex flex-wrap gap-2">
+                      {[1, 2, 3, 4, 5, 6, 7].map(n => (
+                        <button
+                          key={n}
+                          onClick={() => setAtomicTo(n)}
+                          className={`w-8 h-8 rounded-lg font-black text-xs transition-all border-2 ${atomicTo === n ? 'bg-indigo-600 text-white border-indigo-700' : 'bg-white text-gray-400 border-gray-100 hover:border-gray-200'}`}
+                        >
+                          {n === 7 ? '∞' : n}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <EmissionSpectrum />
+              </div>
+
+              <div className="space-y-6">
+                <div className="bg-gray-50 p-6 rounded-3xl border-2 border-gray-100">
+                  <h3 className="text-lg font-black text-gray-800 uppercase mb-4 flex items-center gap-2">
+                    <div className={`w-2 h-2 rounded-full ${atomicFrom < atomicTo ? 'bg-blue-500' : 'bg-yellow-500'}`} />
+                    {atomicFrom === 1 && atomicTo === 7 ? 'Ionization Process' : atomicFrom < atomicTo ? 'Absorption Process' : 'Emission Process'}
+                  </h3>
+                  <p className="text-sm font-bold text-gray-600 leading-relaxed mb-4">
+                    {atomicFrom === 1 && atomicTo === 7 
+                      ? 'The electron absorbs enough energy to completely escape the attraction of the nucleus (n=1 to n=∞). This energy is the Ionization Energy.'
+                      : atomicFrom < atomicTo 
+                        ? 'The electron absorbs a photon of specific energy and moves to a higher energy level (excited state). Energy is ABSORBED.' 
+                        : 'The electron falls to a lower energy level and releases the excess energy as a photon. Energy is RELEASED.'}
+                  </p>
+                  
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between bg-white p-3 rounded-xl border border-gray-200">
+                      <span className="text-[10px] font-black text-gray-400 uppercase">Series</span>
+                      <span className="text-xs font-black text-gray-800 uppercase">
+                        {atomicTo === 1 ? 'Lyman (UV)' : atomicTo === 2 ? 'Balmer (Visible)' : atomicTo === 3 ? 'Paschen (IR)' : 'N/A'}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between bg-white p-3 rounded-xl border border-gray-200">
+                      <span className="text-[10px] font-black text-gray-400 uppercase">Energy Change</span>
+                      <span className={`text-xs font-black uppercase ${atomicFrom < atomicTo ? 'text-blue-600' : 'text-yellow-600'}`}>
+                        {atomicFrom < atomicTo ? '+ ΔE (Endothermic)' : '- ΔE (Exothermic)'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-indigo-50 p-6 rounded-3xl border-2 border-indigo-100">
+                  <h4 className="text-xs font-black text-indigo-600 uppercase tracking-widest mb-4">Spectral Identification</h4>
+                  <div className="grid grid-cols-1 gap-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center font-black text-[10px]">UV</div>
+                      <p className="text-[10px] font-bold text-gray-600">Transitions to <span className="font-black text-gray-800">n = 1</span> produce Ultra-Violet light.</p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center font-black text-[10px]">VIS</div>
+                      <p className="text-[10px] font-bold text-gray-600">Transitions to <span className="font-black text-gray-800">n = 2</span> produce Visible light.</p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-red-100 text-red-600 flex items-center justify-center font-black text-[10px]">IR</div>
+                      <p className="text-[10px] font-bold text-gray-600">Transitions to <span className="font-black text-gray-800">n = 3</span> produce Infra-Red light.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
             className="bg-white border-2 border-gray-200 rounded-[2.5rem] p-8 shadow-[0_8px_0_0_rgba(0,0,0,0.05)]"
           >
@@ -2888,7 +3359,7 @@ export default function App() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-10">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">
               {/* Concentration Dials */}
               <div className="bg-gray-50 p-6 rounded-[2rem] border-2 border-gray-100 space-y-6">
                 <div className="flex items-center gap-2 text-gray-400">
@@ -2914,7 +3385,6 @@ export default function App() {
                         onChange={(e) => {
                           const newVal = parseFloat(e.target.value);
                           setLeChatelierState(prev => ({ ...prev, [species.id]: newVal }));
-                          setLastAction(`Adjusted ${species.label}`);
                         }}
                         className={`w-full h-2 rounded-lg appearance-none cursor-pointer bg-gray-200 accent-emerald-500`}
                         style={{ accentColor: species.id === 'n2' ? '#10b981' : species.id === 'h2' ? '#3b82f6' : '#f59e0b' }}
@@ -2925,68 +3395,85 @@ export default function App() {
               </div>
 
               {/* Pressure Controls */}
-              <div className="bg-gray-50 p-6 rounded-[2rem] border-2 border-gray-100 space-y-5">
+              <div className="bg-gray-50 p-6 rounded-[2rem] border-2 border-gray-100 space-y-6">
                 <div className="flex items-center gap-2 text-gray-400">
                   <Wind size={16} />
-                  <p className="text-[10px] font-black uppercase tracking-widest">Pressure</p>
+                  <p className="text-[10px] font-black uppercase tracking-widest">System Pressure</p>
                 </div>
-                <div className="flex bg-white p-1.5 rounded-2xl border-2 border-gray-100 shadow-sm">
-                  {(['low', 'optimal', 'high'] as const).map((p) => (
-                    <button
-                      key={p}
-                      onClick={() => {
+                <div className="space-y-6">
+                  <div className="bg-white p-4 rounded-2xl border-2 border-gray-100 shadow-sm">
+                    <div className="flex justify-between items-center mb-4">
+                      <span className="text-[10px] font-black text-gray-600 uppercase tracking-widest">Total Pressure</span>
+                      <span className="text-[10px] font-black text-emerald-600 bg-emerald-50 px-2 py-1 rounded-lg border border-emerald-100">
+                        {leChatelierState.pressure.toFixed(2)} atm
+                      </span>
+                    </div>
+                    <input 
+                      type="range"
+                      min="0.5"
+                      max="2.0"
+                      step="0.01"
+                      value={leChatelierState.pressure}
+                      onChange={(e) => {
+                        const newVal = parseFloat(e.target.value);
                         setLeChatelierState(prev => {
-                          const factor = p === 'high' ? 1.5 : p === 'low' ? 0.6 : 1.0;
-                          const currentFactor = prev.pressure === 'high' ? 1.5 : prev.pressure === 'low' ? 0.6 : 1.0;
-                          const ratio = factor / currentFactor;
+                          const ratio = newVal / prev.pressure;
                           return {
                             ...prev,
-                            pressure: p,
+                            pressure: newVal,
                             n2: prev.n2 * ratio,
                             h2: prev.h2 * ratio,
                             nh3: prev.nh3 * ratio
                           };
                         });
-                        setLastAction(`${p.charAt(0).toUpperCase() + p.slice(1)} Pressure`);
                       }}
-                      className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all
-                        ${leChatelierState.pressure === p 
-                          ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-100' 
-                          : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'}
-                      `}
-                    >
-                      {p}
-                    </button>
-                  ))}
+                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                    />
+                    <div className="flex justify-between mt-2">
+                      <span className="text-[8px] font-bold text-gray-400 uppercase">Low</span>
+                      <span className="text-[8px] font-bold text-gray-400 uppercase">High</span>
+                    </div>
+                  </div>
+                  <p className="text-[9px] font-bold text-gray-400 text-center italic leading-relaxed">
+                    Increasing pressure scales all concentrations up immediately.
+                  </p>
                 </div>
-                <p className="text-[9px] font-bold text-gray-400 text-center italic">Immediate effect on all concentrations</p>
               </div>
 
               {/* Temperature Controls */}
-              <div className="bg-gray-50 p-6 rounded-[2rem] border-2 border-gray-100 space-y-5">
+              <div className="bg-gray-50 p-6 rounded-[2rem] border-2 border-gray-100 space-y-6">
                 <div className="flex items-center gap-2 text-gray-400">
                   <Thermometer size={16} />
-                  <p className="text-[10px] font-black uppercase tracking-widest">Temperature</p>
+                  <p className="text-[10px] font-black uppercase tracking-widest">System Temperature</p>
                 </div>
-                <div className="flex bg-white p-1.5 rounded-2xl border-2 border-gray-100 shadow-sm">
-                  {(['low', 'optimal', 'high'] as const).map((t) => (
-                    <button
-                      key={t}
-                      onClick={() => {
-                        setLeChatelierState(prev => ({ ...prev, temp: t }));
-                        setLastAction(`${t.charAt(0).toUpperCase() + t.slice(1)} Temp`);
+                <div className="space-y-6">
+                  <div className="bg-white p-4 rounded-2xl border-2 border-gray-100 shadow-sm">
+                    <div className="flex justify-between items-center mb-4">
+                      <span className="text-[10px] font-black text-gray-600 uppercase tracking-widest">Temperature</span>
+                      <span className="text-[10px] font-black text-orange-600 bg-orange-50 px-2 py-1 rounded-lg border border-orange-100">
+                        {Math.round(leChatelierState.temp)} °C
+                      </span>
+                    </div>
+                    <input 
+                      type="range"
+                      min="0"
+                      max="100"
+                      value={leChatelierState.temp}
+                      onChange={(e) => {
+                        const newVal = parseFloat(e.target.value);
+                        setLeChatelierState(prev => ({ ...prev, temp: newVal }));
                       }}
-                      className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all
-                        ${leChatelierState.temp === t 
-                          ? 'bg-orange-500 text-white shadow-lg shadow-orange-100' 
-                          : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'}
-                      `}
-                    >
-                      {t}
-                    </button>
-                  ))}
+                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-orange-500"
+                    />
+                    <div className="flex justify-between mt-2">
+                      <span className="text-[8px] font-bold text-gray-400 uppercase">Cool</span>
+                      <span className="text-[8px] font-bold text-gray-400 uppercase">Heat</span>
+                    </div>
+                  </div>
+                  <p className="text-[9px] font-black text-orange-500 text-center uppercase tracking-tighter leading-relaxed">
+                    Temperature is the only factor that changes the equilibrium constant (K꜀).
+                  </p>
                 </div>
-                <p className="text-[9px] font-black text-orange-500 text-center uppercase tracking-tighter">Only factor that changes K꜀</p>
               </div>
             </div>
 
@@ -2998,19 +3485,6 @@ export default function App() {
                     <TrendingUp className="text-emerald-500" size={20} />
                     <h3 className="text-sm font-black text-gray-800 uppercase tracking-widest">Concentration Profile</h3>
                   </div>
-                  <AnimatePresence mode="wait">
-                    {lastAction && (
-                      <motion.span 
-                        key={lastAction}
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 10 }}
-                        className="text-[10px] font-black text-emerald-600 bg-emerald-100 px-4 py-1.5 rounded-full border border-emerald-200"
-                      >
-                        {lastAction}
-                      </motion.span>
-                    )}
-                  </AnimatePresence>
                 </div>
                 
                 <div className="h-72 w-full">
@@ -3100,40 +3574,6 @@ export default function App() {
                       <div className="pb-1 border-b border-white/50">[NH₃]²</div>
                       <div className="pt-1">[N₂][H₂]³</div>
                     </div>
-                  </div>
-                </div>
-
-                <div className="bg-white border-2 border-emerald-100 rounded-[2rem] p-6 flex flex-col items-center justify-center text-center">
-                  <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-2">System Status</p>
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-                    <span className="text-xs font-black text-gray-800 uppercase">Dynamic Equilibrium</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-10 p-8 bg-gray-900 rounded-[2.5rem] border-2 border-gray-800 relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-6 opacity-20">
-                <Info size={40} className="text-emerald-500" />
-              </div>
-              <div className="relative z-10">
-                <h4 className="text-emerald-400 font-black text-sm uppercase tracking-widest mb-3">The Golden Rule</h4>
-                <p className="text-sm font-bold text-gray-300 leading-relaxed max-w-xl">
-                  "If a system at equilibrium is disturbed, the system will shift its equilibrium position to <span className="text-white underline decoration-emerald-500 decoration-2 underline-offset-4">counteract</span> the disturbance."
-                </p>
-                <div className="mt-6 flex flex-wrap gap-4">
-                  <div className="flex items-center gap-2 text-[10px] font-black text-gray-400 uppercase">
-                    <CheckCircle2 size={14} className="text-emerald-500" />
-                    Conc. Change → No K꜀ Change
-                  </div>
-                  <div className="flex items-center gap-2 text-[10px] font-black text-gray-400 uppercase">
-                    <CheckCircle2 size={14} className="text-emerald-500" />
-                    Pressure Change → No K꜀ Change
-                  </div>
-                  <div className="flex items-center gap-2 text-[10px] font-black text-emerald-400 uppercase">
-                    <Zap size={14} />
-                    Temp Change → K꜀ Changes
                   </div>
                 </div>
               </div>
@@ -3504,6 +3944,351 @@ export default function App() {
     </div>
   );
 
+  const S11Graphics = ({ index }: { index: number }) => {
+    const kelvin = Math.round(s11Temp + 273.15);
+    const speed = Math.max(0.1, (s11Temp + 273) / 300);
+    
+    const TemperatureSlider = () => (
+      <div className="mt-4 bg-gray-50 p-4 rounded-2xl border border-gray-100">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
+            <Thermometer size={14} className="text-red-500" />
+            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Temperature Control</span>
+          </div>
+          <div className="flex gap-2">
+            <span className="text-xs font-black text-gray-800">{s11Temp}°C</span>
+            <span className="text-xs font-black text-indigo-600">{kelvin}K</span>
+          </div>
+        </div>
+        <input 
+          type="range" 
+          min="-273" 
+          max="500" 
+          value={s11Temp} 
+          onChange={(e) => setS11Temp(parseInt(e.target.value))}
+          className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+        />
+        <div className="flex justify-between mt-1">
+          <span className="text-[8px] font-bold text-gray-400">-273°C</span>
+          <span className="text-[8px] font-bold text-gray-400">500°C</span>
+        </div>
+      </div>
+    );
+
+    if (index === 8) {
+      const state = s11Temp <= 0 ? 'solid' : s11Temp < 100 ? 'liquid' : 'gas';
+      
+      return (
+        <div className="space-y-2">
+          <div className="mt-4 h-24 bg-gray-900 rounded-2xl relative overflow-hidden flex items-center justify-center">
+            <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(#fff 1px, transparent 1px)', backgroundSize: '10px 10px' }} />
+            <div className={`grid ${state === 'solid' ? 'grid-cols-4 gap-1' : state === 'liquid' ? 'grid-cols-4 gap-2' : 'flex flex-wrap gap-8'}`}>
+              {[...Array(state === 'gas' ? 4 : 12)].map((_, i) => (
+                <motion.div
+                  key={i}
+                  animate={state === 'solid' ? {
+                    x: [0, 1, -1, 0],
+                    y: [0, -1, 1, 0]
+                  } : state === 'liquid' ? {
+                    x: [0, 2, -2, 0],
+                    y: [0, 5, -5, 0]
+                  } : {
+                    x: [0, Math.random() * 60 - 30, Math.random() * 60 - 30, 0],
+                    y: [0, Math.random() * 60 - 30, Math.random() * 60 - 30, 0]
+                  }}
+                  transition={{ repeat: Infinity, duration: (state === 'solid' ? 0.2 : state === 'liquid' ? 1 : 0.5) / speed, ease: "linear" }}
+                  className={`w-3 h-3 rounded-full ${state === 'solid' ? 'bg-blue-400' : state === 'liquid' ? 'bg-blue-500' : 'bg-blue-300'}`}
+                />
+              ))}
+            </div>
+            <div className="absolute top-2 right-2 px-2 py-0.5 bg-white/10 rounded-full flex items-center gap-1">
+              <div className={`w-1.5 h-1.5 rounded-full ${state === 'solid' ? 'bg-blue-400' : state === 'liquid' ? 'bg-blue-500' : 'bg-orange-400'}`} />
+              <p className="text-[8px] font-black text-white uppercase tracking-widest">{state}</p>
+            </div>
+          </div>
+          <TemperatureSlider />
+        </div>
+      );
+    }
+
+    if (index === 15) {
+      const shift = (s11Temp + 273) / 500;
+      return (
+        <div className="space-y-2">
+          <div className="mt-4 bg-gray-50 p-4 rounded-2xl border border-gray-100">
+            <div className="flex justify-between items-end h-12 gap-1">
+              {[0.2, 0.5, 0.8, 0.4, 0.9, 0.3].map((h, i) => {
+                const adjustedH = Math.max(0.1, h * (1 - shift * 0.5) + (i / 10) * shift);
+                return (
+                  <motion.div
+                    key={i}
+                    animate={{ height: [`${adjustedH * 100}%`, `${Math.min(1, adjustedH + 0.1) * 100}%`, `${adjustedH * 100}%`] }}
+                    transition={{ repeat: Infinity, duration: (1 + i * 0.2) / (speed || 1) }}
+                    className="flex-1 bg-indigo-400 rounded-t-sm"
+                    style={{ opacity: 0.5 + (i / 10) }}
+                  />
+                );
+              })}
+            </div>
+            <p className="text-[8px] font-black text-gray-400 uppercase mt-2 text-center">Maxwell-Boltzmann Distribution</p>
+          </div>
+          <TemperatureSlider />
+        </div>
+      );
+    }
+
+    if (index === 16) {
+      return (
+        <div className="space-y-2">
+          <div className="mt-4 bg-indigo-50 p-6 rounded-2xl border border-indigo-100">
+            <div className="flex items-center justify-around mb-6">
+              <div className="text-center space-y-1">
+                <input 
+                  type="number" 
+                  value={s11Temp} 
+                  onChange={(e) => setS11Temp(parseInt(e.target.value) || 0)}
+                  className="w-20 bg-white border-2 border-indigo-200 rounded-xl px-2 py-1 text-center font-black text-indigo-600 outline-none focus:border-indigo-400 transition-colors"
+                />
+                <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Celsius (°C)</p>
+              </div>
+              <ArrowRight size={20} className="text-indigo-300 animate-pulse" />
+              <div className="text-center space-y-1">
+                <input 
+                  type="number" 
+                  value={kelvin} 
+                  onChange={(e) => setS11Temp((parseInt(e.target.value) || 0) - 273)}
+                  className="w-20 bg-white border-2 border-indigo-200 rounded-xl px-2 py-1 text-center font-black text-indigo-600 outline-none focus:border-indigo-400 transition-colors"
+                />
+                <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Kelvin (K)</p>
+              </div>
+            </div>
+            <div className="bg-white/50 p-3 rounded-xl border border-indigo-100 text-center">
+              <p className="text-[10px] font-bold text-indigo-600 leading-relaxed">
+                {s11Temp <= -273.15 ? "Absolute Zero: Particles have minimum possible kinetic energy." : 
+                 s11Temp === 0 ? "Freezing point of water." : 
+                 s11Temp === 100 ? "Boiling point of water at 1 atm." : 
+                 `T(K) = ${s11Temp} + 273.15 = ${kelvin} K`}
+              </p>
+            </div>
+          </div>
+          <TemperatureSlider />
+        </div>
+      );
+    }
+
+    return null;
+  };
+
+  const LewisVisuals = ({ formula }: { formula: string }) => {
+    const Dot = ({ cx, cy, color = "#10b981" }: { cx: number, cy: number, color?: string }) => (
+      <circle cx={cx} cy={cy} r="1.5" fill={color} />
+    );
+    const Cross = ({ x, y, color = "#94a3b8" }: { x: number, y: number, color?: string }) => (
+      <text x={x} y={y + 3} textAnchor="middle" className="font-black text-[10px]" fill={color}>x</text>
+    );
+
+    const visuals: Record<string, { dotCross: React.ReactNode, displayed: React.ReactNode }> = {
+      'NH3': {
+        dotCross: (
+          <svg viewBox="0 0 100 100" className="w-24 h-24">
+            <text x="50" y="55" textAnchor="middle" className="fill-gray-800 font-black text-xl">N</text>
+            <Dot cx={46} cy={35} /> <Dot cx={54} cy={35} />
+            <text x="50" y="90" textAnchor="middle" className="fill-gray-400 font-black text-sm">H</text>
+            <Dot cx={50} cy={68} /> <Cross x={50} y={75} />
+            <text x="15" y="60" textAnchor="middle" className="fill-gray-400 font-black text-sm">H</text>
+            <Dot cx={35} cy={55} /> <Cross x={28} y={58} />
+            <text x="85" y="60" textAnchor="middle" className="fill-gray-400 font-black text-sm">H</text>
+            <Dot cx={65} cy={55} /> <Cross x={72} y={58} />
+          </svg>
+        ),
+        displayed: (
+          <svg viewBox="0 0 100 100" className="w-24 h-24">
+            <text x="50" y="55" textAnchor="middle" className="fill-gray-800 font-black text-xl">N</text>
+            <Dot cx={46} cy={35} /> <Dot cx={54} cy={35} />
+            <line x1="50" y1="60" x2="50" y2="80" stroke="#10b981" strokeWidth="2" />
+            <text x="50" y="95" textAnchor="middle" className="fill-gray-400 font-black text-sm">H</text>
+            <line x1="40" y1="52" x2="20" y2="55" stroke="#10b981" strokeWidth="2" />
+            <text x="10" y="60" textAnchor="middle" className="fill-gray-400 font-black text-sm">H</text>
+            <line x1="60" y1="52" x2="80" y2="55" stroke="#10b981" strokeWidth="2" />
+            <text x="90" y="60" textAnchor="middle" className="fill-gray-400 font-black text-sm">H</text>
+          </svg>
+        )
+      },
+      'CH4': {
+        dotCross: (
+          <svg viewBox="0 0 100 100" className="w-24 h-24">
+            <text x="50" y="55" textAnchor="middle" className="fill-gray-800 font-black text-xl">C</text>
+            <text x="50" y="20" textAnchor="middle" className="fill-gray-400 font-black text-sm">H</text>
+            <Dot cx={50} cy={35} /> <Cross x={50} y={28} />
+            <text x="50" y="95" textAnchor="middle" className="fill-gray-400 font-black text-sm">H</text>
+            <Dot cx={50} cy={65} /> <Cross x={50} y={75} />
+            <text x="15" y="55" textAnchor="middle" className="fill-gray-400 font-black text-sm">H</text>
+            <Dot cx={35} cy={50} /> <Cross x={28} y={50} />
+            <text x="85" y="55" textAnchor="middle" className="fill-gray-400 font-black text-sm">H</text>
+            <Dot cx={65} cy={50} /> <Cross x={72} y={50} />
+          </svg>
+        ),
+        displayed: (
+          <svg viewBox="0 0 100 100" className="w-24 h-24">
+            <text x="50" y="55" textAnchor="middle" className="fill-gray-800 font-black text-xl">C</text>
+            <line x1="50" y1="40" x2="50" y2="25" stroke="#10b981" strokeWidth="2" />
+            <text x="50" y="20" textAnchor="middle" className="fill-gray-400 font-black text-sm">H</text>
+            <line x1="50" y1="60" x2="50" y2="75" stroke="#10b981" strokeWidth="2" />
+            <text x="50" y="90" textAnchor="middle" className="fill-gray-400 font-black text-sm">H</text>
+            <line x1="40" y1="50" x2="25" y2="50" stroke="#10b981" strokeWidth="2" />
+            <text x="15" y="55" textAnchor="middle" className="fill-gray-400 font-black text-sm">H</text>
+            <line x1="60" y1="50" x2="75" y2="50" stroke="#10b981" strokeWidth="2" />
+            <text x="85" y="55" textAnchor="middle" className="fill-gray-400 font-black text-sm">H</text>
+          </svg>
+        )
+      },
+      'H2O': {
+        dotCross: (
+          <svg viewBox="0 0 100 100" className="w-24 h-24">
+            <text x="50" y="55" textAnchor="middle" className="fill-gray-800 font-black text-xl">O</text>
+            <Dot cx={40} cy={35} /> <Dot cx={45} cy={30} />
+            <Dot cx={60} cy={35} /> <Dot cx={55} cy={30} />
+            <text x="20" y="85" textAnchor="middle" className="fill-gray-400 font-black text-sm">H</text>
+            <Dot cx={38} cy={65} /> <Cross x={30} y={72} />
+            <text x="80" y="85" textAnchor="middle" className="fill-gray-400 font-black text-sm">H</text>
+            <Dot cx={62} cy={65} /> <Cross x={70} y={72} />
+          </svg>
+        ),
+        displayed: (
+          <svg viewBox="0 0 100 100" className="w-24 h-24">
+            <text x="50" y="55" textAnchor="middle" className="fill-gray-800 font-black text-xl">O</text>
+            <Dot cx={40} cy={35} /> <Dot cx={45} cy={30} />
+            <Dot cx={60} cy={35} /> <Dot cx={55} cy={30} />
+            <line x1="42" y1="62" x2="30" y2="75" stroke="#10b981" strokeWidth="2" />
+            <text x="20" y="90" textAnchor="middle" className="fill-gray-400 font-black text-sm">H</text>
+            <line x1="58" y1="62" x2="70" y2="75" stroke="#10b981" strokeWidth="2" />
+            <text x="80" y="90" textAnchor="middle" className="fill-gray-400 font-black text-sm">H</text>
+          </svg>
+        )
+      },
+      'CO2': {
+        dotCross: (
+          <svg viewBox="0 0 100 100" className="w-24 h-24">
+            <text x="50" y="55" textAnchor="middle" className="fill-gray-800 font-black text-xl">C</text>
+            <text x="15" y="55" textAnchor="middle" className="fill-gray-800 font-black text-xl">O</text>
+            <text x="85" y="55" textAnchor="middle" className="fill-gray-800 font-black text-xl">O</text>
+            {/* Double bonds */}
+            <Dot cx={35} cy={48} /> <Dot cx={35} cy={52} />
+            <Cross x={28} y={48} /> <Cross x={28} y={52} />
+            <Dot cx={65} cy={48} /> <Dot cx={65} cy={52} />
+            <Cross x={72} y={48} /> <Cross x={72} y={52} />
+            {/* Lone pairs on O */}
+            <Cross x={10} y={35} /> <Cross x={15} y={35} />
+            <Cross x={10} y={70} /> <Cross x={15} y={70} />
+            <Cross x={85} y={35} /> <Cross x={90} y={35} />
+            <Cross x={85} y={70} /> <Cross x={90} y={70} />
+          </svg>
+        ),
+        displayed: (
+          <svg viewBox="0 0 100 100" className="w-24 h-24">
+            <text x="50" y="55" textAnchor="middle" className="fill-gray-800 font-black text-xl">C</text>
+            <text x="15" y="55" textAnchor="middle" className="fill-gray-800 font-black text-xl">O</text>
+            <text x="85" y="55" textAnchor="middle" className="fill-gray-800 font-black text-xl">O</text>
+            <line x1="25" y1="48" x2="40" y2="48" stroke="#10b981" strokeWidth="2" />
+            <line x1="25" y1="52" x2="40" y2="52" stroke="#10b981" strokeWidth="2" />
+            <line x1="60" y1="48" x2="75" y2="48" stroke="#10b981" strokeWidth="2" />
+            <line x1="60" y1="52" x2="75" y2="52" stroke="#10b981" strokeWidth="2" />
+            <Dot cx={10} cy={35} /> <Dot cx={15} cy={35} />
+            <Dot cx={10} cy={70} /> <Dot cx={15} cy={70} />
+            <Dot cx={85} cy={35} /> <Dot cx={90} cy={35} />
+            <Dot cx={85} cy={70} /> <Dot cx={90} cy={70} />
+          </svg>
+        )
+      },
+      'SF6': {
+        dotCross: (
+          <svg viewBox="0 0 100 100" className="w-24 h-24">
+            <text x="50" y="55" textAnchor="middle" className="fill-gray-800 font-black text-lg">S</text>
+            {[0, 60, 120, 180, 240, 300].map(angle => {
+              const rad = (angle * Math.PI) / 180;
+              const fx = 50 + Math.cos(rad) * 35;
+              const fy = 50 + Math.sin(rad) * 35;
+              const dx = 50 + Math.cos(rad) * 18;
+              const dy = 50 + Math.sin(rad) * 18;
+              const cx = 50 + Math.cos(rad) * 25;
+              const cy = 50 + Math.sin(rad) * 25;
+              
+              // Lone pairs for F (6 crosses)
+              const lps = [
+                { x: fx + Math.cos(rad + 0.5) * 8, y: fy + Math.sin(rad + 0.5) * 8 },
+                { x: fx + Math.cos(rad - 0.5) * 8, y: fy + Math.sin(rad - 0.5) * 8 },
+                { x: fx + Math.cos(rad + 0.2) * 10, y: fy + Math.sin(rad + 0.2) * 10 },
+                { x: fx + Math.cos(rad - 0.2) * 10, y: fy + Math.sin(rad - 0.2) * 10 },
+                { x: fx + Math.cos(rad + 0.8) * 6, y: fy + Math.sin(rad + 0.8) * 6 },
+                { x: fx + Math.cos(rad - 0.8) * 6, y: fy + Math.sin(rad - 0.8) * 6 },
+              ];
+
+              return (
+                <g key={angle}>
+                  <text x={fx} y={fy + 3} textAnchor="middle" className="fill-gray-400 font-black text-[10px]">F</text>
+                  <Dot cx={dx} cy={dy} />
+                  <Cross x={cx} y={cy} />
+                  {lps.map((lp, i) => <Cross key={i} x={lp.x} y={lp.y} />)}
+                </g>
+              );
+            })}
+          </svg>
+        ),
+        displayed: (
+          <svg viewBox="0 0 100 100" className="w-24 h-24">
+            <text x="50" y="55" textAnchor="middle" className="fill-gray-800 font-black text-lg">S</text>
+            {[0, 60, 120, 180, 240, 300].map(angle => {
+              const rad = (angle * Math.PI) / 180;
+              const fx = 50 + Math.cos(rad) * 40;
+              const fy = 50 + Math.sin(rad) * 40;
+              const x1 = 50 + Math.cos(rad) * 10;
+              const y1 = 50 + Math.sin(rad) * 10;
+              const x2 = 50 + Math.cos(rad) * 30;
+              const y2 = 50 + Math.sin(rad) * 30;
+              
+              // Lone pairs for F
+              const lp1x = fx + Math.cos(rad + 0.4) * 8;
+              const lp1y = fy + Math.sin(rad + 0.4) * 8;
+              const lp2x = fx + Math.cos(rad - 0.4) * 8;
+              const lp2y = fy + Math.sin(rad - 0.4) * 8;
+              const lp3x = fx + Math.cos(rad) * 10;
+              const lp3y = fy + Math.sin(rad) * 10;
+
+              return (
+                <g key={angle}>
+                  <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="#10b981" strokeWidth="1.5" />
+                  <text x={fx} y={fy + 3} textAnchor="middle" className="fill-gray-400 font-black text-[10px]">F</text>
+                  <Dot cx={lp1x} cy={lp1y} color="#94a3b8" />
+                  <Dot cx={lp2x} cy={lp2y} color="#94a3b8" />
+                  <Dot cx={lp3x} cy={lp3y} color="#94a3b8" />
+                </g>
+              );
+            })}
+          </svg>
+        )
+      }
+    };
+
+    const d = visuals[formula] || visuals['NH3'];
+
+    return (
+      <div className="grid grid-cols-2 gap-4 mt-6">
+        <div className="bg-gray-50 p-4 rounded-2xl border-2 border-gray-100 flex flex-col items-center">
+          <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-2">Dot-Cross Structure</p>
+          <div className="bg-white p-2 rounded-xl border border-gray-100 shadow-sm">
+            {d.dotCross}
+          </div>
+        </div>
+        <div className="bg-gray-50 p-4 rounded-2xl border-2 border-gray-100 flex flex-col items-center">
+          <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-2">Displayed Formula</p>
+          <div className="bg-white p-2 rounded-xl border border-gray-100 shadow-sm">
+            {d.displayed}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const RevisionView = () => (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b-2 border-gray-200 p-4 sticky top-0 z-10">
@@ -3524,27 +4309,27 @@ export default function App() {
         <div className="space-y-4">
           <h3 className="text-lg font-black text-gray-400 uppercase tracking-widest">Key Concepts</h3>
           {selectedUnit?.concepts.map((concept, i) => (
-            <motion.div 
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: i * 0.1 }}
+            <div 
               key={i} 
               className="bg-white border-2 border-gray-200 rounded-2xl p-5 flex gap-4 items-start shadow-[0_4px_0_0_rgba(0,0,0,0.05)]"
             >
               <div className="bg-blue-100 text-blue-600 p-2 rounded-lg mt-1">
                 <CheckCircle2 size={20} />
               </div>
-              <p className="text-gray-700 text-lg font-medium leading-relaxed">
-                {concept.includes(': ') ? (
-                  <>
-                    <span className="font-black text-gray-900">{concept.split(': ')[0]}:</span>
-                    {concept.substring(concept.indexOf(': ') + 1)}
-                  </>
-                ) : (
-                  concept
-                )}
-              </p>
-            </motion.div>
+              <div className="flex-1">
+                <p className="text-gray-700 text-lg font-medium leading-relaxed">
+                  {concept.includes(': ') ? (
+                    <>
+                      <span className="font-black text-gray-900">{concept.split(': ')[0]}:</span>
+                      {concept.substring(concept.indexOf(': ') + 1)}
+                    </>
+                  ) : (
+                    concept
+                  )}
+                </p>
+                {selectedUnit.id === 1 && <S11Graphics index={i} />}
+              </div>
+            </div>
           ))}
         </div>
 

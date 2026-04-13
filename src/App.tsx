@@ -40,7 +40,9 @@ import {
   Flame,
   TrendingUp,
   QrCode,
-  Layers
+  Layers,
+  Activity,
+  Box
 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { units, Unit, Question, Vocab } from './data';
@@ -475,6 +477,322 @@ export default function App() {
       ))}
     </div>
   );
+
+  const BondPolarityDrawing = ({ type }: { type: 'non-polar' | 'polar' | 'ionic' }) => {
+    const config = {
+      'non-polar': {
+        leftAtom: 'Cl',
+        rightAtom: 'Cl',
+        leftColor: 'bg-emerald-400',
+        rightColor: 'bg-emerald-400',
+        leftSize: 'w-14 h-14',
+        rightSize: 'w-14 h-14',
+        cloudShape: 'rounded-[100px]',
+        cloudWidth: 'w-40',
+        cloudOffset: 'left-1/2 -translate-x-1/2',
+        deltaLeft: null,
+        deltaRight: null,
+        label: 'Cl₂'
+      },
+      'polar': {
+        leftAtom: 'H',
+        rightAtom: 'Cl',
+        leftColor: 'bg-blue-400',
+        rightColor: 'bg-emerald-400',
+        leftSize: 'w-8 h-8',
+        rightSize: 'w-16 h-16',
+        cloudShape: 'rounded-l-[40px] rounded-r-[100px]',
+        cloudWidth: 'w-36',
+        cloudOffset: 'left-[45%] -translate-x-1/2',
+        deltaLeft: 'δ+',
+        deltaRight: 'δ-',
+        label: 'HCl'
+      },
+      'ionic': {
+        leftAtom: 'Na⁺',
+        rightAtom: 'Cl⁻',
+        leftColor: 'bg-amber-400',
+        rightColor: 'bg-emerald-500',
+        leftSize: 'w-8 h-8',
+        rightSize: 'w-18 h-18',
+        cloudShape: 'hidden',
+        cloudWidth: 'w-0',
+        cloudOffset: '',
+        deltaLeft: '+',
+        deltaRight: '-',
+        label: 'NaCl'
+      }
+    };
+
+    const current = config[type];
+
+    return (
+      <div className="relative w-full h-40 bg-gray-50 rounded-2xl overflow-hidden border border-gray-100 flex items-center justify-center">
+        {/* Electron Cloud (for covalent) */}
+        {type !== 'ionic' && (
+          <motion.div 
+            layoutId="electron-cloud"
+            className={`absolute h-20 bg-indigo-500/10 border-2 border-indigo-500/20 blur-sm ${current.cloudShape} ${current.cloudWidth} ${current.cloudOffset}`}
+            animate={{ scale: [1, 1.05, 1] }}
+            transition={{ duration: 3, repeat: Infinity }}
+          />
+        )}
+
+        <div className="relative flex items-center gap-4 z-10">
+          {/* Left Atom */}
+          <div className="flex flex-col items-center gap-1">
+            {current.deltaLeft && (
+              <span className="text-[10px] font-black text-indigo-600 mb-1">{current.deltaLeft}</span>
+            )}
+            <motion.div 
+              layoutId="left-atom"
+              className={`${current.leftSize} ${current.leftColor} rounded-full flex items-center justify-center shadow-lg border-2 border-white/50`}
+            >
+              <span className="text-white font-black text-[10px]">{current.leftAtom}</span>
+            </motion.div>
+          </div>
+
+          {/* Bond / Transfer Arrow */}
+          {type === 'ionic' ? (
+            <motion.div 
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="flex flex-col items-center"
+            >
+              <div className="text-[8px] font-black text-amber-600 uppercase mb-1">Transfer</div>
+              <div className="w-10 h-0.5 bg-amber-300 relative">
+                <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1.5 h-1.5 border-t-2 border-r-2 border-amber-300 rotate-45" />
+              </div>
+            </motion.div>
+          ) : (
+            <div className="w-6 h-0.5 bg-indigo-200/50" />
+          )}
+
+          {/* Right Atom */}
+          <div className="flex flex-col items-center gap-1">
+            {current.deltaRight && (
+              <span className="text-[10px] font-black text-indigo-600 mb-1">{current.deltaRight}</span>
+            )}
+            <motion.div 
+              layoutId="right-atom"
+              className={`${current.rightSize} ${current.rightColor} rounded-full flex items-center justify-center shadow-lg border-2 border-white/50`}
+            >
+              <span className="text-white font-black text-[10px]">{current.rightAtom}</span>
+            </motion.div>
+          </div>
+        </div>
+
+        <div className="absolute bottom-3 right-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">
+          {current.label}
+        </div>
+      </div>
+    );
+  };
+
+  const SigmaPiBondDrawing = ({ type, step }: { type: 'sigma' | 'pi', step: 'before' | 'after' }) => {
+    return (
+      <div className="relative w-full h-48 bg-gray-900 rounded-2xl overflow-hidden border border-gray-800 flex items-center justify-center">
+        <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(#4f46e5 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
+        
+        <div className="relative flex items-center justify-center w-full h-full">
+          {type === 'sigma' ? (
+            <div className="flex items-center gap-12">
+              {/* Sigma Bond: Axial Overlap */}
+              <motion.div 
+                animate={{ x: step === 'after' ? 25 : 0 }}
+                className="relative"
+              >
+                <div className="w-16 h-8 bg-indigo-500/40 border-2 border-indigo-400 rounded-full flex items-center justify-center">
+                  <span className="text-white font-black text-[8px]">s-orbital</span>
+                </div>
+              </motion.div>
+              
+              <motion.div 
+                animate={{ x: step === 'after' ? -25 : 0 }}
+                className="relative"
+              >
+                <div className="w-16 h-8 bg-indigo-500/40 border-2 border-indigo-400 rounded-full flex items-center justify-center">
+                  <span className="text-white font-black text-[8px]">s-orbital</span>
+                </div>
+              </motion.div>
+
+              {step === 'after' && (
+                <motion.div 
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  className="absolute inset-0 flex items-center justify-center"
+                >
+                  <div className="w-12 h-12 bg-indigo-400/60 rounded-full blur-sm border-2 border-indigo-300" />
+                  <div className="absolute text-white font-black text-xs">σ</div>
+                </motion.div>
+              )}
+            </div>
+          ) : (
+            <div className="flex items-center gap-16">
+              {/* Pi Bond: Sideways Overlap */}
+              <motion.div 
+                animate={{ x: step === 'after' ? 30 : 0 }}
+                className="flex flex-col gap-1"
+              >
+                <div className="w-6 h-12 bg-rose-500/40 border-2 border-rose-400 rounded-full" />
+                <div className="w-6 h-12 bg-rose-500/40 border-2 border-rose-400 rounded-full" />
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-white rounded-full" />
+              </motion.div>
+
+              <motion.div 
+                animate={{ x: step === 'after' ? -30 : 0 }}
+                className="flex flex-col gap-1"
+              >
+                <div className="w-6 h-12 bg-rose-500/40 border-2 border-rose-400 rounded-full" />
+                <div className="w-6 h-12 bg-rose-500/40 border-2 border-rose-400 rounded-full" />
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-white rounded-full" />
+              </motion.div>
+
+              {step === 'after' && (
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="absolute inset-0 flex flex-col items-center justify-center gap-8"
+                >
+                  <div className="w-32 h-6 bg-rose-400/40 rounded-full blur-sm border-t-2 border-rose-300" />
+                  <div className="w-32 h-6 bg-rose-400/40 rounded-full blur-sm border-b-2 border-rose-300" />
+                  <div className="absolute text-white font-black text-xs">π</div>
+                </motion.div>
+              )}
+            </div>
+          )}
+        </div>
+
+        <div className="absolute top-4 left-4 flex flex-col">
+          <span className="text-[8px] font-black text-gray-500 uppercase tracking-widest">Overlap Type</span>
+          <span className="text-xs font-black text-indigo-400">{type === 'sigma' ? 'Axial (Head-on)' : 'Sideways (Parallel)'}</span>
+        </div>
+      </div>
+    );
+  };
+
+  const VSEPRDrawing = ({ domains, lonePairs }: { domains: number, lonePairs: number }) => {
+    const [rotation, setRotation] = useState(0);
+
+    useEffect(() => {
+      let frame: number;
+      const animate = () => {
+        setRotation(prev => (prev + 0.005) % (Math.PI * 2));
+        frame = requestAnimationFrame(animate);
+      };
+      frame = requestAnimationFrame(animate);
+      return () => cancelAnimationFrame(frame);
+    }, []);
+
+    const getVectors = (total: number) => {
+      switch (total) {
+        case 2: return [[0, 1, 0], [0, -1, 0]];
+        case 3: return [[0, 1, 0], [0.866, -0.5, 0], [-0.866, -0.5, 0]];
+        case 4: return [[0, 1, 0], [0.943, -0.333, 0], [-0.471, -0.333, 0.816], [-0.471, -0.333, -0.816]];
+        case 5: return [[0, 1, 0], [0, -1, 0], [1, 0, 0], [-0.5, 0, 0.866], [-0.5, 0, -0.866]];
+        case 6: return [[0, 1, 0], [0, -1, 0], [1, 0, 0], [-1, 0, 0], [0, 0, 1], [0, 0, -1]];
+        default: return [];
+      }
+    };
+
+    const vectors = getVectors(domains);
+    const bondingCount = domains - lonePairs;
+
+    const projected = vectors.map((v, i) => {
+      let x = v[0], y = v[1], z = v[2];
+      const cosY = Math.cos(rotation);
+      const sinY = Math.sin(rotation);
+      const x1 = x * cosY + z * sinY;
+      const z1 = -x * sinY + z * cosY;
+      const cosX = Math.cos(0.5);
+      const sinX = Math.sin(0.5);
+      const y2 = y * cosX - z1 * sinX;
+      const z2 = y * sinX + z1 * cosX;
+
+      return {
+        x: x1 * 70,
+        y: -y2 * 70,
+        z: z2,
+        scale: 0.8 + (z2 + 1) * 0.2,
+        isLonePair: i >= bondingCount
+      };
+    });
+
+    const sorted = [...projected].sort((a, b) => a.z - b.z);
+
+    return (
+      <div className="relative w-full h-64 bg-gray-900 rounded-3xl overflow-hidden border-2 border-gray-800 flex items-center justify-center">
+        <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(#6366f1 1px, transparent 1px)', backgroundSize: '30px 30px' }} />
+        
+        <svg viewBox="0 0 256 256" className="absolute inset-0 w-full h-full pointer-events-none">
+          <g transform="translate(128, 128)">
+            {projected.map((p, i) => {
+              if (p.isLonePair) return null;
+              return (
+                <line 
+                  key={i}
+                  x1="0" y1="0" x2={p.x} y2={p.y}
+                  stroke="url(#bondGradient)"
+                  strokeWidth={4 * p.scale}
+                  strokeLinecap="round"
+                  opacity={0.4 + (p.z + 1) * 0.3}
+                />
+              );
+            })}
+          </g>
+          <defs>
+            <linearGradient id="bondGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#818cf8" />
+              <stop offset="100%" stopColor="#4b5563" />
+            </linearGradient>
+          </defs>
+        </svg>
+
+        <div className="relative w-full h-full flex items-center justify-center">
+          <div className="w-10 h-10 bg-indigo-500 rounded-full border-4 border-indigo-400 shadow-[0_0_20px_rgba(99,102,241,0.4)] z-20 flex items-center justify-center">
+            <span className="text-white font-black text-[10px]">A</span>
+          </div>
+
+          {sorted.map((p, i) => (
+            <div
+              key={i}
+              className="absolute"
+              style={{ 
+                transform: `translate(${p.x}px, ${p.y}px) scale(${p.scale})`,
+                zIndex: Math.round((p.z + 2) * 10)
+              }}
+            >
+              {p.isLonePair ? (
+                <div className="relative flex items-center justify-center">
+                  <div className="w-8 h-12 bg-indigo-500/20 border-2 border-dashed border-indigo-400/40 rounded-full blur-[1px]" 
+                       style={{ transform: `rotate(${Math.atan2(p.x, -p.y) * 180 / Math.PI}deg)` }} />
+                  <div className="absolute flex gap-1">
+                    <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full shadow-[0_0_8px_rgba(129,140,248,0.8)]" />
+                    <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full shadow-[0_0_8px_rgba(129,140,248,0.8)]" />
+                  </div>
+                </div>
+              ) : (
+                <div className="w-6 h-6 bg-gray-400 rounded-full border-2 border-gray-300 shadow-lg flex items-center justify-center">
+                  <span className="text-gray-800 font-black text-[8px]">X</span>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+
+        <div className="absolute bottom-4 left-4 flex flex-col gap-1">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 bg-gray-400 rounded-full" />
+            <span className="text-[8px] font-black text-gray-500 uppercase">Bonding Domain</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 border border-dashed border-indigo-400 rounded-full" />
+            <span className="text-[8px] font-black text-gray-500 uppercase">Lone Pair</span>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   const GiantIonicDrawing = () => (
     <div className="relative w-full h-24 bg-gray-50 rounded-xl overflow-hidden border border-gray-100 p-2">
@@ -1185,6 +1503,11 @@ export default function App() {
     const [ionicStep, setIonicStep] = useState(0); // 0: Molecular, 1: Complete Ionic, 2: Net Ionic
     const [ionicExampleIndex, setIonicExampleIndex] = useState(0);
     const [selectedBondingSubstance, setSelectedBondingSubstance] = useState<string | null>(null);
+    const [bondPolarityType, setBondPolarityType] = useState<'non-polar' | 'polar' | 'ionic'>('non-polar');
+    const [sigmaPiType, setSigmaPiType] = useState<'sigma' | 'pi'>('sigma');
+    const [sigmaPiStep, setSigmaPiStep] = useState<'before' | 'after'>('before');
+    const [vseprDomains, setVseprDomains] = useState(4);
+    const [vseprLonePairs, setVseprLonePairs] = useState(0);
     const [selectedSolubilitySalt, setSelectedSolubilitySalt] = useState<string | null>(null);
     const [electrolyteState, setElectrolyteState] = useState<'solid' | 'molten' | 'aqueous'>('solid');
     const [leChatelierState, setLeChatelierState] = useState({
@@ -1867,7 +2190,300 @@ export default function App() {
             </div>
           </motion.div>
 
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.35 }}
+            className="bg-white border-2 border-gray-200 rounded-[2.5rem] p-8 shadow-[0_8px_0_0_rgba(0,0,0,0.05)]"
+          >
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center gap-4">
+                <div className="bg-indigo-100 p-3 rounded-2xl text-indigo-600">
+                  <Activity size={24} />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-black text-gray-800 uppercase tracking-tight">Bond Polarity</h2>
+                  <p className="text-[10px] font-bold text-indigo-500 uppercase tracking-widest">Electronegativity & Bond Type</p>
+                </div>
+              </div>
+              <div className="flex bg-gray-100 p-1 rounded-xl">
+                {(['non-polar', 'polar', 'ionic'] as const).map((t) => (
+                  <button
+                    key={t}
+                    onClick={() => setBondPolarityType(t)}
+                    className={`px-4 py-2 rounded-lg font-black text-[10px] uppercase tracking-widest transition-all
+                      ${bondPolarityType === t ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}
+                    `}
+                  >
+                    {t.replace('-', ' ')}
+                  </button>
+                ))}
+              </div>
+            </div>
 
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+              <BondPolarityDrawing type={bondPolarityType} />
+              
+              <div className="space-y-6">
+                <div className="bg-gray-50 p-6 rounded-3xl border-2 border-gray-100 relative overflow-hidden">
+                  <div className="absolute top-0 right-0 p-4 opacity-10">
+                    <Zap size={40} className="text-indigo-600" />
+                  </div>
+                  <div className="relative z-10">
+                    <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest mb-2">Electronegativity Difference (Δχ)</p>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-4xl font-black text-gray-800">
+                        {bondPolarityType === 'non-polar' ? '< 0.4' : bondPolarityType === 'polar' ? '0.4 – 1.8' : '> 1.8'}
+                      </span>
+                      <span className="text-xs font-bold text-gray-400 uppercase">Paulings</span>
+                    </div>
+                    <p className="text-sm font-bold text-gray-600 mt-4 leading-relaxed">
+                      {bondPolarityType === 'non-polar' 
+                        ? 'Electrons are shared equally between atoms. No partial charges exist.' 
+                        : bondPolarityType === 'polar' 
+                        ? 'Electrons are shared unequally. The more electronegative atom pulls density, creating dipoles.' 
+                        : 'Electrons are completely transferred from the metal to the non-metal, forming electrostatic attraction.'}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-4">
+                  {[
+                    { label: 'Example', value: bondPolarityType === 'non-polar' ? 'Cl₂' : bondPolarityType === 'polar' ? 'HCl' : 'NaCl' },
+                    { label: 'Bond Type', value: bondPolarityType === 'non-polar' ? 'Pure Cov.' : bondPolarityType === 'polar' ? 'Polar Cov.' : 'Ionic' },
+                    { label: 'Particles', value: bondPolarityType === 'ionic' ? 'Ions' : 'Molecules' }
+                  ].map((stat, i) => (
+                    <div key={i} className="bg-white border-2 border-gray-100 p-4 rounded-2xl text-center">
+                      <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-1">{stat.label}</p>
+                      <p className="text-xs font-black text-gray-800 uppercase">{stat.value}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.38 }}
+            className="bg-white border-2 border-gray-200 rounded-[2.5rem] p-8 shadow-[0_8px_0_0_rgba(0,0,0,0.05)]"
+          >
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center gap-4">
+                <div className="bg-indigo-100 p-3 rounded-2xl text-indigo-600">
+                  <Layers size={24} />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-black text-gray-800 uppercase tracking-tight">Sigma vs Pi Bonds</h2>
+                  <p className="text-[10px] font-bold text-indigo-500 uppercase tracking-widest">Orbital Overlap Mechanisms</p>
+                </div>
+              </div>
+              <div className="flex bg-gray-100 p-1 rounded-xl">
+                {(['sigma', 'pi'] as const).map((t) => (
+                  <button
+                    key={t}
+                    onClick={() => { setSigmaPiType(t); setSigmaPiStep('before'); }}
+                    className={`px-6 py-2 rounded-lg font-black text-[10px] uppercase tracking-widest transition-all
+                      ${sigmaPiType === t ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}
+                    `}
+                  >
+                    {t} Bond
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+              <div className="space-y-6">
+                <SigmaPiBondDrawing type={sigmaPiType} step={sigmaPiStep} />
+                <div className="flex justify-center gap-4">
+                  <button
+                    onClick={() => setSigmaPiStep('before')}
+                    className={`px-8 py-3 rounded-2xl font-black text-xs uppercase tracking-widest transition-all border-2
+                      ${sigmaPiStep === 'before' ? 'bg-indigo-600 text-white border-indigo-700 shadow-lg' : 'bg-white text-gray-400 border-gray-100 hover:border-gray-200'}
+                    `}
+                  >
+                    Before Overlap
+                  </button>
+                  <button
+                    onClick={() => setSigmaPiStep('after')}
+                    className={`px-8 py-3 rounded-2xl font-black text-xs uppercase tracking-widest transition-all border-2
+                      ${sigmaPiStep === 'after' ? 'bg-indigo-600 text-white border-indigo-700 shadow-lg' : 'bg-white text-gray-400 border-gray-100 hover:border-gray-200'}
+                    `}
+                  >
+                    After Overlap
+                  </button>
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                <div className="bg-gray-50 p-6 rounded-3xl border-2 border-gray-100 relative overflow-hidden">
+                  <div className="absolute top-0 right-0 p-4 opacity-10">
+                    <Zap size={40} className="text-indigo-600" />
+                  </div>
+                  <div className="relative z-10">
+                    <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest mb-2">Formation Mechanism</p>
+                    <h3 className="text-xl font-black text-gray-800 uppercase mb-4">
+                      {sigmaPiType === 'sigma' ? 'Axial Overlap' : 'Sideways Overlap'}
+                    </h3>
+                    <p className="text-sm font-bold text-gray-600 leading-relaxed">
+                      {sigmaPiType === 'sigma' 
+                        ? 'Formed by the head-on (axial) overlap of atomic orbitals along the internuclear axis. This allows for free rotation around the bond.' 
+                        : 'Formed by the lateral (sideways) overlap of two parallel p-orbitals (py or pz). This overlap occurs above and below the internuclear axis, preventing free rotation.'}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-white border-2 border-gray-100 p-4 rounded-2xl">
+                    <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-1">Strength</p>
+                    <p className="text-xs font-black text-gray-800 uppercase">{sigmaPiType === 'sigma' ? 'Stronger' : 'Weaker'}</p>
+                  </div>
+                  <div className="bg-white border-2 border-gray-100 p-4 rounded-2xl">
+                    <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-1">Electron Density</p>
+                    <p className="text-xs font-black text-gray-800 uppercase">{sigmaPiType === 'sigma' ? 'On Axis' : 'Above/Below Axis'}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.39 }}
+            className="bg-white border-2 border-gray-200 rounded-[2.5rem] p-8 shadow-[0_8px_0_0_rgba(0,0,0,0.05)]"
+          >
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center gap-4">
+                <div className="bg-indigo-100 p-3 rounded-2xl text-indigo-600">
+                  <Box size={24} />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-black text-gray-800 uppercase tracking-tight">VSEPR Theory</h2>
+                  <p className="text-[10px] font-bold text-indigo-500 uppercase tracking-widest">Valence Shell Electron Pair Repulsion</p>
+                </div>
+              </div>
+              <div className="flex bg-gray-100 p-1 rounded-xl">
+                {[2, 3, 4, 5, 6].map((d) => (
+                  <button
+                    key={d}
+                    onClick={() => {
+                      setVseprDomains(d);
+                      setVseprLonePairs(0);
+                    }}
+                    className={`w-10 h-10 rounded-lg font-black text-[10px] uppercase transition-all
+                      ${vseprDomains === d ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}
+                    `}
+                  >
+                    {d}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+              <div className="space-y-6">
+                <VSEPRDrawing domains={vseprDomains} lonePairs={vseprLonePairs} />
+                <div className="flex flex-col gap-4">
+                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Number of Lone Pairs</p>
+                  <div className="flex justify-center gap-2">
+                    {[...Array(vseprDomains - 1)].map((_, i) => {
+                      // Limit lone pairs based on common VSEPR cases
+                      const maxLonePairs: Record<number, number> = { 2: 0, 3: 1, 4: 2, 5: 3, 6: 2 };
+                      if (i > maxLonePairs[vseprDomains]) return null;
+                      
+                      return (
+                        <button
+                          key={i}
+                          onClick={() => setVseprLonePairs(i)}
+                          className={`w-12 py-2 rounded-xl font-black text-xs transition-all border-2
+                            ${vseprLonePairs === i ? 'bg-indigo-600 text-white border-indigo-700 shadow-lg' : 'bg-white text-gray-400 border-gray-100 hover:border-gray-200'}
+                          `}
+                        >
+                          {i}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                {(() => {
+                  const data: Record<number, Record<number, { molecular: string, electron: string, example: string }>> = {
+                    2: { 0: { molecular: "Linear", electron: "Linear", example: "CO₂" } },
+                    3: { 
+                      0: { molecular: "Trigonal Planar", electron: "Trigonal Planar", example: "BF₃" },
+                      1: { molecular: "Bent", electron: "Trigonal Planar", example: "SO₂" }
+                    },
+                    4: {
+                      0: { molecular: "Tetrahedral", electron: "Tetrahedral", example: "CH₄" },
+                      1: { molecular: "Trigonal Pyramidal", electron: "Tetrahedral", example: "NH₃" },
+                      2: { molecular: "Bent", electron: "Tetrahedral", example: "H₂O" }
+                    },
+                    5: {
+                      0: { molecular: "Trigonal Bipyramidal", electron: "Trigonal Bipyramidal", example: "PCl₅" },
+                      1: { molecular: "Seesaw", electron: "Trigonal Bipyramidal", example: "SF₄" },
+                      2: { molecular: "T-shaped", electron: "Trigonal Bipyramidal", example: "ClF₃" },
+                      3: { molecular: "Linear", electron: "Trigonal Bipyramidal", example: "XeF₂" }
+                    },
+                    6: {
+                      0: { molecular: "Octahedral", electron: "Octahedral", example: "SF₆" },
+                      1: { molecular: "Square Pyramidal", electron: "Octahedral", example: "BrF₅" },
+                      2: { molecular: "Square Planar", electron: "Octahedral", example: "XeF₄" }
+                    }
+                  };
+                  const current = data[vseprDomains]?.[vseprLonePairs] || data[vseprDomains][0];
+
+                  return (
+                    <>
+                      <div className="bg-gray-50 p-6 rounded-3xl border-2 border-gray-100 relative overflow-hidden">
+                        <div className="absolute top-0 right-0 p-4 opacity-10">
+                          <Atom size={40} className="text-indigo-600" />
+                        </div>
+                        <div className="relative z-10">
+                          <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest mb-2">Molecular Geometry</p>
+                          <h3 className="text-2xl font-black text-gray-800 uppercase mb-1">{current.molecular}</h3>
+                          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4">
+                            Electron Domain Geometry: <span className="text-indigo-500">{current.electron}</span>
+                          </p>
+                          <div className="flex items-center gap-4 p-3 bg-white rounded-2xl border border-gray-100">
+                            <div className="bg-indigo-50 p-2 rounded-lg text-indigo-600">
+                              <FlaskConical size={16} />
+                            </div>
+                            <div>
+                              <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Example Chemical</p>
+                              <p className="text-sm font-black text-gray-800" dangerouslySetInnerHTML={{ __html: current.example.replace(/(\d+)/g, '<sub>$1</sub>') }} />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="bg-white border-2 border-gray-100 p-4 rounded-2xl">
+                          <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-1">Bonding Domains</p>
+                          <p className="text-lg font-black text-gray-800">{vseprDomains - vseprLonePairs}</p>
+                        </div>
+                        <div className="bg-white border-2 border-gray-100 p-4 rounded-2xl">
+                          <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-1">Lone Pairs</p>
+                          <p className="text-lg font-black text-indigo-600">{vseprLonePairs}</p>
+                        </div>
+                      </div>
+
+                      <div className="p-4 bg-indigo-50 rounded-2xl border border-indigo-100">
+                        <p className="text-[10px] font-bold text-indigo-700 leading-relaxed">
+                          <span className="font-black uppercase tracking-widest mr-2">Pro Tip:</span>
+                          Lone pairs occupy more space than bonding pairs, causing bond angles to decrease slightly from the ideal values.
+                        </p>
+                      </div>
+                    </>
+                  );
+                })()}
+              </div>
+            </div>
+          </motion.div>
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -2421,12 +3037,12 @@ export default function App() {
                                   ))}
                                   <div className="mt-2 pt-2 border-t border-gray-100 space-y-1">
                                     <div className="flex items-center justify-between gap-4">
-                                      <span className="text-[10px] font-bold text-emerald-600">Target K꜀:</span>
-                                      <span className="text-[10px] font-black text-emerald-600">{leChatelierState.kc.toFixed(1)}</span>
+                                      <span className="text-[10px] font-bold text-emerald-600">Target K꜀ (×10⁻⁴):</span>
+                                      <span className="text-[10px] font-black text-emerald-600">{leChatelierState.kc.toFixed(2)}</span>
                                     </div>
                                     <div className="flex items-center justify-between gap-4">
-                                      <span className="text-[10px] font-bold text-blue-600">Current Q꜀:</span>
-                                      <span className="text-[10px] font-black text-blue-600">{qc.toFixed(1)}</span>
+                                      <span className="text-[10px] font-bold text-blue-600">Current Q꜀ (×10⁻⁴):</span>
+                                      <span className="text-[10px] font-black text-blue-600">{qc.toFixed(2)}</span>
                                     </div>
                                   </div>
                                 </div>
@@ -2467,19 +3083,19 @@ export default function App() {
                       <path d="M0 100 C 20 0 50 0 100 100" fill="none" stroke="white" strokeWidth="0.5" />
                     </svg>
                   </div>
-                  <p className="text-[10px] font-black uppercase tracking-[0.3em] mb-4 opacity-80">Equilibrium Constant</p>
+                  <p className="text-[10px] font-black uppercase tracking-[0.3em] mb-4 opacity-80">Equilibrium Constant (×10⁻⁴)</p>
                   <motion.div 
                     key={leChatelierState.kc}
                     initial={{ scale: 0.8, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     className="text-6xl font-black tracking-tighter mb-2"
                   >
-                    {leChatelierState.kc.toFixed(1)}
+                    {leChatelierState.kc.toFixed(2)}
                   </motion.div>
                   <div className="text-2xl font-black opacity-90">K<sub>c</sub></div>
                   
                   <div className="mt-8 pt-6 border-t border-white/20 w-full flex flex-col items-center">
-                    <p className="text-[9px] font-bold uppercase tracking-widest opacity-70 mb-3">Expression</p>
+                    <p className="text-[9px] font-bold uppercase tracking-widest opacity-70 mb-3">Expression (Scaled)</p>
                     <div className="flex flex-col items-center font-black italic text-sm">
                       <div className="pb-1 border-b border-white/50">[NH₃]²</div>
                       <div className="pt-1">[N₂][H₂]³</div>

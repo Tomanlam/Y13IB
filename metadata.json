@@ -1,0 +1,5 @@
+{
+  "name": "IBDP Chemistry",
+  "description": "A Duolingo-styled chemistry revision app for IBDP Chemistry with quizzes, revision notes, and vocabulary.",
+  "requestFramePermissions": []
+}

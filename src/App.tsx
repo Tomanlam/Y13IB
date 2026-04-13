@@ -1187,6 +1187,67 @@ export default function App() {
     const [selectedBondingSubstance, setSelectedBondingSubstance] = useState<string | null>(null);
     const [selectedSolubilitySalt, setSelectedSolubilitySalt] = useState<string | null>(null);
     const [electrolyteState, setElectrolyteState] = useState<'solid' | 'molten' | 'aqueous'>('solid');
+    const [leChatelierState, setLeChatelierState] = useState({
+      n2: 40,
+      h2: 60,
+      nh3: 20,
+      temp: 'optimal' as 'low' | 'optimal' | 'high',
+      pressure: 'optimal' as 'low' | 'optimal' | 'high',
+      history: [] as any[],
+      kc: 1.0
+    });
+    const [lastAction, setLastAction] = useState<string | null>(null);
+
+    useEffect(() => {
+      const interval = setInterval(() => {
+        setLeChatelierState(prev => {
+          // K_c is only affected by temperature
+          let targetKc = 0.0001; // Base K_c for 'optimal'
+          if (prev.temp === 'high') targetKc = 0.00002; // Exothermic: high T shifts left, K_c decreases
+          if (prev.temp === 'low') targetKc = 0.0005;  // Low T shifts right, K_c increases
+
+          // Current reaction quotient Q_c = [NH3]^2 / ([N2] * [H2]^3)
+          // We use the current concentrations to calculate Q_c
+          const currentQc = (prev.nh3 * prev.nh3) / (prev.n2 * Math.pow(prev.h2, 3));
+          
+          // Reaction rate logic
+          // We want Q_c to move towards targetKc
+          // If Q_c < targetKc, reaction shifts right (N2, H2 decrease, NH3 increases)
+          // If Q_c > targetKc, reaction shifts left (N2, H2 increase, NH3 decreases)
+          
+          const diff = targetKc - currentQc;
+          // Scaling factor to make the movement visible but smooth
+          // Note: [H2]^3 can be very large, so we need a very small multiplier
+          const shift = diff * 10000; 
+          
+          // Limit the shift to prevent wild oscillations
+          const maxShift = 0.5;
+          const clampedShift = Math.max(-maxShift, Math.min(maxShift, shift));
+
+          const nextNH3 = Math.max(1, prev.nh3 + (2 * clampedShift));
+          const nextN2 = Math.max(1, prev.n2 - (1 * clampedShift));
+          const nextH2 = Math.max(1, prev.h2 - (3 * clampedShift));
+
+          const newHistory = [...prev.history, {
+            time: Date.now(),
+            n2: Math.round(nextN2 * 10) / 10,
+            h2: Math.round(nextH2 * 10) / 10,
+            nh3: Math.round(nextNH3 * 10) / 10
+          }].slice(-40);
+
+          return {
+            ...prev,
+            n2: nextN2,
+            h2: nextH2,
+            nh3: nextNH3,
+            kc: targetKc * 10000, // Scale for display purposes
+            history: newHistory
+          };
+        });
+      }, 100);
+
+      return () => clearInterval(interval);
+    }, []);
 
     const saltPrepData = {
       'NaCl': { soluble: true, group1: true, method: 'Titration' },
@@ -1331,12 +1392,14 @@ export default function App() {
           </div>
         </header>
 
-        <main className="max-w-2xl mx-auto p-6 space-y-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-white border-2 border-gray-200 rounded-[2.5rem] p-8 shadow-[0_8px_0_0_rgba(0,0,0,0.05)] overflow-hidden"
-          >
+        <main className="max-w-6xl mx-auto p-6 space-y-12">
+          <div className="max-w-2xl mx-auto space-y-8">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="bg-white border-2 border-gray-200 rounded-[2.5rem] p-8 shadow-[0_8px_0_0_rgba(0,0,0,0.05)] overflow-hidden"
+            >
             <div className="flex items-center gap-4 mb-12">
               <div className="bg-sky-100 p-3 rounded-2xl text-sky-600">
                 <Thermometer size={24} />
@@ -1422,609 +1485,20 @@ export default function App() {
             </div>
           </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="bg-white border-2 border-gray-200 rounded-[2.5rem] p-8 shadow-[0_8px_0_0_rgba(0,0,0,0.05)] overflow-hidden"
-          >
-            <div className="flex items-center gap-4 mb-8">
-              <div className="bg-emerald-100 p-3 rounded-2xl text-emerald-600">
-                <Droplets size={24} />
-              </div>
-              <h2 className="text-2xl font-black text-gray-800 uppercase tracking-tight">Solubility Rules</h2>
-            </div>
 
-            <div className="relative w-full aspect-square max-w-md mx-auto flex items-center justify-center">
-              {/* Tooltip/Overlay for hovered rule */}
-              <AnimatePresence>
-                {hoveredRule && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.8, y: 10 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.8, y: 10 }}
-                    className="absolute top-0 left-0 right-0 z-50 bg-gray-800 text-white p-4 rounded-2xl text-center shadow-xl border-2 border-gray-700"
-                  >
-                    <p className="font-bold text-sm leading-tight">{hoveredRule}</p>
-                  </motion.div>
-                )}
-              </AnimatePresence>
 
-              {/* Central Circle */}
-              <motion.div 
-                onMouseEnter={() => setHoveredRule("All Potassium (K⁺), Sodium (Na⁺), Ammonium (NH₄⁺), and Nitrate (NO₃⁻) salts are soluble.")}
-                onMouseLeave={() => setHoveredRule(null)}
-                whileHover={{ scale: 1.05 }}
-                className={`relative z-20 w-48 h-48 rounded-full flex flex-col items-center justify-center p-6 text-center border-4 border-white shadow-xl cursor-help transition-all
-                  ${(selectedSolubilitySalt === 'NaCl' || selectedSolubilitySalt === 'NH43PO4') ? 'bg-emerald-600 scale-105 ring-4 ring-emerald-200' : 'bg-emerald-500 hover:bg-emerald-600'}
-                `}
-              >
-                <div className="text-white font-black text-lg flex flex-wrap justify-center gap-x-2 leading-none">
-                  <span>K<sup>+</sup></span>
-                  <span>Na<sup>+</sup></span>
-                  <span>NH<sub>4</sub><sup>+</sup></span>
-                  <span>NO<sub>3</sub><sup>-</sup></span>
-                </div>
-                <p className="text-white/80 font-bold text-[10px] uppercase mt-2 tracking-widest">Always Soluble</p>
-              </motion.div>
 
-              {/* Top Circle (Sulfates) */}
-              <motion.div 
-                onMouseEnter={() => setHoveredRule("Most sulfates are soluble except Barium Sulfate (BaSO₄) and Lead(II) Sulfate (PbSO₄).")}
-                onMouseLeave={() => setHoveredRule(null)}
-                whileHover={{ scale: 1.1, zIndex: 30 }}
-                className={`absolute top-4 z-10 w-36 h-36 rounded-full flex items-center justify-center p-4 text-center border-2 cursor-help transition-all
-                  ${(selectedSolubilitySalt === 'MgSO4' || selectedSolubilitySalt === 'BaSO4') ? 'bg-sky-300 border-sky-400 scale-110 z-30' : 'bg-sky-100 border-sky-200 hover:bg-sky-200'}
-                `}
-              >
-                <p className="text-sky-800 font-black text-xl">SO<sub>4</sub><sup>2-</sup></p>
-              </motion.div>
 
-              {/* Bottom Circle (Halides) */}
-              <motion.div 
-                onMouseEnter={() => setHoveredRule("Most halides (Cl⁻, Br⁻, I⁻) are soluble except Silver Halides (AgX) and Lead(II) Halides (PbX₂).")}
-                onMouseLeave={() => setHoveredRule(null)}
-                whileHover={{ scale: 1.1, zIndex: 30 }}
-                className={`absolute bottom-4 z-10 w-36 h-36 rounded-full flex items-center justify-center p-4 text-center border-2 cursor-help transition-all
-                  ${(selectedSolubilitySalt === 'NaCl' || selectedSolubilitySalt === 'AgBr' || selectedSolubilitySalt === 'PbI2') ? 'bg-sky-300 border-sky-400 scale-110 z-30' : 'bg-sky-100 border-sky-200 hover:bg-sky-200'}
-                `}
-              >
-                <p className="text-sky-800 font-black text-xl">X<sup>-</sup></p>
-              </motion.div>
 
-              {/* Left Circle (Hydroxides) */}
-              <motion.div 
-                onMouseEnter={() => setHoveredRule("Most hydroxides are insoluble except those of K⁺, Na⁺, and NH₄⁺.")}
-                onMouseLeave={() => setHoveredRule(null)}
-                whileHover={{ scale: 1.1, zIndex: 30 }}
-                className={`absolute left-[-10px] z-10 w-36 h-36 rounded-full flex items-center justify-center p-4 text-center border-2 cursor-help transition-all
-                  ${selectedSolubilitySalt === 'Fe(OH)2' ? 'bg-rose-300 border-rose-400 scale-110 z-30' : 'bg-rose-100 border-rose-200 hover:bg-rose-200'}
-                `}
-              >
-                <p className="text-rose-800 font-black text-xl">OH<sup>-</sup></p>
-              </motion.div>
 
-              {/* Right Circle (Carbonates) */}
-              <motion.div 
-                onMouseEnter={() => setHoveredRule("Most carbonates are insoluble except those of K⁺, Na⁺, and NH₄⁺.")}
-                onMouseLeave={() => setHoveredRule(null)}
-                whileHover={{ scale: 1.1, zIndex: 30 }}
-                className={`absolute right-[-10px] z-10 w-36 h-36 rounded-full flex items-center justify-center p-4 text-center border-2 cursor-help transition-all
-                  ${selectedSolubilitySalt === 'CuCO3' ? 'bg-rose-300 border-rose-400 scale-110 z-30' : 'bg-rose-100 border-rose-200 hover:bg-rose-200'}
-                `}
-              >
-                <p className="text-rose-800 font-black text-xl">CO<sub>3</sub><sup>2-</sup></p>
-              </motion.div>
-            </div>
-            
-            <div className="mt-8 grid grid-cols-4 gap-2">
-              {[
-                { id: 'NaCl', label: 'NaCl' },
-                { id: 'MgSO4', label: 'MgSO₄' },
-                { id: 'CuCO3', label: 'CuCO₃' },
-                { id: 'Fe(OH)2', label: 'Fe(OH)₂' },
-                { id: 'AgBr', label: 'AgBr' },
-                { id: 'BaSO4', label: 'BaSO₄' },
-                { id: 'PbI2', label: 'PbI₂' },
-                { id: 'NH43PO4', label: '(NH₄)₃PO₄' }
-              ].map((salt) => (
-                <button
-                  key={salt.id}
-                  onClick={() => setSelectedSolubilitySalt(selectedSolubilitySalt === salt.id ? null : salt.id)}
-                  className={`px-2 py-1.5 rounded-lg text-[9px] font-black tracking-tighter transition-all active:scale-95
-                    ${selectedSolubilitySalt === salt.id 
-                      ? 'bg-emerald-500 text-white shadow-[0_3px_0_0_#059669]' 
-                      : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}
-                  `}
-                >
-                  {salt.label}
-                </button>
-              ))}
-            </div>
-            
-            <p className="text-center text-gray-400 text-[10px] font-bold uppercase tracking-widest mt-6">Click a salt to see its rule</p>
-          </motion.div>
+
+
+
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="bg-white border-2 border-gray-200 rounded-[2.5rem] p-8 shadow-[0_8px_0_0_rgba(0,0,0,0.05)]"
-          >
-            <div className="flex items-center gap-4 mb-8">
-              <div className="bg-amber-100 p-3 rounded-2xl text-amber-600">
-                <Zap size={24} />
-              </div>
-              <h2 className="text-2xl font-black text-gray-800 uppercase tracking-tight">Reactivity Series</h2>
-            </div>
-
-            <div className="relative">
-              <div className="flex items-end justify-between gap-1 pb-12 overflow-x-auto no-scrollbar">
-                {reactivityElements.map((el, i) => (
-                  <div key={el.symbol} className="flex flex-col items-center flex-1 min-w-[40px] relative">
-                    {/* Vertical Dotted Lines */}
-                    {(el.symbol === 'C' || el.symbol === 'H') && (
-                      <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-0 border-l-2 border-dashed border-gray-300 h-32 -z-0" />
-                    )}
-                    
-                    <motion.div
-                      onMouseEnter={() => setHoveredReactivity(i)}
-                      onMouseLeave={() => setHoveredReactivity(null)}
-                      whileHover={{ y: -5, scale: 1.1 }}
-                      className={`z-10 w-10 h-10 rounded-xl flex items-center justify-center font-black text-sm shadow-sm border-2 transition-all cursor-help
-                        ${el.symbol === 'C' ? 'bg-emerald-50 border-emerald-200' : 
-                          el.symbol === 'H' ? 'bg-rose-50 border-rose-200' : 
-                          'bg-white border-gray-100 text-gray-700'}
-                        ${el.color || ''}
-                      `}
-                    >
-                      {el.symbol}
-                    </motion.div>
-                    <span className="mt-2 text-[8px] font-bold text-gray-400 uppercase text-center leading-tight h-4">
-                      {el.name}
-                    </span>
-                  </div>
-                ))}
-              </div>
-
-              {/* Hover Information Overlay */}
-              <div className="mt-4 min-h-[80px] bg-gray-50 rounded-3xl border-2 border-gray-100 p-4 flex flex-col justify-center gap-2">
-                <AnimatePresence mode="wait">
-                  {hoveredReactivity !== null ? (
-                    <motion.div
-                      key={hoveredReactivity}
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: 10 }}
-                      className="space-y-2"
-                    >
-                      <div className="flex items-center gap-2">
-                        <div className={`w-2 h-2 rounded-full ${hoveredReactivity < 5 ? 'bg-blue-500' : hoveredReactivity > 5 ? 'bg-orange-500' : 'bg-gray-300'}`} />
-                        <p className="text-xs font-bold text-gray-700">
-                          {hoveredReactivity < 5 && "Extraction by electrolysis"}
-                          {hoveredReactivity > 5 && "Extraction by reacting the metal oxide with carbon (coke)"}
-                          {hoveredReactivity === 5 && "Reference element for extraction"}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className={`w-2 h-2 rounded-full ${hoveredReactivity < 9 ? 'bg-emerald-500' : hoveredReactivity > 9 ? 'bg-rose-500' : 'bg-gray-300'}`} />
-                        <p className="text-xs font-bold text-gray-700">
-                          {hoveredReactivity < 9 && "Reaction with acids"}
-                          {hoveredReactivity > 9 && "DO NOT react with acids"}
-                          {hoveredReactivity === 9 && "Reference element for acid reactions"}
-                        </p>
-                      </div>
-                    </motion.div>
-                  ) : (
-                    <motion.p
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      className="text-xs font-bold text-gray-400 text-center uppercase tracking-widest"
-                    >
-                      Hover over an element to see its properties
-                    </motion.p>
-                  )}
-                </AnimatePresence>
-              </div>
-
-              <div className="mt-6 flex justify-between items-center px-2">
-                <div className="flex items-center gap-2">
-                  <TrendingUp size={14} className="text-emerald-500" />
-                  <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Most Reactive</span>
-                </div>
-                <div className="flex-1 mx-4 h-0.5 bg-gradient-to-r from-emerald-200 via-gray-200 to-rose-200 rounded-full" />
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Least Reactive</span>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="bg-white border-2 border-gray-200 rounded-[2.5rem] p-8 shadow-[0_8px_0_0_rgba(0,0,0,0.05)]"
-          >
-            <div className="flex items-center gap-4 mb-8">
-              <div className="bg-indigo-100 p-3 rounded-2xl text-indigo-600">
-                <FlaskConical size={24} />
-              </div>
-              <h2 className="text-2xl font-black text-gray-800 uppercase tracking-tight">Salt Preparation</h2>
-            </div>
-
-            <div className="flex flex-col items-center space-y-4">
-              {/* Question 1 */}
-              <div className={`w-full max-w-sm p-4 rounded-2xl border-2 transition-all text-center
-                ${selectedSaltPrep ? 'opacity-40' : 'opacity-100'}
-                ${selectedSaltPrep && (selectedSaltPrep === 'AgCl' || selectedSaltPrep === 'NaCl' || selectedSaltPrep === 'CuSO4') ? 'opacity-100 border-indigo-400 bg-indigo-50' : 'border-gray-100 bg-gray-50'}
-              `}>
-                <p className="text-xs font-black text-indigo-500 uppercase tracking-widest mb-1">Question 1</p>
-                <p className="font-bold text-gray-700">Is the salt soluble?</p>
-              </div>
-
-              <div className="flex w-full max-w-md justify-between px-4">
-                {/* No Path */}
-                <div className="flex flex-col items-center flex-1">
-                  <div className={`w-0.5 h-8 transition-all ${selectedSaltPrep === 'AgCl' ? 'bg-rose-500' : 'bg-gray-200'}`} />
-                  <div className={`px-3 py-1 rounded-full text-[10px] font-black uppercase transition-all
-                    ${selectedSaltPrep === 'AgCl' ? 'bg-rose-500 text-white' : 'bg-gray-100 text-gray-400'}
-                  `}>No</div>
-                  <div className={`w-0.5 h-8 transition-all ${selectedSaltPrep === 'AgCl' ? 'bg-rose-500' : 'bg-gray-200'}`} />
-                  <div className={`p-4 rounded-2xl border-2 transition-all text-center w-full
-                    ${selectedSaltPrep === 'AgCl' ? 'border-rose-500 bg-rose-50 text-rose-700 scale-105 shadow-md' : 'border-gray-100 bg-gray-50 text-gray-400 opacity-40'}
-                  `}>
-                    <p className="text-[10px] font-black uppercase tracking-widest mb-1">Method</p>
-                    <p className="font-bold">Precipitation</p>
-                  </div>
-                </div>
-
-                <div className="w-12" />
-
-                {/* Yes Path */}
-                <div className="flex flex-col items-center flex-1">
-                  <div className={`w-0.5 h-8 transition-all ${selectedSaltPrep === 'NaCl' || selectedSaltPrep === 'CuSO4' ? 'bg-emerald-500' : 'bg-gray-200'}`} />
-                  <div className={`px-3 py-1 rounded-full text-[10px] font-black uppercase transition-all
-                    ${selectedSaltPrep === 'NaCl' || selectedSaltPrep === 'CuSO4' ? 'bg-emerald-500 text-white' : 'bg-gray-100 text-gray-400'}
-                  `}>Yes</div>
-                  <div className={`w-0.5 h-8 transition-all ${selectedSaltPrep === 'NaCl' || selectedSaltPrep === 'CuSO4' ? 'bg-emerald-500' : 'bg-gray-200'}`} />
-                  
-                  {/* Question 2 */}
-                  <div className={`p-4 rounded-2xl border-2 transition-all text-center w-full
-                    ${selectedSaltPrep === 'NaCl' || selectedSaltPrep === 'CuSO4' ? 'border-indigo-400 bg-indigo-50 text-indigo-700' : 'border-gray-100 bg-gray-50 text-gray-400 opacity-40'}
-                  `}>
-                    <p className="text-xs font-black uppercase tracking-widest mb-1">Question 2</p>
-                    <p className="font-bold">Contains K⁺, Na⁺, or NH₄⁺?</p>
-                  </div>
-
-                  <div className="flex w-full justify-between mt-4">
-                    {/* Yes Path Q2 */}
-                    <div className="flex flex-col items-center flex-1">
-                      <div className={`w-0.5 h-8 transition-all ${selectedSaltPrep === 'NaCl' ? 'bg-emerald-500' : 'bg-gray-200'}`} />
-                      <div className={`px-3 py-1 rounded-full text-[10px] font-black uppercase transition-all
-                        ${selectedSaltPrep === 'NaCl' ? 'bg-emerald-500 text-white' : 'bg-gray-100 text-gray-400'}
-                      `}>Yes</div>
-                      <div className={`w-0.5 h-8 transition-all ${selectedSaltPrep === 'NaCl' ? 'bg-emerald-500' : 'bg-gray-200'}`} />
-                      <div className={`p-4 rounded-2xl border-2 transition-all text-center w-full
-                        ${selectedSaltPrep === 'NaCl' ? 'border-emerald-500 bg-emerald-50 text-emerald-700 scale-105 shadow-md' : 'border-gray-100 bg-gray-50 text-gray-400 opacity-40'}
-                      `}>
-                        <p className="text-[10px] font-black uppercase tracking-widest mb-1">Method</p>
-                        <p className="font-bold">Titration</p>
-                      </div>
-                    </div>
-
-                    <div className="w-4" />
-
-                    {/* No Path Q2 */}
-                    <div className="flex flex-col items-center flex-1">
-                      <div className={`w-0.5 h-8 transition-all ${selectedSaltPrep === 'CuSO4' ? 'bg-rose-500' : 'bg-gray-200'}`} />
-                      <div className={`px-3 py-1 rounded-full text-[10px] font-black uppercase transition-all
-                        ${selectedSaltPrep === 'CuSO4' ? 'bg-rose-500 text-white' : 'bg-gray-100 text-gray-400'}
-                      `}>No</div>
-                      <div className={`w-0.5 h-8 transition-all ${selectedSaltPrep === 'CuSO4' ? 'bg-rose-500' : 'bg-gray-200'}`} />
-                      <div className={`p-4 rounded-2xl border-2 transition-all text-center w-full
-                        ${selectedSaltPrep === 'CuSO4' ? 'border-orange-500 bg-orange-50 text-orange-700 scale-105 shadow-md' : 'border-gray-100 bg-gray-50 text-gray-400 opacity-40'}
-                      `}>
-                        <p className="text-[10px] font-black uppercase tracking-widest mb-1">Method</p>
-                        <p className="font-bold leading-tight">Limiting Acid + Excess Solid</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-12 flex justify-center gap-4">
-              {['NaCl', 'CuSO4', 'AgCl'].map(salt => (
-                <button
-                  key={salt}
-                  onClick={() => setSelectedSaltPrep(selectedSaltPrep === salt ? null : salt)}
-                  className={`px-6 py-3 rounded-2xl font-black transition-all active:scale-95 border-2
-                    ${selectedSaltPrep === salt ? 'bg-indigo-500 text-white border-indigo-600 shadow-lg' : 'bg-white text-gray-600 border-gray-200 hover:border-indigo-300'}
-                  `}
-                >
-                  {salt === 'NaCl' && <span>NaCl</span>}
-                  {salt === 'CuSO4' && <span>CuSO<sub>4</sub></span>}
-                  {salt === 'AgCl' && <span>AgCl</span>}
-                </button>
-              ))}
-            </div>
-            <p className="text-center text-gray-400 text-[10px] font-bold uppercase tracking-widest mt-4">Click a salt to trace its preparation path</p>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            className="bg-white border-2 border-gray-200 rounded-[2.5rem] p-8 shadow-[0_8px_0_0_rgba(0,0,0,0.05)]"
-          >
-            <div className="flex items-center gap-4 mb-8">
-              <div className="bg-sky-100 p-3 rounded-2xl text-sky-600">
-                <Beaker size={24} />
-              </div>
-              <h2 className="text-2xl font-black text-gray-800 uppercase tracking-tight">Lab Apparatus</h2>
-            </div>
-
-            <div className="grid grid-cols-3 gap-4 mb-8">
-              {apparatusData.map((item) => (
-                <motion.div
-                  key={item.id}
-                  onMouseEnter={() => setHoveredApparatus(item.id)}
-                  onMouseLeave={() => setHoveredApparatus(null)}
-                  className="bg-gray-50 border-2 border-gray-100 rounded-3xl p-4 flex flex-col items-center cursor-help transition-all hover:border-sky-200 hover:bg-sky-50 group"
-                >
-                  <div className="mb-4 transition-transform group-hover:scale-110">
-                    {item.svg}
-                  </div>
-                  <p className="text-[10px] font-black text-gray-800 uppercase tracking-tight text-center">{item.name}</p>
-                </motion.div>
-              ))}
-            </div>
-
-            <div className="flex justify-center gap-12 mb-12 p-6 bg-gray-50 rounded-[2rem] border-2 border-gray-100">
-              <div className="flex flex-col items-center">
-                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Accuracy</span>
-                <AnimatePresence mode="wait">
-                  {hoveredApparatus ? (
-                    <motion.span 
-                      key="acc-val"
-                      initial={{ opacity: 0, y: 5 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -5 }}
-                      className={`text-sm font-black uppercase ${apparatusData.find(a => a.id === hoveredApparatus)?.accuracy === 'Accurate' ? 'text-emerald-500' : 'text-amber-500'}`}
-                    >
-                      {apparatusData.find(a => a.id === hoveredApparatus)?.accuracy}
-                    </motion.span>
-                  ) : (
-                    <motion.span key="acc-placeholder" className="text-sm font-black text-gray-300 uppercase">---</motion.span>
-                  )}
-                </AnimatePresence>
-              </div>
-              <div className="flex flex-col items-center">
-                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Volume</span>
-                <AnimatePresence mode="wait">
-                  {hoveredApparatus ? (
-                    <motion.span 
-                      key="vol-val"
-                      initial={{ opacity: 0, y: 5 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -5 }}
-                      className="text-sm font-black text-sky-500 uppercase"
-                    >
-                      {apparatusData.find(a => a.id === hoveredApparatus)?.volume}
-                    </motion.span>
-                  ) : (
-                    <motion.span key="vol-placeholder" className="text-sm font-black text-gray-300 uppercase">---</motion.span>
-                  )}
-                </AnimatePresence>
-              </div>
-            </div>
-
-            <div className="border-t-2 border-gray-100 pt-8">
-              <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-6 text-center">Miscellaneous Apparatus</h3>
-              <div className="grid grid-cols-4 gap-4">
-                {[
-                  { name: 'Conical Flask', svg: (
-                    <svg viewBox="0 0 40 40" className="w-8 h-8">
-                      <path d="M 16 5 L 24 5 L 24 15 L 35 35 L 5 35 L 16 15 Z" fill="none" stroke="currentColor" strokeWidth="1.5" />
-                    </svg>
-                  )},
-                  { name: 'Volumetric Flask', svg: (
-                    <svg viewBox="0 0 40 40" className="w-8 h-8">
-                      <path d="M 18 5 L 22 5 L 22 20 Q 35 25 35 35 L 5 35 Q 5 25 18 20 Z" fill="none" stroke="currentColor" strokeWidth="1.5" />
-                      <line x1="18" y1="12" x2="22" y2="12" stroke="currentColor" strokeWidth="1" />
-                    </svg>
-                  )},
-                  { name: 'Gas Syringe', svg: (
-                    <svg viewBox="0 0 40 40" className="w-10 h-8">
-                      <rect x="5" y="15" width="25" height="10" fill="none" stroke="currentColor" strokeWidth="1.5" />
-                      <rect x="20" y="17" width="18" height="6" fill="currentColor" opacity="0.3" />
-                      <line x1="38" y1="15" x2="38" y2="25" stroke="currentColor" strokeWidth="1.5" />
-                      <line x1="2" y1="20" x2="5" y2="20" stroke="currentColor" strokeWidth="1.5" />
-                    </svg>
-                  )},
-                  { name: 'Beaker', svg: (
-                    <svg viewBox="0 0 40 40" className="w-8 h-8">
-                      <path d="M 10 5 L 10 35 L 30 35 L 30 5 M 30 5 L 33 3" fill="none" stroke="currentColor" strokeWidth="1.5" />
-                    </svg>
-                  )},
-                  { name: 'Test Tube', svg: (
-                    <svg viewBox="0 0 40 40" className="w-8 h-8">
-                      <path d="M 17 5 L 17 30 Q 17 35 20 35 Q 23 35 23 30 L 23 5" fill="none" stroke="currentColor" strokeWidth="1.5" />
-                    </svg>
-                  )},
-                  { name: 'Boiling Tube', svg: (
-                    <svg viewBox="0 0 40 40" className="w-8 h-8">
-                      <path d="M 15 5 L 15 30 Q 15 35 20 35 Q 25 35 25 30 L 25 5" fill="none" stroke="currentColor" strokeWidth="2" />
-                    </svg>
-                  )},
-                  { name: 'Evaporating Dish', svg: (
-                    <svg viewBox="0 0 40 40" className="w-10 h-8">
-                      <path d="M 5 15 Q 20 35 35 15 Z" fill="none" stroke="currentColor" strokeWidth="1.5" />
-                    </svg>
-                  )},
-                  { name: 'Filter Funnel', svg: (
-                    <svg viewBox="0 0 40 40" className="w-8 h-8">
-                      <path d="M 5 5 L 35 5 L 22 20 L 22 35 L 18 35 L 18 20 Z" fill="none" stroke="currentColor" strokeWidth="1.5" />
-                    </svg>
-                  )},
-                ].map((misc, i) => (
-                  <div key={i} className="flex flex-col items-center gap-2 p-2 rounded-xl hover:bg-gray-50 transition-colors group">
-                    <div className="text-gray-400 group-hover:text-sky-500 transition-colors">
-                      {misc.svg}
-                    </div>
-                    <span className="text-[7px] font-black text-gray-400 uppercase tracking-tighter text-center leading-none">{misc.name}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.45 }}
-            className="bg-white border-2 border-gray-200 rounded-[2.5rem] p-8 shadow-[0_8px_0_0_rgba(0,0,0,0.05)]"
-          >
-            <div className="flex items-center gap-4 mb-8">
-              <div className="bg-indigo-100 p-3 rounded-2xl text-indigo-600">
-                <Droplets size={24} />
-              </div>
-              <h2 className="text-2xl font-black text-gray-800 uppercase tracking-tight">Acids and Bases</h2>
-            </div>
-
-            <div className="space-y-10">
-              {/* pH Scale */}
-              <div className="relative pt-8 pb-4">
-                <div className="flex justify-between text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">
-                  <span>Strong Acid</span>
-                  <span>Neutral</span>
-                  <span>Strong Base</span>
-                </div>
-                <div className="h-12 w-full flex rounded-2xl overflow-hidden border-2 border-gray-100 p-1 bg-gray-50">
-                  <div 
-                    onMouseEnter={() => setHoveredPhRegion('acid')}
-                    onMouseLeave={() => setHoveredPhRegion(null)}
-                    className="flex-[6] h-full flex gap-1"
-                  >
-                    {[1, 2, 3, 4, 5, 6].map(ph => (
-                      <div 
-                        key={ph} 
-                        className={`flex-1 rounded-lg flex items-center justify-center text-[10px] font-black transition-all ${ph <= 3 ? 'bg-rose-500 text-white shadow-[0_2px_0_0_#be123c]' : 'bg-rose-300 text-rose-800 shadow-[0_2px_0_0_#fb7185]'}`}
-                      >
-                        {ph}
-                      </div>
-                    ))}
-                  </div>
-                  <div className="flex-1 h-full px-1">
-                    <div className="w-full h-full bg-emerald-400 rounded-lg flex items-center justify-center text-[10px] font-black text-white shadow-[0_2px_0_0_#047857]">7</div>
-                  </div>
-                  <div 
-                    onMouseEnter={() => setHoveredPhRegion('base')}
-                    onMouseLeave={() => setHoveredPhRegion(null)}
-                    className="flex-[7] h-full flex gap-1"
-                  >
-                    {[8, 9, 10, 11, 12, 13, 14].map(ph => (
-                      <div 
-                        key={ph} 
-                        className={`flex-1 rounded-lg flex items-center justify-center text-[10px] font-black transition-all ${ph >= 11 ? 'bg-indigo-600 text-white shadow-[0_2px_0_0_#3730a3]' : 'bg-indigo-400 text-indigo-900 shadow-[0_2px_0_0_#818cf8]'}`}
-                      >
-                        {ph}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <div className="flex justify-between mt-2 px-2">
-                  <div className="text-[9px] font-bold text-rose-500 uppercase">Red (Acidic)</div>
-                  <div className="text-[9px] font-bold text-emerald-500 uppercase">Green</div>
-                  <div className="text-[9px] font-bold text-indigo-500 uppercase">Blue (Basic)</div>
-                </div>
-              </div>
-
-              {/* Indicators */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {[
-                  { 
-                    name: 'Methyl Orange', 
-                    acid: 'bg-rose-500', 
-                    base: 'bg-amber-400', 
-                    acidText: 'Red', 
-                    baseText: 'Yellow' 
-                  },
-                  { 
-                    name: 'Thymolphthalein', 
-                    acid: 'bg-gray-100 border-2 border-dashed border-gray-300', 
-                    base: 'bg-indigo-600', 
-                    acidText: 'Colorless', 
-                    baseText: 'Blue' 
-                  },
-                  { 
-                    name: 'Litmus', 
-                    acid: 'bg-rose-500', 
-                    base: 'bg-indigo-600', 
-                    acidText: 'Red', 
-                    baseText: 'Blue' 
-                  },
-                  { 
-                    name: 'Universal Indicator', 
-                    acid: 'bg-gradient-to-r from-rose-600 via-orange-500 to-yellow-400', 
-                    base: 'bg-gradient-to-r from-blue-400 via-indigo-600 to-purple-800', 
-                    acidText: 'Warmer', 
-                    baseText: 'Cooler' 
-                  }
-                ].map((indicator) => (
-                  <div key={indicator.name} className="bg-gray-50 border-2 border-gray-100 rounded-3xl p-5 flex flex-col gap-4">
-                    <h4 className="text-[10px] font-black text-gray-800 uppercase tracking-widest">{indicator.name}</h4>
-                    <div className="flex gap-2 h-8">
-                      <div className={`flex-1 rounded-xl transition-all duration-500 ${hoveredPhRegion === 'acid' ? indicator.acid : 'bg-gray-200 grayscale opacity-30'}`}>
-                        {hoveredPhRegion === 'acid' && (
-                          <div className="w-full h-full flex items-center justify-center text-[8px] font-black text-white uppercase tracking-tighter">
-                            {indicator.acidText}
-                          </div>
-                        )}
-                      </div>
-                      <div className={`flex-1 rounded-xl transition-all duration-500 ${hoveredPhRegion === 'base' ? indicator.base : 'bg-gray-200 grayscale opacity-30'}`}>
-                        {hoveredPhRegion === 'base' && (
-                          <div className="w-full h-full flex items-center justify-center text-[8px] font-black text-white uppercase tracking-tighter">
-                            {indicator.baseText}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Definitions */}
-              <div className="grid grid-cols-2 gap-4 pt-4 border-t-2 border-gray-100">
-                <div className="space-y-3">
-                  <div className="flex flex-col">
-                    <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Acids</span>
-                    <span className="text-xs font-bold text-rose-600">H⁺ Donor</span>
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Bases</span>
-                    <span className="text-xs font-bold text-indigo-600">H⁺ Acceptor</span>
-                  </div>
-                </div>
-                <div className="space-y-3">
-                  <div className="flex flex-col">
-                    <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Strong</span>
-                    <span className="text-xs font-bold text-gray-800">Complete Dissociation</span>
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Weak</span>
-                    <span className="text-xs font-bold text-gray-800">Partial Dissociation</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.48 }}
             className="bg-white border-2 border-gray-200 rounded-[2.5rem] p-8 shadow-[0_8px_0_0_rgba(0,0,0,0.05)]"
           >
             <div className="flex items-center justify-between mb-8">
@@ -2248,12 +1722,10 @@ export default function App() {
             </div>
           </motion.div>
 
-
-
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.49 }}
+            transition={{ delay: 0.3 }}
             className="bg-white border-2 border-gray-200 rounded-[2.5rem] p-8 shadow-[0_8px_0_0_rgba(0,0,0,0.05)]"
           >
             <div className="flex items-center justify-between mb-8">
@@ -2400,7 +1872,7 @@ export default function App() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.55 }}
+            transition={{ delay: 0.4 }}
             className="bg-white border-2 border-gray-200 rounded-[2.5rem] p-8 shadow-[0_8px_0_0_rgba(0,0,0,0.05)]"
           >
             <div className="flex items-center justify-between mb-8">
@@ -2484,28 +1956,12 @@ export default function App() {
             </div>
           </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6 }}
-            className="bg-white border-2 border-gray-200 rounded-[2.5rem] p-8 shadow-[0_8px_0_0_rgba(0,0,0,0.05)]"
-          >
-            <div className="flex items-center justify-between mb-8">
-              <div className="flex items-center gap-4">
-                <div className="bg-orange-100 p-3 rounded-2xl text-orange-600">
-                  <ArrowRightLeft size={24} />
-                </div>
-                <h2 className="text-2xl font-black text-gray-800 uppercase tracking-tight">Addition VS Substitution</h2>
-              </div>
-            </div>
 
-            <AdditionVsSubstitution />
-          </motion.div>
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.58 }}
+            transition={{ delay: 0.5 }}
             className="bg-white border-2 border-gray-200 rounded-[2.5rem] p-8 shadow-[0_8px_0_0_rgba(0,0,0,0.05)]"
           >
             <div className="flex items-center justify-between mb-8">
@@ -2523,7 +1979,7 @@ export default function App() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
+            transition={{ delay: 0.6 }}
             className="bg-white border-2 border-gray-200 rounded-[2.5rem] p-8 shadow-[0_8px_0_0_rgba(0,0,0,0.05)]"
           >
             <div className="flex items-center justify-between mb-8">
@@ -2698,7 +2154,7 @@ export default function App() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6 }}
+            transition={{ delay: 0.7 }}
             className="bg-white border-2 border-gray-200 rounded-[2.5rem] p-8 shadow-[0_8px_0_0_rgba(0,0,0,0.05)]"
           >
             <div className="flex items-center gap-4 mb-8">
@@ -2769,6 +2225,304 @@ export default function App() {
               ))}
             </div>
           </motion.div>
+          </div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.8 }}
+            className="bg-white border-2 border-gray-200 rounded-[3rem] p-6 md:p-10 shadow-[0_12px_0_0_rgba(0,0,0,0.05)] overflow-hidden"
+          >
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-10 gap-6">
+              <div className="flex items-center gap-5">
+                <div className="bg-emerald-500 p-4 rounded-3xl text-white shadow-lg shadow-emerald-200">
+                  <RefreshCw size={28} />
+                </div>
+                <div>
+                  <h2 className="text-3xl font-black text-gray-900 uppercase tracking-tighter leading-none">Le Chatelier's Principle</h2>
+                  <p className="text-emerald-500 font-bold text-xs uppercase tracking-widest mt-1">Equilibrium Dynamics</p>
+                </div>
+              </div>
+              <div className="text-[10px] font-black text-emerald-600 uppercase tracking-widest bg-emerald-50 px-4 py-2 rounded-2xl border-2 border-emerald-100">
+                Haber Process Simulation
+              </div>
+            </div>
+
+            <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-[2.5rem] p-8 mb-10 border-4 border-gray-800 shadow-2xl relative overflow-hidden group">
+              <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                <Atom size={120} className="text-white" />
+              </div>
+              
+              <div className="relative z-10 flex flex-col items-center">
+                <div className="flex justify-center items-center gap-4 text-white font-black text-2xl md:text-4xl tracking-tight text-center">
+                  <span className="drop-shadow-md">N<sub>2</sub>(g)</span>
+                  <span className="text-emerald-400">+</span>
+                  <span className="drop-shadow-md">3H<sub>2</sub>(g)</span>
+                  <span className="text-emerald-400 mx-2">⇌</span>
+                  <span className="drop-shadow-md">2NH<sub>3</sub>(g)</span>
+                </div>
+                <div className="mt-6 flex flex-wrap justify-center gap-4">
+                  <span className="px-4 py-1.5 bg-gray-800/50 rounded-full text-[10px] font-bold text-gray-400 uppercase tracking-widest border border-gray-700">
+                    ΔH = -92 kJ mol⁻¹
+                  </span>
+                  <span className="px-4 py-1.5 bg-emerald-500/20 rounded-full text-[10px] font-bold text-emerald-400 uppercase tracking-widest border border-emerald-500/30">
+                    Exothermic
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-10">
+              {/* Concentration Dials */}
+              <div className="bg-gray-50 p-6 rounded-[2rem] border-2 border-gray-100 space-y-6">
+                <div className="flex items-center gap-2 text-gray-400">
+                  <Droplets size={16} />
+                  <p className="text-[10px] font-black uppercase tracking-widest">Concentration Dials</p>
+                </div>
+                <div className="space-y-4">
+                  {[
+                    { id: 'n2', label: 'N₂', color: 'bg-emerald-500', value: leChatelierState.n2 },
+                    { id: 'h2', label: 'H₂', color: 'bg-blue-500', value: leChatelierState.h2 },
+                    { id: 'nh3', label: 'NH₃', color: 'bg-orange-500', value: leChatelierState.nh3 }
+                  ].map((species) => (
+                    <div key={species.id} className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-[10px] font-black text-gray-600 uppercase tracking-tighter">{species.label} Concentration</span>
+                        <span className="text-[10px] font-black text-gray-400">{Math.round(species.value)} mol/dm³</span>
+                      </div>
+                      <input 
+                        type="range"
+                        min="5"
+                        max="120"
+                        value={species.value}
+                        onChange={(e) => {
+                          const newVal = parseFloat(e.target.value);
+                          setLeChatelierState(prev => ({ ...prev, [species.id]: newVal }));
+                          setLastAction(`Adjusted ${species.label}`);
+                        }}
+                        className={`w-full h-2 rounded-lg appearance-none cursor-pointer bg-gray-200 accent-emerald-500`}
+                        style={{ accentColor: species.id === 'n2' ? '#10b981' : species.id === 'h2' ? '#3b82f6' : '#f59e0b' }}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Pressure Controls */}
+              <div className="bg-gray-50 p-6 rounded-[2rem] border-2 border-gray-100 space-y-5">
+                <div className="flex items-center gap-2 text-gray-400">
+                  <Wind size={16} />
+                  <p className="text-[10px] font-black uppercase tracking-widest">Pressure</p>
+                </div>
+                <div className="flex bg-white p-1.5 rounded-2xl border-2 border-gray-100 shadow-sm">
+                  {(['low', 'optimal', 'high'] as const).map((p) => (
+                    <button
+                      key={p}
+                      onClick={() => {
+                        setLeChatelierState(prev => {
+                          const factor = p === 'high' ? 1.5 : p === 'low' ? 0.6 : 1.0;
+                          const currentFactor = prev.pressure === 'high' ? 1.5 : prev.pressure === 'low' ? 0.6 : 1.0;
+                          const ratio = factor / currentFactor;
+                          return {
+                            ...prev,
+                            pressure: p,
+                            n2: prev.n2 * ratio,
+                            h2: prev.h2 * ratio,
+                            nh3: prev.nh3 * ratio
+                          };
+                        });
+                        setLastAction(`${p.charAt(0).toUpperCase() + p.slice(1)} Pressure`);
+                      }}
+                      className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all
+                        ${leChatelierState.pressure === p 
+                          ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-100' 
+                          : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'}
+                      `}
+                    >
+                      {p}
+                    </button>
+                  ))}
+                </div>
+                <p className="text-[9px] font-bold text-gray-400 text-center italic">Immediate effect on all concentrations</p>
+              </div>
+
+              {/* Temperature Controls */}
+              <div className="bg-gray-50 p-6 rounded-[2rem] border-2 border-gray-100 space-y-5">
+                <div className="flex items-center gap-2 text-gray-400">
+                  <Thermometer size={16} />
+                  <p className="text-[10px] font-black uppercase tracking-widest">Temperature</p>
+                </div>
+                <div className="flex bg-white p-1.5 rounded-2xl border-2 border-gray-100 shadow-sm">
+                  {(['low', 'optimal', 'high'] as const).map((t) => (
+                    <button
+                      key={t}
+                      onClick={() => {
+                        setLeChatelierState(prev => ({ ...prev, temp: t }));
+                        setLastAction(`${t.charAt(0).toUpperCase() + t.slice(1)} Temp`);
+                      }}
+                      className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all
+                        ${leChatelierState.temp === t 
+                          ? 'bg-orange-500 text-white shadow-lg shadow-orange-100' 
+                          : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'}
+                      `}
+                    >
+                      {t}
+                    </button>
+                  ))}
+                </div>
+                <p className="text-[9px] font-black text-orange-500 text-center uppercase tracking-tighter">Only factor that changes K꜀</p>
+              </div>
+            </div>
+
+            {/* Graph & Kc Section */}
+            <div className="grid grid-cols-1 xl:grid-cols-4 gap-8">
+              <div className="xl:col-span-3 bg-gray-50 rounded-[2.5rem] p-4 md:p-8 border-2 border-gray-100 shadow-inner">
+                <div className="flex justify-between items-center mb-8">
+                  <div className="flex items-center gap-3">
+                    <TrendingUp className="text-emerald-500" size={20} />
+                    <h3 className="text-sm font-black text-gray-800 uppercase tracking-widest">Concentration Profile</h3>
+                  </div>
+                  <AnimatePresence mode="wait">
+                    {lastAction && (
+                      <motion.span 
+                        key={lastAction}
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 10 }}
+                        className="text-[10px] font-black text-emerald-600 bg-emerald-100 px-4 py-1.5 rounded-full border border-emerald-200"
+                      >
+                        {lastAction}
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+                </div>
+                
+                <div className="h-72 w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={leChatelierState.history}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+                      <XAxis hide dataKey="time" />
+                      <YAxis domain={[0, 160]} hide />
+                      <Tooltip 
+                        content={({ active, payload }) => {
+                          if (active && payload && payload.length) {
+                            // Calculate current Qc for the tooltip
+                            const data = payload[0].payload;
+                            const qc = (data.nh3 * data.nh3) / (data.n2 * Math.pow(data.h2, 3)) * 10000;
+                            return (
+                              <div className="bg-white border-2 border-gray-100 rounded-2xl p-4 shadow-xl">
+                                <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-2">Equilibrium State</p>
+                                <div className="space-y-1">
+                                  {payload.map((entry: any, index: number) => (
+                                    <div key={index} className="flex items-center justify-between gap-4">
+                                      <span className="text-[10px] font-bold text-gray-500">{entry.name}:</span>
+                                      <span className="text-[10px] font-black" style={{ color: entry.color }}>{entry.value} mol/dm³</span>
+                                    </div>
+                                  ))}
+                                  <div className="mt-2 pt-2 border-t border-gray-100 space-y-1">
+                                    <div className="flex items-center justify-between gap-4">
+                                      <span className="text-[10px] font-bold text-emerald-600">Target K꜀:</span>
+                                      <span className="text-[10px] font-black text-emerald-600">{leChatelierState.kc.toFixed(1)}</span>
+                                    </div>
+                                    <div className="flex items-center justify-between gap-4">
+                                      <span className="text-[10px] font-bold text-blue-600">Current Q꜀:</span>
+                                      <span className="text-[10px] font-black text-blue-600">{qc.toFixed(1)}</span>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          }
+                          return null;
+                        }}
+                      />
+                      <Line type="monotone" dataKey="n2" stroke="#10b981" strokeWidth={4} dot={false} name="[N₂]" isAnimationActive={false} />
+                      <Line type="monotone" dataKey="h2" stroke="#3b82f6" strokeWidth={4} dot={false} name="[H₂]" isAnimationActive={false} />
+                      <Line type="monotone" dataKey="nh3" stroke="#f59e0b" strokeWidth={4} dot={false} name="[NH₃]" isAnimationActive={false} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+
+                <div className="flex flex-wrap justify-center gap-6 md:gap-8 mt-6">
+                  <div className="flex items-center gap-3">
+                    <div className="w-4 h-1.5 bg-emerald-500 rounded-full" />
+                    <span className="text-[11px] font-black text-gray-500 uppercase tracking-widest">[N₂]</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-4 h-1.5 bg-blue-500 rounded-full" />
+                    <span className="text-[11px] font-black text-gray-500 uppercase tracking-widest">[H₂]</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-4 h-1.5 bg-orange-500 rounded-full" />
+                    <span className="text-[11px] font-black text-gray-500 uppercase tracking-widest">[NH₃]</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Kc Display */}
+              <div className="flex flex-col gap-6">
+                <div className="flex-1 bg-emerald-500 rounded-[2.5rem] p-8 text-white shadow-xl shadow-emerald-100 flex flex-col items-center justify-center text-center relative overflow-hidden">
+                  <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
+                    <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
+                      <path d="M0 100 C 20 0 50 0 100 100" fill="none" stroke="white" strokeWidth="0.5" />
+                    </svg>
+                  </div>
+                  <p className="text-[10px] font-black uppercase tracking-[0.3em] mb-4 opacity-80">Equilibrium Constant</p>
+                  <motion.div 
+                    key={leChatelierState.kc}
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    className="text-6xl font-black tracking-tighter mb-2"
+                  >
+                    {leChatelierState.kc.toFixed(1)}
+                  </motion.div>
+                  <div className="text-2xl font-black opacity-90">K<sub>c</sub></div>
+                  
+                  <div className="mt-8 pt-6 border-t border-white/20 w-full flex flex-col items-center">
+                    <p className="text-[9px] font-bold uppercase tracking-widest opacity-70 mb-3">Expression</p>
+                    <div className="flex flex-col items-center font-black italic text-sm">
+                      <div className="pb-1 border-b border-white/50">[NH₃]²</div>
+                      <div className="pt-1">[N₂][H₂]³</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white border-2 border-emerald-100 rounded-[2rem] p-6 flex flex-col items-center justify-center text-center">
+                  <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-2">System Status</p>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+                    <span className="text-xs font-black text-gray-800 uppercase">Dynamic Equilibrium</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-10 p-8 bg-gray-900 rounded-[2.5rem] border-2 border-gray-800 relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-6 opacity-20">
+                <Info size={40} className="text-emerald-500" />
+              </div>
+              <div className="relative z-10">
+                <h4 className="text-emerald-400 font-black text-sm uppercase tracking-widest mb-3">The Golden Rule</h4>
+                <p className="text-sm font-bold text-gray-300 leading-relaxed max-w-xl">
+                  "If a system at equilibrium is disturbed, the system will shift its equilibrium position to <span className="text-white underline decoration-emerald-500 decoration-2 underline-offset-4">counteract</span> the disturbance."
+                </p>
+                <div className="mt-6 flex flex-wrap gap-4">
+                  <div className="flex items-center gap-2 text-[10px] font-black text-gray-400 uppercase">
+                    <CheckCircle2 size={14} className="text-emerald-500" />
+                    Conc. Change → No K꜀ Change
+                  </div>
+                  <div className="flex items-center gap-2 text-[10px] font-black text-gray-400 uppercase">
+                    <CheckCircle2 size={14} className="text-emerald-500" />
+                    Pressure Change → No K꜀ Change
+                  </div>
+                  <div className="flex items-center gap-2 text-[10px] font-black text-emerald-400 uppercase">
+                    <Zap size={14} />
+                    Temp Change → K꜀ Changes
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
         </main>
       </motion.div>
     );
@@ -2822,9 +2576,9 @@ export default function App() {
               <h3 className="text-2xl font-black text-gray-800 uppercase tracking-tight mb-2">App QR Code</h3>
               <p className="text-gray-500 font-medium mb-6">Scan to open the revision app on your mobile device!</p>
               <div className="bg-gray-50 p-6 rounded-2xl border-2 border-gray-100 flex justify-center mb-6">
-                <QRCodeSVG value="https://y11-rev.vercel.app/" size={200} level="H" includeMargin={true} />
+                <QRCodeSVG value="https://y13-ib.vercel.app" size={200} level="H" includeMargin={true} />
               </div>
-              <p className="text-emerald-500 font-black text-sm uppercase tracking-widest">y11-rev.vercel.app</p>
+              <p className="text-emerald-500 font-black text-sm uppercase tracking-widest">y13-ib.vercel.app</p>
             </motion.div>
           </div>
         )}
@@ -7535,7 +7289,22 @@ export default function App() {
         </header>
 
         <main className="max-w-2xl mx-auto p-4 space-y-6 mt-4">
-          {units.map((unit) => {
+          <div className="flex bg-gray-200 p-1 rounded-2xl">
+            <button
+              onClick={() => setActiveCategory('structure')}
+              className={`flex-1 py-3 rounded-xl font-black uppercase tracking-widest transition-all ${activeCategory === 'structure' ? 'bg-white text-emerald-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+            >
+              Structure
+            </button>
+            <button
+              onClick={() => setActiveCategory('reactivity')}
+              className={`flex-1 py-3 rounded-xl font-black uppercase tracking-widest transition-all ${activeCategory === 'reactivity' ? 'bg-white text-emerald-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+            >
+              Reactivity
+            </button>
+          </div>
+
+          {units.filter(u => u.category === activeCategory).map((unit) => {
             const stats = sessionStats[unit.id] || { attemptedQuestions: [], masteredVocab: [] };
             const attemptedCount = stats.attemptedQuestions.length;
             const totalQuestions = unit.questions.length;
@@ -7690,12 +7459,12 @@ export default function App() {
               <h3 className="text-xl font-black text-gray-800 uppercase tracking-tight">Repository</h3>
             </div>
             <a 
-              href="https://github.com/Tomanlam/Y11-rev" 
+              href="https://github.com/Tomanlam/Y13IB" 
               target="_blank" 
               rel="noopener noreferrer"
               className="flex items-center justify-between bg-gray-900 text-white p-4 rounded-2xl hover:bg-gray-800 transition-colors group"
             >
-              <span className="font-bold text-sm truncate mr-2">github.com/Tomanlam/Y11-rev</span>
+              <span className="font-bold text-sm truncate mr-2">github.com/Tomanlam/Y13IB</span>
               <ExternalLink size={18} className="flex-shrink-0 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
             </a>
           </motion.div>

@@ -26,7 +26,7 @@ export interface Unit {
 export const units: Unit[] = [
   {
     id: 1,
-    title: "Structure 1.1 — Introduction to the particulate nature of matter",
+    title: "S1.1 — Introduction to the particulate nature of matter",
     description: "Understanding the basic building blocks of matter.",
     color: "bg-emerald-500",
     category: 'structure',
@@ -126,7 +126,7 @@ export const units: Unit[] = [
   },
   {
     id: 2,
-    title: "Structure 1.2 — The nuclear atom",
+    title: "S1.2 — The nuclear atom",
     description: "Exploring the structure of the atom's nucleus.",
     color: "bg-blue-500",
     category: 'structure',
@@ -208,7 +208,7 @@ export const units: Unit[] = [
   },
   {
     id: 3,
-    title: "Structure 1.3 — Electron configurations",
+    title: "S1.3 — Electron configurations",
     description: "How electrons are arranged in atoms.",
     color: "bg-indigo-500",
     category: 'structure',
@@ -317,7 +317,7 @@ export const units: Unit[] = [
   },
   {
     id: 4,
-    title: "Structure 1.4 — Counting particles by mass: the mole",
+    title: "S1.4 — Counting particles by mass: the mole",
     description: "The fundamental unit for measuring amount of substance.",
     color: "bg-purple-500",
     category: 'structure',
@@ -396,7 +396,7 @@ export const units: Unit[] = [
   },
   {
     id: 5,
-    title: "Structure 1.5 — Ideal gases",
+    title: "S1.5 — Ideal gases",
     description: "Behavior of gases under different conditions.",
     color: "bg-cyan-500",
     category: 'structure',
@@ -483,7 +483,7 @@ export const units: Unit[] = [
   },
   {
     id: 6,
-    title: "Structure 2.1 — The ionic model",
+    title: "S2.1 — The ionic model",
     description: "Bonding between metals and non-metals.",
     color: "bg-teal-500",
     category: 'structure',
@@ -493,7 +493,7 @@ export const units: Unit[] = [
   },
   {
     id: 7,
-    title: "Structure 2.2 — The covalent model",
+    title: "S2.2 — The covalent model",
     description: "Sharing of electrons between non-metals.",
     color: "bg-sky-500",
     category: 'structure',
@@ -503,7 +503,7 @@ export const units: Unit[] = [
   },
   {
     id: 8,
-    title: "Structure 2.3 — The metallic model",
+    title: "S2.3 — The metallic model",
     description: "Bonding in metals.",
     color: "bg-slate-500",
     category: 'structure',
@@ -513,7 +513,7 @@ export const units: Unit[] = [
   },
   {
     id: 9,
-    title: "Structure 2.4 — From models to materials",
+    title: "S2.4 — From models to materials",
     description: "How bonding models explain material properties.",
     color: "bg-gray-500",
     category: 'structure',
@@ -523,7 +523,7 @@ export const units: Unit[] = [
   },
   {
     id: 10,
-    title: "Structure 3.1 — The periodic table: classification of elements",
+    title: "S3.1 — The periodic table: classification of elements",
     description: "Trends and patterns in the periodic table.",
     color: "bg-rose-500",
     category: 'structure',
@@ -533,7 +533,7 @@ export const units: Unit[] = [
   },
   {
     id: 11,
-    title: "Structure 3.2 — Functional groups: classification of organic compounds",
+    title: "S3.2 — Functional groups: classification of organic compounds",
     description: "Identifying organic molecules by their functional groups.",
     color: "bg-orange-500",
     category: 'structure',
@@ -543,7 +543,7 @@ export const units: Unit[] = [
   },
   {
     id: 12,
-    title: "Reactivity 1.1 — Measuring enthalpy changes",
+    title: "R1.1 — Measuring enthalpy changes",
     description: "Quantifying heat energy in chemical reactions.",
     color: "bg-red-500",
     category: 'reactivity',
@@ -553,7 +553,7 @@ export const units: Unit[] = [
   },
   {
     id: 13,
-    title: "Reactivity 1.2 — Energy cycles in reactions",
+    title: "R1.2 — Energy cycles in reactions",
     description: "Using Hess's Law and energy cycles.",
     color: "bg-orange-600",
     category: 'reactivity',
@@ -563,7 +563,7 @@ export const units: Unit[] = [
   },
   {
     id: 14,
-    title: "Reactivity 1.3 — Energy from fuels",
+    title: "R1.3 — Energy from fuels",
     description: "Combustion and energy production.",
     color: "bg-yellow-600",
     category: 'reactivity',
@@ -573,7 +573,7 @@ export const units: Unit[] = [
   },
   {
     id: 15,
-    title: "Reactivity 1.4 — Entropy and spontaneity (additional higher level)",
+    title: "R1.4 — Entropy and spontaneity (additional higher level)",
     description: "Predicting if a reaction will occur spontaneously.",
     color: "bg-lime-600",
     category: 'reactivity',
@@ -583,7 +583,7 @@ export const units: Unit[] = [
   },
   {
     id: 16,
-    title: "Reactivity 2.1 — How much? the amount of chemical change",
+    title: "R2.1 — How much? the amount of chemical change",
     description: "Stoichiometry and yield calculations.",
     color: "bg-emerald-600",
     category: 'reactivity',
@@ -593,7 +593,7 @@ export const units: Unit[] = [
   },
   {
     id: 17,
-    title: "Reactivity 2.2 — How fast? the rate of chemical change",
+    title: "R2.2 — How fast? the rate of chemical change",
     description: "Factors affecting reaction speed.",
     color: "bg-teal-600",
     category: 'reactivity',
@@ -603,7 +603,7 @@ export const units: Unit[] = [
   },
   {
     id: 18,
-    title: "Reactivity 2.3 — How far? the extent of chemical change",
+    title: "R2.3 — How far? the extent of chemical change",
     description: "Chemical equilibrium and its position.",
     color: "bg-cyan-600",
     category: 'reactivity',
@@ -613,42 +613,881 @@ export const units: Unit[] = [
   },
   {
     id: 19,
-    title: "Reactivity 3.1 — Proton transfer reactions",
+    title: "R3.1 — Proton transfer reactions",
     description: "Acids and bases in chemical reactions.",
     color: "bg-blue-600",
     category: 'reactivity',
-    concepts: ["Bronsted-Lowry theory and pH."],
-    vocab: [],
-    questions: []
+    concepts: [
+      "Brønsted–Lowry acid: proton (H⁺) donor.",
+      "Brønsted–Lowry base: proton (H⁺) acceptor (uses a lone pair).",
+      "In aqueous solutions, H⁺ is commonly written as H₃O⁺ (hydronium).",
+      "Conjugate acid–base pair: two species that differ by exactly one H⁺.",
+      "Amphiprotic species: can both donate and accept H⁺ (e.g. H₂O).",
+      "Amphoteric substance: can behave as an acid or base (not necessarily via H⁺ transfer). Example: Al₂O₃ reacts with acids and bases.",
+      "pH: pH = −log₁₀[H⁺] where [H⁺] is in mol dm⁻³.",
+      "[H⁺] = 10^(−pH).",
+      "pOH: pOH = −log₁₀[OH⁻].",
+      "At 298 K: Kᵥ (K₍w₎) = [H⁺][OH⁻] = 1.00 × 10⁻¹⁴.",
+      "At 298 K: pH + pOH = 14.",
+      "Strong acid/base: (almost) complete dissociation in water.",
+      "Weak acid/base: partial dissociation; equilibrium established.",
+      "Strong acid → very weak conjugate base.",
+      "Weak acid → relatively stronger conjugate base.",
+      "Neutralisation: acid + base → salt + water; net ionic: H⁺(aq) + OH⁻(aq) → H₂O(l).",
+      "Salt hydrolysis: ions from salts may react with water, affecting pH (depends on parent acid/base strengths).",
+      "Indicators are weak acids/bases with differently coloured conjugate forms; colour change occurs over a pH range (typically pKₐ ± 1).",
+      "Choosing indicators: match indicator transition range to steep pH change near equivalence point.",
+      "Buffer: resists pH change; made from weak acid + its conjugate base, or weak base + its conjugate acid.",
+      "Henderson–Hasselbalch (acidic buffer): pH = pKₐ + log₁₀([A⁻]/[HA]).",
+      "Henderson–Hasselbalch (basic buffer): pOH = pK_b + log₁₀([BH⁺]/[B]); then pH = 14 − pOH (at 298 K)."
+    ],
+    vocab: [
+      { term: "Brønsted–Lowry acid", traditional: "布忍斯特-洛里酸", simplified: "布忍斯特-洛里酸", definition: "proton donor, H⁺, dissociation, H₃O⁺" },
+      { term: "Brønsted–Lowry base", traditional: "布忍斯特-洛里鹼", simplified: "布忍斯特-洛里碱", definition: "proton acceptor, lone pair, NH₃" },
+      { term: "Conjugate pair", traditional: "共軛對", simplified: "共轭对", definition: "differs by one H⁺, related species" },
+      { term: "Amphiprotic", traditional: "兩性質子", simplified: "两性质子", definition: "donor and acceptor, H₂O, HCO₃⁻, H₂PO₄⁻" },
+      { term: "Amphoteric", traditional: "兩性", simplified: "两性", definition: "reacts with acids and bases, Al₂O₃, ZnO" },
+      { term: "pH", traditional: "pH值", simplified: "pH值", definition: "−log[H⁺], logarithmic scale, 0–14 (typical)" },
+      { term: "K₍w₎", traditional: "水的離子積", simplified: "水的离子积", definition: "[H⁺][OH⁻], 1.00×10⁻¹⁴ at 298 K, temperature dependence" },
+      { term: "Strong acid/base", traditional: "強酸/強鹼", simplified: "强酸/强碱", definition: "complete dissociation, high conductivity" },
+      { term: "Weak acid/base", traditional: "弱酸/弱鹼", simplified: "弱酸/弱碱", definition: "equilibrium, Kₐ/K_b, buffer region in titration" },
+      { term: "Neutralisation", traditional: "中和反應", simplified: "中和反应", definition: "salt + water, enthalpy of neutralisation ≈ −57 kJ mol⁻¹ (strong acid + strong base)" },
+      { term: "Indicator", traditional: "指示劑", simplified: "指示剂", definition: "weak acid/base, colour change range, endpoint vs equivalence point" },
+      { term: "Buffer", traditional: "緩衝溶液", simplified: "缓冲溶液", definition: "resists pH change, conjugate pair mixture, buffer capacity" }
+    ],
+    questions: [
+      { id: "3.1-1", text: "In Brønsted–Lowry theory, an acid is a species that:", options: ["Accepts an electron pair", "Donates a proton", "Donates a hydroxide ion", "Accepts a proton"], correctAnswer: "Donates a proton" },
+      { id: "3.1-2", text: "A Brønsted–Lowry base is best described as a species that:", options: ["Accepts a proton using a lone pair", "Donates a proton to water only", "Produces OH⁻ in every reaction", "Accepts an electron pair only in water"], correctAnswer: "Accepts a proton using a lone pair" },
+      { id: "3.1-3", text: "Which pair differs by exactly one proton and is therefore a conjugate acid–base pair?", options: ["H₂O and O₂", "HCl and Cl⁻", "Na⁺ and Na", "NH₃ and NO₃⁻"], correctAnswer: "HCl and Cl⁻" },
+      { id: "3.1-4", text: "In the reaction HCl(g) + H₂O(l) → H₃O⁺(aq) + Cl⁻(aq), H₂O acts as:", options: ["An acid", "A base", "Neither acid nor base", "An oxidising agent"], correctAnswer: "A base" },
+      { id: "3.1-5", text: "Which species is amphiprotic?", options: ["Cl⁻", "Na⁺", "H₂O", "CH₃COO⁻"], correctAnswer: "H₂O" },
+      { id: "3.1-6", text: "Amphoteric substances:", options: ["Must donate and accept H⁺", "Can behave as acids or bases, not necessarily via H⁺ transfer", "Only react with acids", "Only react with bases"], correctAnswer: "Can behave as acids or bases, not necessarily via H⁺ transfer" },
+      { id: "3.1-7", text: "Which statement about pH is correct?", options: ["pH = log₁₀[H⁺]", "pH = −log₁₀[H⁺]", "pH = −log₁₀[OH⁻]", "pH = log₁₀[OH⁻]"], correctAnswer: "pH = −log₁₀[H⁺]" },
+      { id: "3.1-8", text: "If pH = 3.00, [H⁺] is:", options: ["3.00 mol dm⁻³", "1.00 × 10⁻³ mol dm⁻³", "1.00 × 10³ mol dm⁻³", "3.00 × 10⁻³ mol dm⁻³"], correctAnswer: "1.00 × 10⁻³ mol dm⁻³" },
+      { id: "3.1-9", text: "At 298 K, K₍w₎ equals:", options: ["1.00 × 10⁻⁷", "1.00 × 10⁻¹⁴", "14", "7"], correctAnswer: "1.00 × 10⁻¹⁴" },
+      { id: "3.1-10", text: "At 298 K, if [OH⁻] = 1.0 × 10⁻³ mol dm⁻³, then [H⁺] is:", options: ["1.0 × 10⁻¹¹", "1.0 × 10⁻³", "1.0 × 10⁻⁷", "1.0 × 10⁻¹"], correctAnswer: "1.0 × 10⁻¹¹" },
+      { id: "3.1-11", text: "For an acidic solution at 298 K:", options: ["[H⁺] = [OH⁻]", "[H⁺] > [OH⁻]", "[H⁺] < [OH⁻]", "[H⁺][OH⁻] > 1.0 × 10⁻¹⁴"], correctAnswer: "[H⁺] > [OH⁻]" },
+      { id: "3.1-12", text: "Which is true for pure water at 298 K?", options: ["pH = 0", "pH = 14", "pH = 7", "pH depends only on pressure"], correctAnswer: "pH = 7" },
+      { id: "3.1-13", text: "Increasing temperature generally increases K₍w₎ because water ionisation is:", options: ["Exothermic", "Endothermic", "Catalytic", "Photochemical"], correctAnswer: "Endothermic" },
+      { id: "3.1-14", text: "At temperatures above 298 K, pure water has pH < 7 but remains neutral because:", options: ["[H⁺] = 0", "[OH⁻] = 0", "[H⁺] = [OH⁻]", "K₍w₎ decreases"], correctAnswer: "[H⁺] = [OH⁻]" },
+      { id: "3.1-15", text: "A strong acid is one that:", options: ["Has high concentration", "Dissociates almost completely", "Has pH always below 1", "Reacts only with bases"], correctAnswer: "Dissociates almost completely" },
+      { id: "3.1-16", text: "A weak acid compared with a strong acid of the same concentration generally has:", options: ["Lower pH", "Higher [H⁺]", "Higher pH", "Complete dissociation"], correctAnswer: "Higher pH" },
+      { id: "3.1-17", text: "The terms “concentrated” and “dilute” refer to:", options: ["Degree of dissociation", "Strength of an acid", "Amount of solute per unit volume", "pKₐ value"], correctAnswer: "Amount of solute per unit volume" },
+      { id: "3.1-18", text: "In general, a strong acid produces a conjugate base that is:", options: ["Strong", "Weak", "Amphiprotic", "Insoluble"], correctAnswer: "Weak" },
+      { id: "3.1-19", text: "Which acid strength order is correct for hydrogen halides?", options: ["HI < HBr < HCl < HF", "HF < HCl < HBr < HI", "HF < HI < HBr < HCl", "HCl < HF < HI < HBr"], correctAnswer: "HF < HCl < HBr < HI" },
+      { id: "3.1-20", text: "A neutralisation reaction always produces:", options: ["Salt only", "Water only", "Water and a salt", "Hydrogen gas and a salt"], correctAnswer: "Water and a salt" },
+      { id: "3.1-21", text: "Net ionic equation for strong acid + strong base neutralisation is:", options: ["Na⁺ + Cl⁻ → NaCl", "H⁺ + Cl⁻ → HCl", "H⁺ + OH⁻ → H₂O", "OH⁻ + Na⁺ → NaOH"], correctAnswer: "H⁺ + OH⁻ → H₂O" },
+      { id: "3.1-22", text: "Reaction of an acid with a metal carbonate typically produces:", options: ["Salt + water", "Salt + hydrogen", "Salt + water + carbon dioxide", "Salt + oxygen"], correctAnswer: "Salt + water + carbon dioxide" },
+      { id: "3.1-23", text: "Which is an example of a strong base?", options: ["NH₃", "NaOH", "CH₃NH₂", "Al(OH)₃"], correctAnswer: "NaOH" },
+      { id: "3.1-24", text: "A strong base in water has equilibrium position:", options: ["Far to the left", "Far to the right", "Exactly in the middle", "No equilibrium exists in solution"], correctAnswer: "Far to the right" },
+      { id: "3.1-25", text: "Conductivity of solutions at the same concentration is highest for:", options: ["Weak acids", "Strong acids", "Pure water", "Non-electrolytes"], correctAnswer: "Strong acids" },
+      { id: "3.1-26", text: "A titration curve equivalence point is:", options: ["Where indicator changes colour", "Where pH = 7 always", "Where stoichiometrically equal moles have reacted", "Where solution becomes colourless"], correctAnswer: "Where stoichiometrically equal moles have reacted" },
+      { id: "3.1-27", text: "Strong acid–strong base titration equivalence point (at 298 K) is typically near:", options: ["pH 3", "pH 5", "pH 7", "pH 11"], correctAnswer: "pH 7" },
+      { id: "3.1-28", text: "Weak acid–strong base titration equivalence point is typically:", options: ["Below 7", "At 7", "Above 7", "Always at pH 14"], correctAnswer: "Above 7" },
+      { id: "3.1-29", text: "Strong acid–weak base titration equivalence point is typically:", options: ["Above 7", "At 7", "Below 7", "Unmeasurable"], correctAnswer: "Below 7" },
+      { id: "3.1-30", text: "In a weak acid–strong base titration, the half-equivalence point satisfies:", options: ["[HA] = 0", "[A⁻] = 0", "[HA] = [A⁻]", "pH = 7"], correctAnswer: "[HA] = [A⁻]" },
+      { id: "3.1-31", text: "In a weak acid–strong base titration, pH at half-equivalence equals:", options: ["pKₐ", "pK_b", "pK_w", "14"], correctAnswer: "pKₐ" },
+      { id: "3.1-32", text: "Which indicator is generally suitable for weak acid–strong base titrations?", options: ["Methyl orange", "Bromophenol blue", "Methyl red", "Phenolphthalein"], correctAnswer: "Phenolphthalein" },
+      { id: "3.1-33", text: "For strong acid–strong base titration, suitable indicators include:", options: ["Only phenolphthalein", "Only methyl orange", "Methyl red and phenolphthalein", "No indicators"], correctAnswer: "Methyl red and phenolphthalein" },
+      { id: "3.1-34", text: "An indicator is typically a:", options: ["Strong acid", "Weak acid or weak base with different coloured forms", "Neutral salt", "Catalyst"], correctAnswer: "Weak acid or weak base with different coloured forms" },
+      { id: "3.1-35", text: "For an indicator HIn ⇌ H⁺ + In⁻, the endpoint occurs approximately when:", options: ["[HIn] ≫ [In⁻]", "[HIn] = [In⁻]", "[H⁺] = 0", "[OH⁻] = 0"], correctAnswer: "[HIn] = [In⁻]" },
+      { id: "3.1-36", text: "Therefore, at the endpoint of a weak acid indicator, pH ≈:", options: ["Kₐ", "pKₐ", "K_b", "pK_w"], correctAnswer: "pKₐ" },
+      { id: "3.1-37", text: "A buffer solution contains significant amounts of:", options: ["A strong acid and its conjugate base", "A strong base and its conjugate acid", "A weak acid and its conjugate base", "Only neutral salt"], correctAnswer: "A weak acid and its conjugate base" },
+      { id: "3.1-38", text: "Which mixture makes an acidic buffer?", options: ["HCl + NaCl", "CH₃COOH + CH₃COONa", "NaOH + NaCl", "HNO₃ + KNO₃"], correctAnswer: "CH₃COOH + CH₃COONa" },
+      { id: "3.1-39", text: "Which mixture makes a basic buffer?", options: ["NH₃ + NH₄Cl", "HCl + NaCl", "NaOH + NaCl", "CH₃COOH + NaCl"], correctAnswer: "NH₃ + NH₄Cl" },
+      { id: "3.1-40", text: "Henderson–Hasselbalch for an acidic buffer is:", options: ["pH = pKₐ + log([A⁻]/[HA])", "pH = pKₐ − log([A⁻]/[HA])", "pH = −log([A⁻]/[HA])", "pH = pK_w + log([A⁻]/[HA])"], correctAnswer: "pH = pKₐ + log([A⁻]/[HA])" },
+      { id: "3.1-41", text: "If [A⁻] increases while [HA] constant (buffer), pH:", options: ["Decreases", "Increases", "Stays exactly 7", "Becomes undefined"], correctAnswer: "Increases" },
+      { id: "3.1-42", text: "Adding a small amount of H⁺ to CH₃COOH/CH₃COO⁻ buffer mainly causes:", options: ["CH₃COOH → CH₃COO⁻ + H⁺", "CH₃COO⁻ + H⁺ → CH₃COOH", "H⁺ + OH⁻ → H₂O only", "No reaction"], correctAnswer: "CH₃COO⁻ + H⁺ → CH₃COOH" },
+      { id: "3.1-43", text: "Adding a small amount of OH⁻ to CH₃COOH/CH₃COO⁻ buffer mainly causes:", options: ["OH⁻ + H⁺ → H₂O, shifting equilibrium to form more H⁺", "OH⁻ oxidises acetate", "OH⁻ precipitates sodium ions", "pH always stays exactly constant"], correctAnswer: "OH⁻ + H⁺ → H₂O, shifting equilibrium to form more H⁺" },
+      { id: "3.1-44", text: "Dilution of a buffer generally causes pH to:", options: ["Change greatly", "Change only slightly (ratio similar), but capacity decreases", "Become 7", "Become 14"], correctAnswer: "Change only slightly (ratio similar), but capacity decreases" },
+      { id: "3.1-45", text: "A salt made from strong acid + strong base typically gives a solution that is:", options: ["Acidic", "Basic", "Neutral", "Always a buffer"], correctAnswer: "Neutral" },
+      { id: "3.1-46", text: "A salt made from strong acid + weak base typically gives a solution that is:", options: ["Neutral", "Basic", "Acidic", "Always pH 3"], correctAnswer: "Acidic" },
+      { id: "3.1-47", text: "A salt made from weak acid + strong base typically gives a solution that is:", options: ["Acidic", "Basic", "Neutral", "Always pH 7"], correctAnswer: "Basic" },
+      { id: "3.1-48", text: "Small highly charged metal ions (e.g. Al³⁺) can make solutions acidic because they:", options: ["Donate OH⁻", "Hydrolyse coordinated water, releasing H⁺", "React with Cl⁻ to form HCl", "Always act as strong bases"], correctAnswer: "Hydrolyse coordinated water, releasing H⁺" },
+      { id: "3.1-49", text: "Which statement about pKₐ is correct?", options: ["Higher pKₐ means stronger acid", "Higher pKₐ means weaker acid", "pKₐ = logKₐ", "pKₐ is only for strong acids"], correctAnswer: "Higher pKₐ means weaker acid" },
+      { id: "3.1-50", text: "For a conjugate acid–base pair at 298 K, the relationship between Kₐ and K_b is:", options: ["Kₐ + K_b = K₍w₎", "Kₐ × K_b = K₍w₎", "Kₐ = K_b", "Kₐ − K_b = K₍w₎"], correctAnswer: "Kₐ × K_b = K₍w₎" }
+    ]
   },
   {
     id: 20,
-    title: "Reactivity 3.2 — Electron transfer reactions",
+    title: "R3.2 — Electron transfer reactions",
     description: "Oxidation and reduction processes.",
     color: "bg-indigo-600",
     category: 'reactivity',
-    concepts: ["Redox reactions and oxidation states."],
-    vocab: [],
-    questions: []
+    concepts: [
+      "Oxidising agent: causes another species to lose electrons; oxidising agent is reduced (oxidation number decreases).",
+      "Reducing agent: causes another species to gain electrons; reducing agent is oxidised (oxidation number increases).",
+      "Oxidation: loss of electrons (often gain of oxygen or loss of hydrogen).",
+      "Reduction: gain of electrons (often loss of oxygen or gain of hydrogen).",
+      "Half-equation: equation showing oxidation or reduction separately.",
+      "Redox titration: titration where electrons transfer between oxidant and reductant.",
+      "Voltaic (galvanic) cell: generates electrical energy from a spontaneous redox reaction.",
+      "Electrolytic cell: uses electrical energy to drive a non-spontaneous reaction.",
+      "Electrode: solid conductor where oxidation/reduction occurs.",
+      "Anode: electrode where oxidation occurs.",
+      "Cathode: electrode where reduction occurs.",
+      "Salt bridge: allows ion flow to complete circuit and maintain charge balance.",
+      "Electrode potential (E): potential difference between an electrode and its ions in solution at equilibrium.",
+      "Standard hydrogen electrode (SHE): reference half-cell with E° = 0.00 V.",
+      "Standard electrode potential (E°): electrode potential measured under standard conditions.",
+      "Standard conditions (for E°): 298 K, 100 kPa gases, 1.0 mol dm⁻³ solutions.",
+      "Cell potential / EMF (E_cell or ΔE): potential difference of a complete cell.",
+      "EMF calculation: E_cell = E°(right) − E°(left) (equivalently, E°(cathode) − E°(anode)).",
+      "Spontaneity (standard conditions): E_cell > 0 means reaction is spontaneous as written.",
+      "Free energy link (HL): ΔG° = −nF E° (n = electrons transferred; F = 96 500 C mol⁻¹).",
+      "Primary cell: single-use; not rechargeable.",
+      "Secondary cell: rechargeable; reaction can be reversed by applying voltage.",
+      "Electrolysis: decomposition using electricity; ions migrate to electrodes.",
+      "Aqueous electrolysis (HL): water can be oxidised/reduced; products depend on E° values, ion concentration, and electrode identity.",
+      "Active electrode: participates in redox (e.g., Cu anode dissolves in CuSO₄ electrolysis).",
+      "Inert electrode: does not participate (e.g., Pt, graphite).",
+      "Oxidation of alcohols: 1° alcohol → aldehyde → carboxylic acid; 2° alcohol → ketone; 3° alcohol: no oxidation (typical conditions).",
+      "Reducing agents (organic): LiAlH₄ (strong; can reduce carboxylic acids), NaBH₄ (milder; cannot reduce carboxylic acids).",
+      "Hydrogenation: reduction of C=C / C≡C using H₂ with a catalyst (e.g., Ni)."
+    ],
+    vocab: [
+      { term: "Oxidising agent", traditional: "氧化劑", simplified: "氧化剂", definition: "accepts e⁻, is reduced, oxidation number decreases" },
+      { term: "Reducing agent", traditional: "還原劑", simplified: "还原剂", definition: "donates e⁻, is oxidised, oxidation number increases" },
+      { term: "Voltaic cell", traditional: "伏打電池", simplified: "伏打电池", definition: "spontaneous, anode (−), cathode (+)" },
+      { term: "Electrolytic cell", traditional: "電解池", simplified: "电解池", definition: "non-spontaneous, anode (+), cathode (−)" },
+      { term: "Anode", traditional: "陽極", simplified: "阳极", definition: "oxidation, electrons produced" },
+      { term: "Cathode", traditional: "陰極", simplified: "阴极", definition: "reduction, electrons consumed" },
+      { term: "Salt bridge", traditional: "鹽橋", simplified: "盐桥", definition: "ion migration, charge balance, completes circuit" },
+      { term: "E° more positive", traditional: "E° 更正", simplified: "E° 更正", definition: "more easily reduced, stronger oxidising agent" },
+      { term: "E° more negative", traditional: "E° 更負", simplified: "E° 更负", definition: "more easily oxidised, stronger reducing agent" },
+      { term: "Aqueous electrolysis factors", traditional: "水溶液電解因素", simplified: "水溶液电解因素", definition: "E°, concentration, electrode material" },
+      { term: "ΔG° sign", traditional: "ΔG° 符號", simplified: "ΔG° 符号", definition: "E° sign (ΔG° = −nF E°)" }
+    ],
+    questions: [
+      {
+        id: "3.2-1",
+        text: "An oxidising agent is best defined as a species that:",
+        options: ["donates electrons and is reduced", "accepts electrons and is reduced", "accepts electrons and is oxidised", "donates electrons and is oxidised"],
+        correctAnswer: "accepts electrons and is reduced"
+      },
+      {
+        id: "3.2-2",
+        text: "In a redox reaction, the reducing agent is the species that:",
+        options: ["gains electrons", "loses electrons", "decreases oxidation number", "is reduced"],
+        correctAnswer: "loses electrons"
+      },
+      {
+        id: "3.2-3",
+        text: "Which change indicates oxidation?",
+        options: ["+3 to +2", "+2 to 0", "0 to +2", "+7 to +6"],
+        correctAnswer: "0 to +2"
+      },
+      {
+        id: "3.2-4",
+        text: "Which change indicates reduction?",
+        options: ["0 to +1", "+2 to +3", "−1 to 0", "+2 to +4"],
+        correctAnswer: "−1 to 0"
+      },
+      {
+        id: "3.2-5",
+        text: "Which statement is always true about a redox reaction?",
+        options: ["Only oxidation occurs", "Only reduction occurs", "Oxidation and reduction occur simultaneously", "No electrons are transferred"],
+        correctAnswer: "Oxidation and reduction occur simultaneously"
+      },
+      {
+        id: "3.2-6",
+        text: "The half-equation for oxidation of iron(II) to iron(III) is:",
+        options: ["Fe²⁺ + e⁻ → Fe³⁺", "Fe³⁺ + e⁻ → Fe²⁺", "Fe²⁺ → Fe³⁺ + e⁻", "Fe³⁺ → Fe²⁺ + e⁻"],
+        correctAnswer: "Fe²⁺ → Fe³⁺ + e⁻"
+      },
+      {
+        id: "3.2-7",
+        text: "In acidic solution, the reduction half-equation for MnO₄⁻ to Mn²⁺ is:",
+        options: ["MnO₄⁻ + 8H⁺ + 5e⁻ → Mn²⁺ + 4H₂O", "MnO₄⁻ + 4H⁺ + 3e⁻ → MnO₂ + 2H₂O", "MnO₄⁻ + e⁻ → MnO₄²⁻", "MnO₄⁻ + 2H₂O + 3e⁻ → MnO₂ + 4OH⁻"],
+        correctAnswer: "MnO₄⁻ + 8H⁺ + 5e⁻ → Mn²⁺ + 4H₂O"
+      },
+      {
+        id: "3.2-8",
+        text: "In a manganate(VII) titration with Fe²⁺ in acid, the ratio MnO₄⁻ : Fe²⁺ is:",
+        options: ["1:1", "1:2", "1:5", "5:1"],
+        correctAnswer: "1:5"
+      },
+      {
+        id: "3.2-9",
+        text: "In iodine–thiosulfate titrations, thiosulfate ions reduce iodine to iodide. The balanced overall equation is:",
+        options: ["S₂O₃²⁻ + I₂ → I⁻ + S₄O₆²⁻", "2S₂O₃²⁻ + I₂ → 2I⁻ + S₄O₆²⁻", "S₂O₃²⁻ + 2I⁻ → I₂ + S₄O₆²⁻", "2S₂O₃²⁻ + 2I⁻ → I₂ + S₄O₆²⁻"],
+        correctAnswer: "2S₂O₃²⁻ + I₂ → 2I⁻ + S₄O₆²⁻"
+      },
+      {
+        id: "3.2-10",
+        text: "In a voltaic (galvanic) cell, the anode is:",
+        options: ["positive and site of reduction", "positive and site of oxidation", "negative and site of oxidation", "negative and site of reduction"],
+        correctAnswer: "negative and site of oxidation"
+      },
+      {
+        id: "3.2-11",
+        text: "In an electrolytic cell, the anode is:",
+        options: ["negative and site of oxidation", "negative and site of reduction", "positive and site of oxidation", "positive and site of reduction"],
+        correctAnswer: "positive and site of oxidation"
+      },
+      {
+        id: "3.2-12",
+        text: "RED CAT helps you remember that:",
+        options: ["oxidation occurs at the cathode", "reduction occurs at the cathode", "reduction occurs at the anode", "oxidation occurs at the salt bridge"],
+        correctAnswer: "reduction occurs at the cathode"
+      },
+      {
+        id: "3.2-13",
+        text: "The purpose of a salt bridge in a voltaic cell is primarily to:",
+        options: ["provide electrons to the circuit", "prevent any ion movement", "allow ion flow to maintain charge balance", "increase the concentration of metal ions"],
+        correctAnswer: "allow ion flow to maintain charge balance"
+      },
+      {
+        id: "3.2-14",
+        text: "In the Daniell cell Zn(s)|Zn²⁺||Cu²⁺|Cu(s), electrons flow from:",
+        options: ["Cu to Zn", "Zn to Cu", "salt bridge to Cu", "Cu²⁺ to Zn²⁺"],
+        correctAnswer: "Zn to Cu"
+      },
+      {
+        id: "3.2-15",
+        text: "In the cell Zn(s)|Zn²⁺||Cu²⁺|Cu(s), the overall spontaneous reaction is:",
+        options: ["Zn²⁺ + Cu → Zn + Cu²⁺", "Zn + Cu²⁺ → Zn²⁺ + Cu", "Zn + Cu → Zn²⁺ + Cu²⁺", "Zn²⁺ + Cu²⁺ → Zn + Cu"],
+        correctAnswer: "Zn + Cu²⁺ → Zn²⁺ + Cu"
+      },
+      {
+        id: "3.2-16",
+        text: "Standard electrode potentials are measured relative to the:",
+        options: ["standard lithium electrode", "standard copper electrode", "standard hydrogen electrode", "standard silver electrode"],
+        correctAnswer: "standard hydrogen electrode"
+      },
+      {
+        id: "3.2-17",
+        text: "The standard hydrogen electrode has an assigned value of:",
+        options: ["+1.00 V", "0.00 V", "−1.00 V", "depends on temperature only"],
+        correctAnswer: "0.00 V"
+      },
+      {
+        id: "3.2-18",
+        text: "Standard electrode potential measurements require (among others):",
+        options: ["273 K and 1 atm", "298 K and 1.0 mol dm⁻³", "310 K and 0.1 mol dm⁻³", "298 K and 0.10 mol dm⁻³"],
+        correctAnswer: "298 K and 1.0 mol dm⁻³"
+      },
+      {
+        id: "3.2-19",
+        text: "Using the convention in these notes, the EMF is calculated as:",
+        options: ["E_left − E_right", "E_right − E_left", "E_anode + E_cathode", "E_cathode − E_right"],
+        correctAnswer: "E_right − E_left"
+      },
+      {
+        id: "3.2-20",
+        text: "A positive E_cell under standard conditions indicates that:",
+        options: ["the forward reaction is spontaneous as written", "the reverse reaction is spontaneous as written", "the reaction is at equilibrium", "the reaction rate must be fast"],
+        correctAnswer: "the forward reaction is spontaneous as written"
+      },
+      {
+        id: "3.2-21",
+        text: "A more positive E° value generally indicates the species is:",
+        options: ["a better reducing agent", "less easily reduced", "more easily reduced and a better oxidising agent", "always a metal"],
+        correctAnswer: "more easily reduced and a better oxidising agent"
+      },
+      {
+        id: "3.2-22",
+        text: "A more negative E° value generally indicates the species is:",
+        options: ["more easily oxidised and a better reducing agent", "more easily reduced and a better oxidising agent", "always a non-metal", "unable to participate in redox"],
+        correctAnswer: "more easily oxidised and a better reducing agent"
+      },
+      {
+        id: "3.2-23",
+        text: "The equation linking free energy and standard cell potential is:",
+        options: ["ΔG° = +nFE°", "ΔG° = −nFE°", "ΔG° = −(n/F)E°", "ΔG° = −E°/nF"],
+        correctAnswer: "ΔG° = −nFE°"
+      },
+      {
+        id: "3.2-24",
+        text: "In ΔG° = −nFE°, n represents:",
+        options: ["number of moles of solution", "number of electrons transferred", "number of half-cells", "number of ions in the salt bridge"],
+        correctAnswer: "number of electrons transferred"
+      },
+      {
+        id: "3.2-25",
+        text: "The Faraday constant F is approximately:",
+        options: ["9.65 × 10² C mol⁻¹", "9.65 × 10³ C mol⁻¹", "9.65 × 10⁴ C mol⁻¹", "9.65 × 10⁵ C mol⁻¹"],
+        correctAnswer: "9.65 × 10⁴ C mol⁻¹"
+      },
+      {
+        id: "3.2-26",
+        text: "If E° is positive, ΔG° is:",
+        options: ["positive", "negative", "zero", "undefined"],
+        correctAnswer: "negative"
+      },
+      {
+        id: "3.2-27",
+        text: "Which is a key difference between a primary cell and a secondary cell?",
+        options: ["Primary cells are rechargeable", "Secondary cells are not rechargeable", "Secondary cells can be recharged by reversing the reaction", "Primary cells require a salt bridge"],
+        correctAnswer: "Secondary cells can be recharged by reversing the reaction"
+      },
+      {
+        id: "3.2-28",
+        text: "In a lead-acid battery on discharge, the negative electrode is primarily:",
+        options: ["PbO₂", "Pb", "Pt", "graphite"],
+        correctAnswer: "Pb"
+      },
+      {
+        id: "3.2-29",
+        text: "In a lead-acid battery, the electrolyte is:",
+        options: ["NaOH(aq)", "H₂SO₄(aq)", "KNO₃(aq)", "HCl(aq)"],
+        correctAnswer: "H₂SO₄(aq)"
+      },
+      {
+        id: "3.2-30",
+        text: "In electrolysis of molten PbBr₂, the cathode product is:",
+        options: ["Br₂", "Pb", "H₂", "O₂"],
+        correctAnswer: "Pb"
+      },
+      {
+        id: "3.2-31",
+        text: "In electrolysis of molten PbBr₂, the anode product is:",
+        options: ["Pb", "Pb²⁺", "Br₂", "Br⁻"],
+        correctAnswer: "Br₂"
+      },
+      {
+        id: "3.2-32",
+        text: "During electrolysis, anions move to the:",
+        options: ["cathode and gain electrons", "cathode and lose electrons", "anode and gain electrons", "anode and lose electrons"],
+        correctAnswer: "anode and lose electrons"
+      },
+      {
+        id: "3.2-33",
+        text: "During electrolysis, cations move to the:",
+        options: ["anode and gain electrons", "cathode and gain electrons", "anode and lose electrons", "cathode and lose electrons"],
+        correctAnswer: "cathode and gain electrons"
+      },
+      {
+        id: "3.2-34",
+        text: "Which statement about molten salt electrolysis is correct?",
+        options: ["Metals form at the anode", "Non-metals form at the cathode", "Metals form at the cathode", "Water is always discharged preferentially"],
+        correctAnswer: "Metals form at the cathode"
+      },
+      {
+        id: "3.2-35",
+        text: "In aqueous electrolysis, product prediction depends on:",
+        options: ["only the electrolyte concentration", "only the electrode material", "E° values, ion concentration, and electrode identity", "only the colour of ions"],
+        correctAnswer: "E° values, ion concentration, and electrode identity"
+      },
+      {
+        id: "3.2-36",
+        text: "In acidified water electrolysis, hydrogen is produced at the cathode mainly because:",
+        options: ["H⁺ has a more favourable reduction than H₂O", "SO₄²⁻ is reduced first", "O₂ is reduced to H₂O", "Na⁺ is reduced first"],
+        correctAnswer: "H⁺ has a more favourable reduction than H₂O"
+      },
+      {
+        id: "3.2-37",
+        text: "Why is SO₄²⁻ not oxidised at the anode in acidic aqueous electrolysis?",
+        options: ["It is insoluble", "Sulfur is already at its maximum oxidation state", "It has a positive charge", "It is a stronger reducing agent than water"],
+        correctAnswer: "Sulfur is already at its maximum oxidation state"
+      },
+      {
+        id: "3.2-38",
+        text: "In concentrated NaCl(aq) electrolysis, chlorine is produced at the anode mainly due to:",
+        options: ["the high concentration of Cl⁻ ions", "Na⁺ being oxidised", "H₂ being oxidised", "sulfate ions being oxidised"],
+        correctAnswer: "the high concentration of Cl⁻ ions"
+      },
+      {
+        id: "3.2-39",
+        text: "In electrolysis of CuSO₄(aq) using inert electrodes, the cathode product is typically:",
+        options: ["H₂", "O₂", "Cu(s)", "SO₂"],
+        correctAnswer: "Cu(s)"
+      },
+      {
+        id: "3.2-40",
+        text: "In electrolysis of CuSO₄(aq) using inert electrodes, the anode product is typically:",
+        options: ["Cu(s)", "O₂(g)", "H₂(g)", "Cl₂(g)"],
+        correctAnswer: "O₂(g)"
+      },
+      {
+        id: "3.2-41",
+        text: "In electrolysis of CuSO₄(aq) using copper electrodes, the anode reaction is:",
+        options: ["Cu²⁺ + 2e⁻ → Cu", "Cu → Cu²⁺ + 2e⁻", "2H₂O → O₂ + 4H⁺ + 4e⁻", "2Cl⁻ → Cl₂ + 2e⁻"],
+        correctAnswer: "Cu → Cu²⁺ + 2e⁻"
+      },
+      {
+        id: "3.2-42",
+        text: "An electrode that participates in the redox process is called:",
+        options: ["passive", "inert", "active", "neutral"],
+        correctAnswer: "active"
+      },
+      {
+        id: "3.2-43",
+        text: "Primary alcohol oxidation (typical) gives:",
+        options: ["ketone only", "aldehyde, then carboxylic acid on further oxidation", "carboxylic acid only", "no reaction"],
+        correctAnswer: "aldehyde, then carboxylic acid on further oxidation"
+      },
+      {
+        id: "3.2-44",
+        text: "Secondary alcohol oxidation (typical) gives:",
+        options: ["aldehyde", "carboxylic acid", "ketone", "ester"],
+        correctAnswer: "ketone"
+      },
+      {
+        id: "3.2-45",
+        text: "Tertiary alcohols generally do not oxidise under these conditions because:",
+        options: ["they contain no oxygen", "there is no hydrogen on the functional group carbon", "they have too low a boiling point", "they always form alkenes instead"],
+        correctAnswer: "there is no hydrogen on the functional group carbon"
+      },
+      {
+        id: "3.2-46",
+        text: "A common oxidising agent for alcohols in acidic solution is:",
+        options: ["NaBH₄", "LiAlH₄", "acidified K₂Cr₂O₇", "H₂/Ni"],
+        correctAnswer: "acidified K₂Cr₂O₇"
+      },
+      {
+        id: "3.2-47",
+        text: "LiAlH₄ differs from NaBH₄ because LiAlH₄:",
+        options: ["cannot reduce aldehydes", "can reduce carboxylic acids", "is used only in water", "is an oxidising agent"],
+        correctAnswer: "can reduce carboxylic acids"
+      },
+      {
+        id: "3.2-48",
+        text: "Hydrogenation of alkenes typically uses:",
+        options: ["H₂ with Ni catalyst", "O₂ with Pt catalyst", "NaBH₄ in water", "acidified KMnO₄"],
+        correctAnswer: "H₂ with Ni catalyst"
+      },
+      {
+        id: "3.2-49",
+        text: "For an alkyne to be fully hydrogenated to an alkane, it requires:",
+        options: ["1 mol H₂ per mol alkyne", "2 mol H₂ per mol alkyne", "3 mol H₂ per mol alkyne", "no hydrogen"],
+        correctAnswer: "2 mol H₂ per mol alkyne"
+      },
+      {
+        id: "3.2-50",
+        text: "If an experimentally predicted spontaneous cell shows no visible reaction, the best explanation is:",
+        options: ["E° is unrelated to feasibility", "kinetics may be too slow despite thermodynamic feasibility", "oxidation and reduction cannot occur together", "the salt bridge prevents any reaction"],
+        correctAnswer: "kinetics may be too slow despite thermodynamic feasibility"
+      }
+    ]
   },
   {
     id: 21,
-    title: "Reactivity 3.3 — Electron sharing reactions",
+    title: "R3.3 — Electron sharing reactions",
     description: "Covalent bonding and reactivity.",
     color: "bg-violet-600",
     category: 'reactivity',
-    concepts: ["Covalent bond formation and properties."],
-    vocab: [],
-    questions: []
+    concepts: [
+      "Reaction equation: shows reactants and products and their stoichiometry.",
+      "Reaction mechanism: shows how a reaction happens, including movement of electrons and intermediate species.",
+      "Radical: chemical species with an unpaired electron (shown by a dot •).",
+      "Radicals can be atomic (one atom), molecular/polyatomic (group of atoms), and can be neutral or charged.",
+      "Single-headed curly arrow: shows movement of one electron (also called fish-hook / half-curly arrow).",
+      "Homolytic fission: even breaking of a covalent bond where each atom takes one electron → two radicals form.",
+      "Thermolytic fission: homolytic fission caused by heat (more likely for weaker bonds).",
+      "Photolytic fission: homolytic fission caused by UV light (often for halogen–halogen bonds).",
+      "Free-radical substitution: substitution reaction where a H atom on an alkane is replaced by a halogen via a radical chain mechanism.",
+      "Initiation: first step; radicals are generated (e.g., UV splits Cl₂ → 2Cl•).",
+      "Propagation: chain “grows”; radicals react to form products and regenerate radicals.",
+      "Termination: chain stops; two radicals combine to form a stable molecule.",
+      "Why alkanes are unreactive: strong C–C / C–H bonds and nonpolar nature."
+    ],
+    vocab: [
+      { term: "Radical", traditional: "自由基", simplified: "自由基", definition: "unpaired electron, dot notation (•), high reactivity" },
+      { term: "Mechanism", traditional: "機理", simplified: "机理", definition: "electron movement, curly arrows, stepwise" },
+      { term: "Single-headed arrow", traditional: "單頭彎箭頭", simplified: "单头弯箭头", definition: "one electron, fish-hook, radical mechanisms" },
+      { term: "Homolytic fission", traditional: "均裂", simplified: "均裂", definition: "even bond breaking, two radicals, each atom takes 1 e⁻" },
+      { term: "Photolytic fission", traditional: "光解", simplified: "光解", definition: "UV light, initiation, X₂ → 2X•" },
+      { term: "Thermolytic fission", traditional: "熱解", simplified: "热解", definition: "heat, bond enthalpy, radical formation" },
+      { term: "Free-radical substitution", traditional: "自由基取代", simplified: "自由基取代", definition: "alkane + halogen, UV, substitution" },
+      { term: "Initiation", traditional: "引發", simplified: "引发", definition: "radicals formed, start of chain" },
+      { term: "Propagation", traditional: "增長", simplified: "增长", definition: "H abstraction, alkyl radical, radical regenerated" },
+      { term: "Termination", traditional: "終止", simplified: "终止", definition: "radical + radical, stable molecule, chain stops" },
+      { term: "Alkane stability", traditional: "烷烴穩定性", simplified: "烷烃稳定性", definition: "strong sigma bonds, nonpolar, low reactivity" }
+    ],
+    questions: [
+      {
+        id: "3.3-1",
+        text: "A radical is a species that contains:",
+        options: ["a lone pair", "a positive charge", "an unpaired electron", "a double bond"],
+        correctAnswer: "an unpaired electron"
+      },
+      {
+        id: "3.3-2",
+        text: "In structural formulae, radicals are indicated by:",
+        options: ["δ+", "•", "(aq)", "a wavy bond"],
+        correctAnswer: "•"
+      },
+      {
+        id: "3.3-3",
+        text: "Which species is a radical?",
+        options: ["NH₃", "Mg²⁺", "NO•", "Cl⁻"],
+        correctAnswer: "NO•"
+      },
+      {
+        id: "3.3-4",
+        text: "Radicals are highly reactive mainly because they:",
+        options: ["have a full octet", "contain an unpaired electron", "are always ionic", "have strong hydrogen bonding"],
+        correctAnswer: "contain an unpaired electron"
+      },
+      {
+        id: "3.3-5",
+        text: "Reaction mechanisms differ from reaction equations because mechanisms show:",
+        options: ["only the final products", "the movement of electrons and steps", "only stoichiometric ratios", "only state symbols"],
+        correctAnswer: "the movement of electrons and steps"
+      },
+      {
+        id: "3.3-6",
+        text: "A single-headed curly arrow shows movement of:",
+        options: ["two electrons", "one electron", "a proton", "a lone pair only"],
+        correctAnswer: "one electron"
+      },
+      {
+        id: "3.3-7",
+        text: "Single-headed curly arrows are also called:",
+        options: ["equilibrium arrows", "fish-hook arrows", "resonance arrows", "double-headed arrows"],
+        correctAnswer: "fish-hook arrows"
+      },
+      {
+        id: "3.3-8",
+        text: "Homolytic fission is bond breaking where:",
+        options: ["one atom takes both electrons", "each atom takes one electron", "no electrons move", "ions form directly"],
+        correctAnswer: "each atom takes one electron"
+      },
+      {
+        id: "3.3-9",
+        text: "The homolytic fission of Cl₂ produces:",
+        options: ["Cl⁺ and Cl⁻", "2Cl•", "2Cl⁻", "Cl₂⁺"],
+        correctAnswer: "2Cl•"
+      },
+      {
+        id: "3.3-10",
+        text: "In homolytic fission, curly arrows should start:",
+        options: ["from an electron-rich region (e.g., the bond)", "from an electron-poor region", "from the product radical dot", "from the nucleus"],
+        correctAnswer: "from an electron-rich region (e.g., the bond)"
+      },
+      {
+        id: "3.3-11",
+        text: "Photolytic fission typically requires:",
+        options: ["UV light", "cold conditions", "aqueous acid", "a base catalyst"],
+        correctAnswer: "UV light"
+      },
+      {
+        id: "3.3-12",
+        text: "Thermolytic fission is caused primarily by:",
+        options: ["pressure", "heat", "light", "electricity"],
+        correctAnswer: "heat"
+      },
+      {
+        id: "3.3-13",
+        text: "The initiation step in free-radical substitution is usually:",
+        options: ["radical + radical → stable molecule", "X₂ → 2X•", "alkyl radical + X₂ → haloalkane + X•", "alkane + X₂ → haloalkane + HX (one step)"],
+        correctAnswer: "X₂ → 2X•"
+      },
+      {
+        id: "3.3-14",
+        text: "The propagation step is characterised by:",
+        options: ["radicals being produced and regenerated", "radicals never being used", "the chain stopping", "formation of ions"],
+        correctAnswer: "radicals being produced and regenerated"
+      },
+      {
+        id: "3.3-15",
+        text: "The termination step occurs when:",
+        options: ["UV light is switched on", "two radicals combine to form a stable molecule", "a halogen molecule splits", "a catalyst is added"],
+        correctAnswer: "two radicals combine to form a stable molecule"
+      },
+      {
+        id: "3.3-16",
+        text: "Alkanes are relatively unreactive mainly because:",
+        options: ["they contain C=C bonds", "they are nonpolar and have strong C–C and C–H bonds", "they are strong bases", "they contain ionic bonds"],
+        correctAnswer: "they are nonpolar and have strong C–C and C–H bonds"
+      },
+      {
+        id: "3.3-17",
+        text: "The C–H bond in an alkane is usually:",
+        options: ["highly polar", "nonpolar or only slightly polar", "ionic", "metallic"],
+        correctAnswer: "nonpolar or only slightly polar"
+      },
+      {
+        id: "3.3-18",
+        text: "Alkanes do not readily react with polar reagents because alkanes:",
+        options: ["have strong dipoles", "lack electron-deficient and electron-rich regions", "contain O–H groups", "are aromatic"],
+        correctAnswer: "lack electron-deficient and electron-rich regions"
+      },
+      {
+        id: "3.3-19",
+        text: "Free-radical substitution of alkanes requires UV light mainly to:",
+        options: ["heat the mixture", "generate radicals in initiation", "remove products", "make alkanes more polar"],
+        correctAnswer: "generate radicals in initiation"
+      },
+      {
+        id: "3.3-20",
+        text: "In chlorination of ethane, one propagation step is:",
+        options: ["CH₃CH₃ + Cl• → •CH₂CH₃ + HCl", "Cl• + Cl• → Cl₂", "Cl₂ → 2Cl•", "•CH₂CH₃ + •CH₂CH₃ → C₄H₁₀"],
+        correctAnswer: "CH₃CH₃ + Cl• → •CH₂CH₃ + HCl"
+      },
+      {
+        id: "3.3-21",
+        text: "The other key propagation step in chlorination of ethane is:",
+        options: ["•CH₂CH₃ + Cl₂ → CH₃CH₂Cl + Cl•", "Cl₂ → 2Cl•", "Cl• + Cl• → Cl₂", "CH₃CH₃ + Cl₂ → CH₃CH₂Cl + HCl (one step)"],
+        correctAnswer: "•CH₂CH₃ + Cl₂ → CH₃CH₂Cl + Cl•"
+      },
+      {
+        id: "3.3-22",
+        text: "In propagation, the halogen radical is:",
+        options: ["consumed and not regenerated", "regenerated, allowing the chain to continue", "converted into a halide ion", "converted into a carbocation"],
+        correctAnswer: "regenerated, allowing the chain to continue"
+      },
+      {
+        id: "3.3-23",
+        text: "A termination step could be:",
+        options: ["Cl₂ → 2Cl•", "Cl• + Cl• → Cl₂", "CH₃CH₃ + Cl• → •CH₂CH₃ + HCl", "•CH₂CH₃ + Cl₂ → CH₃CH₂Cl + Cl•"],
+        correctAnswer: "Cl• + Cl• → Cl₂"
+      },
+      {
+        id: "3.3-24",
+        text: "Formation of butane in a termination step is:",
+        options: ["•CH₂CH₃ + •CH₂CH₃ → CH₃CH₂CH₂CH₃", "CH₃CH₃ + Cl₂ → CH₃CH₂Cl + HCl", "Cl• + Cl• → Cl₂", "•CH₂CH₃ + Cl₂ → CH₃CH₂Cl + Cl•"],
+        correctAnswer: "•CH₂CH₃ + •CH₂CH₃ → CH₃CH₂CH₂CH₃"
+      },
+      {
+        id: "3.3-25",
+        text: "A common experimental observation showing UV is needed is:",
+        options: ["bromine decolourises in the dark", "bromine decolourises only in sunlight when mixed with an alkane", "bromine turns blue-black with starch", "a precipitate forms immediately"],
+        correctAnswer: "bromine decolourises only in sunlight when mixed with an alkane"
+      },
+      {
+        id: "3.3-26",
+        text: "Free-radical substitution is called a chain reaction because:",
+        options: ["radicals are never consumed", "radicals are regenerated during propagation", "it occurs in a single step", "it requires a salt bridge"],
+        correctAnswer: "radicals are regenerated during propagation"
+      },
+      {
+        id: "3.3-27",
+        text: "A disadvantage of free-radical halogenation for synthesis is that it:",
+        options: ["cannot occur with alkanes", "often gives a mixture of products", "always gives only one product", "requires a strong acid catalyst"],
+        correctAnswer: "often gives a mixture of products"
+      },
+      {
+        id: "3.3-28",
+        text: "If excess halogen is present, substitution can:",
+        options: ["stop after one substitution", "continue, forming more substituted products", "only occur at carbon-1", "produce only alkenes"],
+        correctAnswer: "continue, forming more substituted products"
+      },
+      {
+        id: "3.3-29",
+        text: "The statement CH₃CH₃ + Cl• → CH₃CH₂Cl + H• is incorrect as a propagation step mainly because it:",
+        options: ["produces a hydrogen radical in propagation", "is always endothermic", "produces ions", "breaks an ionic bond"],
+        correctAnswer: "produces a hydrogen radical in propagation"
+      },
+      {
+        id: "3.3-30",
+        text: "In homolytic fission, each product radical has:",
+        options: ["no electrons", "a full octet", "an unpaired electron", "two positive charges"],
+        correctAnswer: "an unpaired electron"
+      },
+      {
+        id: "3.3-31",
+        text: "Which is an example of an atomic radical?",
+        options: ["Br•", "NH₄⁺", "H₂O", "Cl⁻"],
+        correctAnswer: "Br•"
+      },
+      {
+        id: "3.3-32",
+        text: "Which is an example of a molecular (polyatomic) radical?",
+        options: ["Na⁺", "OH•", "Mg²⁺", "CH₄"],
+        correctAnswer: "OH•"
+      },
+      {
+        id: "3.3-33",
+        text: "A radical may be neutral or charged because the only requirement is:",
+        options: ["having a double bond", "having an unpaired electron", "having an overall charge of zero", "being an alkane"],
+        correctAnswer: "having an unpaired electron"
+      },
+      {
+        id: "3.3-34",
+        text: "Radicals are often short-lived because they:",
+        options: ["are too stable", "react quickly to form lower-enthalpy products", "do not collide", "cannot form bonds"],
+        correctAnswer: "react quickly to form lower-enthalpy products"
+      },
+      {
+        id: "3.3-35",
+        text: "The propagation step is described as “growing” because:",
+        options: ["the number of atoms increases each step", "it repeats in cycles, producing product while maintaining radicals", "the reaction stops", "the halogen becomes ionic"],
+        correctAnswer: "it repeats in cycles, producing product while maintaining radicals"
+      },
+      {
+        id: "3.3-36",
+        text: "A C–H bond in propagation breaks:",
+        options: ["heterolytically to form ions", "homolytically to form a radical", "to form a carbocation", "to form a carbanion only"],
+        correctAnswer: "homolytically to form a radical"
+      },
+      {
+        id: "3.3-37",
+        text: "The main product of single substitution chlorination of ethane is:",
+        options: ["CH₃CH₂Cl", "CH₂=CH₂", "C₂H₅OH", "CH₃COOH"],
+        correctAnswer: "CH₃CH₂Cl"
+      },
+      {
+        id: "3.3-38",
+        text: "CH₃CH₂Cl is classified as a:",
+        options: ["halogenoalkane", "haloarene", "alcohol", "ketone"],
+        correctAnswer: "halogenoalkane"
+      },
+      {
+        id: "3.3-39",
+        text: "The step X₂ → 2X• is:",
+        options: ["initiation", "propagation", "termination", "rearrangement"],
+        correctAnswer: "initiation"
+      },
+      {
+        id: "3.3-40",
+        text: "The step radical + radical → stable molecule is:",
+        options: ["initiation", "propagation", "termination", "substitution"],
+        correctAnswer: "termination"
+      },
+      {
+        id: "3.3-41",
+        text: "Which sequence correctly names the stages?",
+        options: ["initiation → propagation → termination", "propagation → initiation → termination", "termination → propagation → initiation", "initiation → termination → propagation"],
+        correctAnswer: "initiation → propagation → termination"
+      },
+      {
+        id: "3.3-42",
+        text: "Which condition is most associated with photolytic fission?",
+        options: ["UV light", "aqueous alkali", "reflux with acid", "high pressure only"],
+        correctAnswer: "UV light"
+      },
+      {
+        id: "3.3-43",
+        text: "The dot in a radical formula should be placed:",
+        options: ["on the atom with the unpaired electron", "on the most electronegative atom always", "at the end of the formula only", "anywhere on the structure"],
+        correctAnswer: "on the atom with the unpaired electron"
+      },
+      {
+        id: "3.3-44",
+        text: "A key role of radicals in propagation is to:",
+        options: ["form ions", "abstract H and create new radicals", "stop the reaction", "catalyse without being regenerated"],
+        correctAnswer: "abstract H and create new radicals"
+      },
+      {
+        id: "3.3-45",
+        text: "The ethyl radical is:",
+        options: ["CH₃CH₂•", "CH₃CH₂⁻", "CH₃CH₂⁺", "CH₃CH₂:"],
+        correctAnswer: "CH₃CH₂•"
+      },
+      {
+        id: "3.3-46",
+        text: "In •CH₂CH₃ + Cl₂ → CH₃CH₂Cl + Cl•, the number of radicals on each side is:",
+        options: ["0 left, 1 right", "1 left, 1 right", "2 left, 0 right", "1 left, 0 right"],
+        correctAnswer: "1 left, 1 right"
+      },
+      {
+        id: "3.3-47",
+        text: "The reason alkanes do not undergo electrophilic addition is that they:",
+        options: ["are nonpolar and have only sigma bonds", "have multiple bonds", "are ionic", "contain OH groups"],
+        correctAnswer: "are nonpolar and have only sigma bonds"
+      },
+      {
+        id: "3.3-48",
+        text: "A typical halogen used in free-radical substitution is:",
+        options: ["chlorine or bromine", "nitrogen", "helium", "sodium"],
+        correctAnswer: "chlorine or bromine"
+      },
+      {
+        id: "3.3-49",
+        text: "The term “stoichiometry” refers to:",
+        options: ["electron movement", "relative quantities of reactants and products", "reaction rate only", "bond polarity only"],
+        correctAnswer: "relative quantities of reactants and products"
+      },
+      {
+        id: "3.3-50",
+        text: "The strongest evidence that a reaction is a chain reaction is that:",
+        options: ["radicals are produced only once and never regenerated", "radicals are regenerated in propagation steps", "the reaction requires water", "the reaction is reversible"],
+        correctAnswer: "radicals are regenerated in propagation steps"
+      }
+    ]
   },
   {
     id: 22,
-    title: "Reactivity 3.4 — Electron-pair sharing reactions",
+    title: "R3.4 — Electron-pair sharing reactions",
     description: "Lewis acids and bases.",
     color: "bg-purple-600",
     category: 'reactivity',
-    concepts: ["Coordinate covalent bonds."],
-    vocab: [],
-    questions: []
+    concepts: [
+      "Nucleophile: electron-rich species that donates a lone pair; attracted to δ⁺/positive centres.",
+      "Electrophile: electron-deficient species that accepts electrons (accepts a lone pair) to form a covalent bond.",
+      "Nucleophilic substitution: nucleophile attacks a δ⁺ carbon and replaces a leaving group (commonly X⁻ in halogenoalkanes).",
+      "Leaving group: atom/group that departs with the bonding electron pair (e.g. halide ion).",
+      "Heterolytic fission: covalent bond breaks with both bonding electrons going to one atom → forms a cation and an anion.",
+      "Curly arrow (double-headed): movement of an electron pair from a lone pair or region of high electron density to an electron-poor site.",
+      "Electrophilic addition: electrophile adds across a C=C; π bond breaks and new σ bonds form.",
+      "Lewis acid: lone pair acceptor.",
+      "Lewis base: lone pair donor.",
+      "Coordinate (dative) bond: covalent bond where both electrons are donated by the same atom (Lewis base → Lewis acid).",
+      "Ligand: molecule/ion that donates a lone pair to a metal ion to form a coordinate bond.",
+      "Complex ion: central metal ion with ligands in square brackets.",
+      "Coordination number: number of coordinate bonds to the central metal ion.",
+      "SN1: substitution nucleophilic unimolecular; two-step; carbocation intermediate; rate = k[halogenoalkane].",
+      "SN2: substitution nucleophilic bimolecular; one-step; backside attack; transition state; rate = k[halogenoalkane][nucleophile].",
+      "Carbocation: positively charged carbon with three covalent bonds.",
+      "Inductive effect (+I): alkyl groups donate electron density and stabilise carbocations.",
+      "Markovnikov’s rule: in addition to an unsymmetrical alkene, the electrophile adds to give the more stable carbocation; substituent (e.g. X) ends up on the more substituted carbon.",
+      "Electrophilic substitution (benzene): electrophile substitutes for H on the ring; aromaticity is temporarily lost then regenerated."
+    ],
+    vocab: [
+      { term: "Nucleophile", traditional: "親核試劑", simplified: "亲核试剂", definition: "electron-rich, lone pair donor, attacks δ⁺ carbon, e.g. OH⁻, CN⁻, NH₃, H₂O" },
+      { term: "Electrophile", traditional: "親電試劑", simplified: "亲电试剂", definition: "electron-poor, lone pair acceptor, δ⁺/positive, e.g. H⁺, carbocations, NO₂⁺" },
+      { term: "Heterolytic fission", traditional: "異裂", simplified: "异裂", definition: "bond breaks, both electrons to one atom, ions formed, curly arrow" },
+      { term: "Electrophilic addition", traditional: "親電加成", simplified: "亲电加成", definition: "alkene π bond, carbocation intermediate, two-step, halogens/HX/H₂O (acid-catalysed for hydration)" },
+      { term: "Lewis acid/base", traditional: "路易斯酸/鹼", simplified: "路易斯酸/碱", definition: "accept/donate lone pair, coordinate bond" },
+      { term: "Ligand/complex", traditional: "配體/配合物", simplified: "配体/配合物", definition: "ligand donates lone pair, complex ion in [ ], charge from oxidation states and ligand charges" },
+      { term: "SN1", traditional: "SN1反應", simplified: "SN1反应", definition: "tertiary, carbocation, two-step, unimolecular, racemisation possible" },
+      { term: "SN2", traditional: "SN2反應", simplified: "SN2反应", definition: "primary, one-step, transition state, backside attack, inversion of configuration" },
+      { term: "Leaving group", traditional: "離去基團", simplified: "离去集团", definition: "halide, weaker C–X bond gives faster substitution, trend C–I fastest, C–F slowest" },
+      { term: "Silver nitrate test", traditional: "硝酸銀測試", simplified: "硝酸银测试", definition: "AgCl white, AgBr cream, AgI yellow; F⁻ no precipitate" }
+    ],
+    questions: [
+      { id: "3.4-1", text: "A nucleophile is best described as a species that:", options: ["accepts a proton", "donates a lone pair of electrons", "donates a hydrogen atom", "accepts a lone pair of electrons"], correctAnswer: "donates a lone pair of electrons" },
+      { id: "3.4-2", text: "Which is generally the stronger nucleophile?", options: ["H₂O", "OH⁻", "CH₃OH", "NH₄⁺"], correctAnswer: "OH⁻" },
+      { id: "3.4-3", text: "Which list contains only nucleophiles?", options: ["OH⁻, NH₃, CN⁻", "H⁺, NO₂⁺, Br⁻", "BF₃, H₂O, H⁺", "NO₂⁺, Br₂, HCl"], correctAnswer: "OH⁻, NH₃, CN⁻" },
+      { id: "3.4-4", text: "In a nucleophilic substitution of a halogenoalkane, the leaving group is typically:", options: ["the nucleophile", "the halogen atom that departs as X⁻", "the carbon atom being attacked", "the solvent"], correctAnswer: "the halogen atom that departs as X⁻" },
+      { id: "3.4-5", text: "Heterolytic fission of a covalent bond produces:", options: ["two radicals", "two cations", "a cation and an anion", "two anions"], correctAnswer: "a cation and an anion" },
+      { id: "3.4-6", text: "Curly arrows in organic mechanisms are used to show:", options: ["movement of atoms", "movement of an electron pair", "movement of a single electron", "changes in temperature"], correctAnswer: "movement of an electron pair" },
+      { id: "3.4-7", text: "Which bond is most likely to undergo heterolytic fission in HCl?", options: ["H–Cl producing H· and Cl·", "H–Cl producing H⁺ and Cl⁻", "H–Cl producing H⁻ and Cl⁺", "H–Cl producing H₂ and Cl₂"], correctAnswer: "H–Cl producing H⁺ and Cl⁻" },
+      { id: "3.4-8", text: "An electrophile is best described as a species that:", options: ["donates a lone pair", "accepts a lone pair", "donates electrons to become oxidised", "accepts neutrons"], correctAnswer: "accepts a lone pair" },
+      { id: "3.4-9", text: "The C=C bond in alkenes is reactive toward electrophiles mainly because:", options: ["it contains a strong σ bond", "the π bond is electron-rich and weaker than the σ bond", "the alkene is always ionic", "alkenes have higher bond angles than alkanes"], correctAnswer: "the π bond is electron-rich and weaker than the σ bond" },
+      { id: "3.4-10", text: "Electrophilic addition to an alkene results in:", options: ["formation of a C=C bond", "replacement of a C=C by a C–C and two new σ bonds", "formation of a radical intermediate only", "substitution on a benzene ring"], correctAnswer: "replacement of a C=C by a C–C and two new σ bonds" },
+      { id: "3.4-11", text: "Hydration of an alkene to form an alcohol typically requires:", options: ["UV light only", "a strong acid catalyst", "a base catalyst only", "a free-radical initiator"], correctAnswer: "a strong acid catalyst" },
+      { id: "3.4-12", text: "In electrophilic addition of HBr to ethene, the first step is:", options: ["Br⁻ attacks the alkene", "π electrons attack δ⁺ H and H–Br breaks heterolytically", "homolytic fission of H–Br", "formation of NO₂⁺"], correctAnswer: "π electrons attack δ⁺ H and H–Br breaks heterolytically" },
+      { id: "3.4-13", text: "Halogen molecules (e.g. Br₂) behave as electrophiles toward alkenes because they:", options: ["are permanently polar", "become polarised near the electron-rich π bond", "always form radicals first", "donate lone pairs to the alkene"], correctAnswer: "become polarised near the electron-rich π bond" },
+      { id: "3.4-14", text: "A Lewis acid is a:", options: ["proton donor", "proton acceptor", "lone pair acceptor", "lone pair donor"], correctAnswer: "lone pair acceptor" },
+      { id: "3.4-15", text: "A Lewis base is a:", options: ["lone pair donor", "lone pair acceptor", "electron pair remover", "proton donor only"], correctAnswer: "lone pair donor" },
+      { id: "3.4-16", text: "A coordinate bond forms when:", options: ["each atom contributes one electron", "both electrons in the bond are donated by one atom", "a proton is transferred", "a bond breaks homolytically"], correctAnswer: "both electrons in the bond are donated by one atom" },
+      { id: "3.4-17", text: "In BF₃ + NH₃ → F₃B←NH₃, BF₃ acts as:", options: ["Lewis base", "Brønsted–Lowry base", "Lewis acid", "nucleophile"], correctAnswer: "Lewis acid" },
+      { id: "3.4-18", text: "In the formation of [Cu(H₂O)₆]²⁺, Cu²⁺ is:", options: ["Lewis base", "Lewis acid", "leaving group", "nucleophile"], correctAnswer: "Lewis acid" },
+      { id: "3.4-19", text: "A ligand is best defined as:", options: ["an electrophile that attacks benzene", "a molecule/ion that donates a lone pair to a metal ion", "a species that always has a +1 charge", "a radical formed by homolytic fission"], correctAnswer: "a molecule/ion that donates a lone pair to a metal ion" },
+      { id: "3.4-20", text: "Coordination number is the:", options: ["oxidation state of the metal", "number of ligands only (always)", "number of coordinate bonds to the central metal ion", "number of electrons in the d subshell"], correctAnswer: "number of coordinate bonds to the central metal ion" },
+      { id: "3.4-21", text: "Which is a bidentate ligand?", options: ["H₂O", "NH₃", "1,2-diaminoethane (en)", "Cl⁻"], correctAnswer: "1,2-diaminoethane (en)" },
+      { id: "3.4-22", text: "EDTA is described as:", options: ["monodentate", "bidentate", "hexadentate", "non-ligand"], correctAnswer: "hexadentate" },
+      { id: "3.4-23", text: "The charge on [CuCl₄]²⁻ can be explained because:", options: ["Cu is +4", "four Cl⁻ ligands contribute a total of −4 with Cu²⁺ giving −2 overall", "Cl⁻ ligands are neutral", "complex ions are always neutral"], correctAnswer: "four Cl⁻ ligands contribute a total of −4 with Cu²⁺ giving −2 overall" },
+      { id: "3.4-24", text: "In [Fe(H₂O)₆]³⁺, the overall charge is +3 because:", options: ["water is −1", "water is neutral and Fe is +3", "Fe is +6", "there are three waters"], correctAnswer: "water is neutral and Fe is +3" },
+      { id: "3.4-25", text: "Which statement about SN1 is correct?", options: ["one-step mechanism with transition state only", "rate depends on both halogenoalkane and nucleophile", "carbocation intermediate is formed", "occurs mainly in primary halogenoalkanes"], correctAnswer: "carbocation intermediate is formed" },
+      { id: "3.4-26", text: "Which statement about SN2 is correct?", options: ["two-step mechanism", "carbocation intermediate is formed", "backside attack occurs", "rate depends only on halogenoalkane concentration"], correctAnswer: "backside attack occurs" },
+      { id: "3.4-27", text: "The rate equation for an SN1 reaction is typically:", options: ["rate = k[Nu⁻]", "rate = k[halogenoalkane]", "rate = k[halogenoalkane][Nu⁻]", "rate = k[product]"], correctAnswer: "rate = k[halogenoalkane]" },
+      { id: "3.4-28", text: "The rate equation for an SN2 reaction is typically:", options: ["rate = k[halogenoalkane][nucleophile]", "rate = k[halogenoalkane]", "rate = k[nucleophile]", "rate = k[solvent]"], correctAnswer: "rate = k[halogenoalkane][nucleophile]" },
+      { id: "3.4-29", text: "SN1 reactions are favoured for:", options: ["tertiary halogenoalkanes", "primary halogenoalkanes", "methane", "ethene"], correctAnswer: "tertiary halogenoalkanes" },
+      { id: "3.4-30", text: "SN2 reactions are favoured for:", options: ["tertiary halogenoalkanes", "primary halogenoalkanes", "benzene", "tertiary carbocations"], correctAnswer: "primary halogenoalkanes" },
+      { id: "3.4-31", text: "In an SN2 mechanism, the nucleophile attacks:", options: ["from the same side as the leaving group", "from the opposite side of the leaving group", "randomly from either side equally", "only after a carbocation forms"], correctAnswer: "from the opposite side of the leaving group" },
+      { id: "3.4-32", text: "Inversion of configuration is characteristic of:", options: ["electrophilic substitution", "SN1", "SN2", "hydration"], correctAnswer: "SN2" },
+      { id: "3.4-33", text: "The transition state in SN2 is best described as:", options: ["a stable intermediate that can be isolated", "a high-energy arrangement with partial bonds", "a carbocation", "a radical"], correctAnswer: "a high-energy arrangement with partial bonds" },
+      { id: "3.4-34", text: "Carbocation stability increases in the order:", options: ["tertiary > secondary > primary", "primary > secondary > tertiary", "secondary > tertiary > primary", "primary > tertiary > secondary"], correctAnswer: "tertiary > secondary > primary" },
+      { id: "3.4-35", text: "The inductive effect in alkyl groups generally:", options: ["withdraws electron density and destabilises carbocations", "donates electron density and stabilises carbocations", "has no effect on carbocations", "makes benzene non-aromatic"], correctAnswer: "donates electron density and stabilises carbocations" },
+      { id: "3.4-36", text: "Which C–X bond leads to the fastest substitution (all else equal)?", options: ["C–F", "C–Cl", "C–Br", "C–I"], correctAnswer: "C–I" },
+      { id: "3.4-37", text: "Which halide gives a yellow precipitate with aqueous AgNO₃?", options: ["Cl⁻", "Br⁻", "I⁻", "F⁻"], correctAnswer: "I⁻" },
+      { id: "3.4-38", text: "Which halide gives no visible precipitate with aqueous AgNO₃?", options: ["Cl⁻", "Br⁻", "I⁻", "F⁻"], correctAnswer: "F⁻" },
+      { id: "3.4-39", text: "The bromine water test for unsaturation is positive when:", options: ["the solution becomes more orange", "the orange/brown colour is decolourised", "a yellow precipitate forms", "the pH decreases only"], correctAnswer: "the orange/brown colour is decolourised" },
+      { id: "3.4-40", text: "Electrophilic addition of Br₂ to ethene is faster than addition of H₂O because:", options: ["water is non-polar", "water is a weak electrophile and needs an acid catalyst", "bromine cannot be polarised", "ethene is saturated"], correctAnswer: "water is a weak electrophile and needs an acid catalyst" },
+      { id: "3.4-41", text: "Markovnikov’s rule predicts that in addition of HBr to propene, the major product is:", options: ["1-bromopropane", "2-bromopropane", "1-chloropropane", "propan-1-ol"], correctAnswer: "2-bromopropane" },
+      { id: "3.4-42", text: "Markovnikov’s rule is linked to:", options: ["stability of carbocation intermediates", "stability of radicals only", "solubility of silver halides", "coordination number"], correctAnswer: "stability of carbocation intermediates" },
+      { id: "3.4-43", text: "Benzene typically undergoes electrophilic substitution rather than addition because:", options: ["benzene has no π electrons", "benzene is aromatic and addition would permanently destroy aromaticity", "benzene is ionic", "benzene contains a C=C that is very weak"], correctAnswer: "benzene is aromatic and addition would permanently destroy aromaticity" },
+      { id: "3.4-44", text: "In nitration of benzene, the electrophile is:", options: ["NO₃⁻", "NO₂⁺", "NH₄⁺", "OH⁻"], correctAnswer: "NO₂⁺" },
+      { id: "3.4-45", text: "In electrophilic substitution, aromaticity is restored by:", options: ["homolytic cleavage of a C–H bond", "heterolytic cleavage of a C–H bond and reformation of the π system", "breaking a C–C bond", "addition of H₂ across the ring"], correctAnswer: "heterolytic cleavage of a C–H bond and reformation of the π system" },
+      { id: "3.4-46", text: "In a mechanism, an electron-pair arrow should start from:", options: ["a δ⁺ atom", "a positive charge only", "a lone pair or region of high electron density", "the reaction arrow (→)"], correctAnswer: "a lone pair or region of high electron density" },
+      { id: "3.4-47", text: "Which is both a Lewis base and a Brønsted–Lowry base?", options: ["H⁺", "OH⁻", "BF₃", "NO₂⁺"], correctAnswer: "OH⁻" },
+      { id: "3.4-48", text: "In the reaction H⁺ + OH⁻ → H₂O, OH⁻ acts as:", options: ["Lewis acid", "Lewis base", "electrophile only", "leaving group"], correctAnswer: "Lewis base" },
+      { id: "3.4-49", text: "Which pair is correctly matched?", options: ["Nucleophile: lone pair acceptor", "Electrophile: electron-rich species", "Lewis acid: lone pair acceptor", "Lewis base: electron-poor species"], correctAnswer: "Lewis acid: lone pair acceptor" },
+      { id: "3.4-50", text: "Which statement is correct about halogens in electrophilic addition to alkenes?", options: ["they must be permanently polar", "they become polarised by the alkene π bond", "they always react via radicals", "they act as nucleophiles in step 1"], correctAnswer: "they become polarised by the alkene π bond" }
+    ]
   }
 ];

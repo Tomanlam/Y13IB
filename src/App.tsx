@@ -12,6 +12,9 @@ import {
   GraduationCap, 
   Languages, 
   ChevronLeft, 
+  ChevronUp,
+  ChevronDown,
+  Plus,
   CheckCircle2, 
   XCircle, 
   Trophy,
@@ -45,7 +48,7 @@ import {
   Activity,
   Box
 } from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Cell } from 'recharts';
 import { units, Unit, Question, Vocab } from './data';
 
 type AppMode = 'splash' | 'dashboard' | 'quiz' | 'quiz-select' | 'revision' | 'vocab' | 'result' | 'user-stats' | 'about' | 'playground' | 'facts';
@@ -59,6 +62,11 @@ interface SessionStats {
 }
 
 export default function App() {
+  const formatFormula = (formula: string) => {
+    return formula
+      .replace(/([a-zA-Z)])(\d+)/g, '$1<sub>$2</sub>')
+      .replace(/(\d*)([+-])/g, '<sup>$1$2</sup>');
+  };
   const [mode, setMode] = useState<AppMode>('splash');
   const [selectedUnit, setSelectedUnit] = useState<Unit | null>(null);
   const [quizProgress, setQuizProgress] = useState(0);
@@ -2204,7 +2212,7 @@ export default function App() {
                               className="rounded-full shadow-sm"
                             />
                           </div>
-                          <span className="text-[8px] font-black text-gray-400 uppercase" dangerouslySetInnerHTML={{ __html: d.label.replace(/(\d+)([+-])/g, '<sup>$1$2</sup>') }} />
+                          <span className="text-[8px] font-black text-gray-400 uppercase" dangerouslySetInnerHTML={{ __html: formatFormula(d.label) }} />
                           <span className="text-[8px] font-bold text-gray-800">{d.value}{d.unit}</span>
                         </div>
                       );
@@ -2248,7 +2256,7 @@ export default function App() {
                               className="rounded-full shadow-sm"
                             />
                           </div>
-                          <span className="text-[8px] font-black text-gray-400 uppercase" dangerouslySetInnerHTML={{ __html: d.label.replace(/(\d+)([+-])/g, '<sup>$1$2</sup>') }} />
+                          <span className="text-[8px] font-black text-gray-400 uppercase" dangerouslySetInnerHTML={{ __html: formatFormula(d.label) }} />
                           <span className="text-[8px] font-bold text-gray-800">{d.value}{d.unit}</span>
                         </div>
                       );
@@ -2342,6 +2350,587 @@ export default function App() {
     );
   };
 
+  const EquilibriumConstants = () => {
+    const [coeffs, setCoeffs] = useState({ a: 1, b: 1, c: 1, d: 1 });
+    const [activeSpecies, setActiveSpecies] = useState({ a: true, b: true, c: true, d: true });
+
+    const deltaN = (activeSpecies.c ? coeffs.c : 0) + (activeSpecies.d ? coeffs.d : 0) - 
+                   ((activeSpecies.a ? coeffs.a : 0) + (activeSpecies.b ? coeffs.b : 0));
+
+    const formatUnits = (dn: number) => {
+      if (dn === 0) return "No units";
+      const molExp = dn === 1 ? "" : <sup>{dn}</sup>;
+      const dmExp = -3 * dn === 1 ? "" : <sup>{-3 * dn}</sup>;
+      
+      return (
+        <span className="font-mono font-bold">
+          mol{molExp} dm{dmExp}
+        </span>
+      );
+    };
+
+    const renderTerm = (label: string, coeff: number, active: boolean) => {
+      if (!active) return null;
+      return (
+        <div className="flex flex-col items-center gap-2 p-4 bg-white rounded-2xl border-2 border-gray-100 shadow-sm">
+          <div className="flex items-center gap-2">
+            <span className="text-xl font-black text-gray-800">[{label}]</span>
+            <div className="flex flex-col">
+              <button 
+                onClick={() => setCoeffs(prev => ({ ...prev, [label.toLowerCase()]: Math.min(prev[label.toLowerCase() as keyof typeof prev] + 1, 9) }))}
+                className="text-gray-400 hover:text-emerald-500 transition-colors"
+              >
+                <ChevronUp size={14} />
+              </button>
+              <span className="text-xs font-black text-emerald-600 text-center">{coeff}</span>
+              <button 
+                onClick={() => setCoeffs(prev => ({ ...prev, [label.toLowerCase()]: Math.max(prev[label.toLowerCase() as keyof typeof prev] - 1, 1) }))}
+                className="text-gray-400 hover:text-emerald-500 transition-colors"
+              >
+                <ChevronDown size={14} />
+              </button>
+            </div>
+          </div>
+          <button 
+            onClick={() => setActiveSpecies(prev => ({ ...prev, [label.toLowerCase()]: !prev[label.toLowerCase() as keyof typeof prev] }))}
+            className="text-[8px] font-black uppercase tracking-widest text-gray-400 hover:text-rose-500"
+          >
+            Remove
+          </button>
+        </div>
+      );
+    };
+
+    const renderAddButton = (label: string) => (
+      <button 
+        onClick={() => setActiveSpecies(prev => ({ ...prev, [label.toLowerCase()]: true }))}
+        className="p-4 border-2 border-dashed border-gray-200 rounded-2xl text-gray-400 hover:border-emerald-300 hover:text-emerald-500 transition-all flex items-center justify-center"
+      >
+        <Plus size={20} />
+        <span className="ml-2 text-[10px] font-black uppercase">Add {label}</span>
+      </button>
+    );
+
+    return (
+      <div className="space-y-10">
+        {/* Equation Display */}
+        <div className="bg-gray-900 p-8 rounded-[2.5rem] border-4 border-gray-800 shadow-2xl relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-4 opacity-10">
+            <Atom size={80} className="text-white" />
+          </div>
+          <div className="relative z-10 flex flex-wrap justify-center items-center gap-4 text-white font-black text-2xl md:text-3xl tracking-tight">
+            <div className="flex items-center gap-2">
+              {activeSpecies.a && <span>{coeffs.a}A</span>}
+              {activeSpecies.a && activeSpecies.b && <span className="text-emerald-400">+</span>}
+              {activeSpecies.b && <span>{coeffs.b}B</span>}
+            </div>
+            <span className="text-emerald-400 mx-2">⇌</span>
+            <div className="flex items-center gap-2">
+              {activeSpecies.c && <span>{coeffs.c}C</span>}
+              {activeSpecies.c && activeSpecies.d && <span className="text-emerald-400">+</span>}
+              {activeSpecies.d && <span>{coeffs.d}D</span>}
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+          {/* Controls */}
+          <div className="space-y-8">
+            <div>
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Reactants</p>
+              <div className="grid grid-cols-2 gap-4">
+                {activeSpecies.a ? renderTerm('A', coeffs.a, true) : renderAddButton('A')}
+                {activeSpecies.b ? renderTerm('B', coeffs.b, true) : renderAddButton('B')}
+              </div>
+            </div>
+            <div>
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Products</p>
+              <div className="grid grid-cols-2 gap-4">
+                {activeSpecies.c ? renderTerm('C', coeffs.c, true) : renderAddButton('C')}
+                {activeSpecies.d ? renderTerm('D', coeffs.d, true) : renderAddButton('D')}
+              </div>
+            </div>
+          </div>
+
+          {/* Kc Expression & Units */}
+          <div className="flex flex-col justify-center gap-8">
+            <div className="bg-emerald-50 p-8 rounded-[2.5rem] border-2 border-emerald-100 relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-4 opacity-10">
+                <Calculator size={40} className="text-emerald-600" />
+              </div>
+              <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-6">K<sub>c</sub> Expression</p>
+              
+              <div className="flex items-center gap-4">
+                <span className="text-3xl font-black text-gray-800">K<sub>c</sub> =</span>
+                <div className="flex flex-col items-center">
+                  <div className="pb-2 border-b-2 border-gray-800 flex gap-1 text-xl font-black text-gray-800">
+                    {activeSpecies.c && <span>[C]<sup>{coeffs.c}</sup></span>}
+                    {activeSpecies.d && <span>[D]<sup>{coeffs.d}</sup></span>}
+                    {!activeSpecies.c && !activeSpecies.d && <span className="text-gray-300">1</span>}
+                  </div>
+                  <div className="pt-2 flex gap-1 text-xl font-black text-gray-800">
+                    {activeSpecies.a && <span>[A]<sup>{coeffs.a}</sup></span>}
+                    {activeSpecies.b && <span>[B]<sup>{coeffs.b}</sup></span>}
+                    {!activeSpecies.a && !activeSpecies.b && <span className="text-gray-300">1</span>}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-indigo-50 p-8 rounded-[2.5rem] border-2 border-indigo-100">
+              <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest mb-4">Calculated Units</p>
+              <div className="flex items-baseline gap-3">
+                <span className="text-3xl font-black text-gray-800">{formatUnits(deltaN)}</span>
+              </div>
+              <p className="text-[10px] font-bold text-gray-400 mt-4 leading-relaxed">
+                Units are derived from (mol dm⁻³)<sup>Δn</sup>, where Δn = (moles of products) - (moles of reactants).
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const IonizationEnergy = () => {
+    const [view, setView] = useState<'first' | 'successive'>('first');
+    const [selectedZ, setSelectedZ] = useState(1);
+
+    const ieData = [
+      { z: 1, symbol: 'H', ie: 1312, period: 1, group: 1, successive: [1312] },
+      { z: 2, symbol: 'He', ie: 2372, period: 1, group: 18, successive: [2372, 5250] },
+      { z: 3, symbol: 'Li', ie: 520, period: 2, group: 1, successive: [520, 7298, 11815] },
+      { z: 4, symbol: 'Be', ie: 900, period: 2, group: 2, successive: [900, 1757, 14848, 21006] },
+      { z: 5, symbol: 'B', ie: 801, period: 2, group: 13, successive: [801, 2427, 3660, 25026, 32827] },
+      { z: 6, symbol: 'C', ie: 1086, period: 2, group: 14, successive: [1086, 2353, 4620, 6222, 37831, 47277] },
+      { z: 7, symbol: 'N', ie: 1402, period: 2, group: 15, successive: [1402, 2856, 4578, 7475, 9445, 53267, 64360] },
+      { z: 8, symbol: 'O', ie: 1314, period: 2, group: 16, successive: [1314, 3388, 5300, 7469, 10989, 13327, 71330, 84078] },
+      { z: 9, symbol: 'F', ie: 1681, period: 2, group: 17, successive: [1681, 3374, 6050, 8408, 11023, 15164, 17868, 92038, 106434] },
+      { z: 10, symbol: 'Ne', ie: 2081, period: 2, group: 18, successive: [2081, 3952, 6122, 9371, 12177, 15238, 19999, 23069, 115379, 131432] },
+      { z: 11, symbol: 'Na', ie: 496, period: 3, group: 1, successive: [496, 4562, 6910, 9543, 13354, 16613, 20117, 25496, 28932, 141362, 159075] },
+      { z: 12, symbol: 'Mg', ie: 738, period: 3, group: 2, successive: [738, 1451, 7733, 10543, 13630, 18020, 21711, 25661, 31653, 35458, 169988, 189368] },
+      { z: 13, symbol: 'Al', ie: 578, period: 3, group: 13, successive: [578, 1817, 2745, 11577, 14842, 18379, 23326, 27465, 31853, 38473, 42647, 201266, 222316] },
+      { z: 14, symbol: 'Si', ie: 786, period: 3, group: 14, successive: [786, 1577, 3232, 4356, 16091, 19805, 23780, 29287, 33878, 38726, 45962, 50502, 235196, 257923] },
+      { z: 15, symbol: 'P', ie: 1012, period: 3, group: 15, successive: [1012, 1907, 2914, 4964, 6274, 21267, 25431, 29872, 35905, 40950, 46261, 54114, 59024, 271788, 296198] },
+      { z: 16, symbol: 'S', ie: 1000, period: 3, group: 16, successive: [1000, 2252, 3357, 4556, 7004, 8496, 27107, 31719, 36621, 43177, 48710, 54469, 62930, 68216, 311048, 337138] },
+      { z: 17, symbol: 'Cl', ie: 1251, period: 3, group: 17, successive: [1251, 2298, 3822, 5159, 6542, 9362, 11018, 33604, 38600, 43961, 51068, 57119, 63363, 72373, 78095, 352994, 380760] },
+      { z: 18, symbol: 'Ar', ie: 1521, period: 3, group: 18, successive: [1521, 2666, 3931, 5771, 7238, 8781, 11995, 13842, 40760, 46186, 52002, 59653, 66199, 72918, 82473, 88576, 397605, 427066] },
+      { z: 19, symbol: 'K', ie: 419, period: 4, group: 1, successive: [419, 3052, 4420, 5877, 7975, 9590, 11343, 14944, 16964, 48610, 54490, 60730, 68950, 75900, 83080, 93400, 99710, 444880, 476063, 508549] },
+      { z: 20, symbol: 'Ca', ie: 590, period: 4, group: 2, successive: [590, 1145, 4912, 6491, 8153, 10496, 12270, 14206, 18191, 20385, 57110, 63410, 70110, 78890, 86310, 94000, 104900, 111711, 494850, 527762] },
+    ];
+
+    const currentElement = ieData.find(e => e.z === selectedZ) || ieData[0];
+
+    const getShellColor = (electronIndex: number, totalZ: number) => {
+      // Electron index is 0-based, from outermost to innermost removed
+      // But usually successive IE is plotted from 1st to Zth.
+      // Let's map electron number (1 to Z) to shell.
+      // For Z=11 (Na): 1st (3s), 2nd-9th (2p, 2s), 10th-11th (1s)
+      // Shell capacities: 2, 8, 8, 2 (up to Ca)
+      
+      const shellMapping: number[] = [];
+      for (let i = 1; i <= totalZ; i++) {
+        if (i <= 2) shellMapping.push(1); // 1s
+        else if (i <= 10) shellMapping.push(2); // 2s, 2p
+        else if (i <= 18) shellMapping.push(3); // 3s, 3p
+        else shellMapping.push(4); // 4s
+      }
+      // Successive IE is usually plotted as 1st, 2nd... so i=1 is 1st IE
+      // The shell mapping above is from innermost (1s) to outermost.
+      // We need to reverse it because 1st IE removes the outermost electron.
+      const reversedShells = [...shellMapping].reverse();
+      const shell = reversedShells[electronIndex];
+      
+      const colors = {
+        1: '#ef4444', // Red (Innermost)
+        2: '#f59e0b', // Orange
+        3: '#10b981', // Emerald
+        4: '#3b82f6', // Blue (Outermost)
+      };
+      return colors[shell as keyof typeof colors] || '#6366f1';
+    };
+
+    const successiveChartData = currentElement.successive.map((val, idx) => ({
+      num: idx + 1,
+      ie: Math.log10(val),
+      realVal: val,
+      color: getShellColor(idx, currentElement.z)
+    }));
+
+    const BohrModel = ({ z }: { z: number }) => {
+      const shellCounts = [0, 0, 0, 0];
+      for (let i = 1; i <= z; i++) {
+        if (i <= 2) shellCounts[0]++;
+        else if (i <= 10) shellCounts[1]++;
+        else if (i <= 18) shellCounts[2]++;
+        else shellCounts[3]++;
+      }
+
+      return (
+        <div className="relative w-48 h-48 flex items-center justify-center">
+          {/* Nucleus */}
+          <div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center z-10 shadow-lg border-2 border-white">
+            <span className="text-[10px] font-black text-white">{z}+</span>
+          </div>
+          
+          {shellCounts.map((count, sIdx) => {
+            if (count === 0) return null;
+            const radius = 30 + sIdx * 20;
+            const shellColor = { 0: '#ef4444', 1: '#f59e0b', 2: '#10b981', 3: '#3b82f6' }[sIdx];
+            return (
+              <div key={sIdx} className="absolute border border-gray-200 rounded-full" style={{ width: radius * 2, height: radius * 2 }}>
+                {[...Array(count)].map((_, eIdx) => {
+                  const angle = (eIdx / count) * 2 * Math.PI;
+                  const x = radius * Math.cos(angle);
+                  const y = radius * Math.sin(angle);
+                  return (
+                    <motion.div
+                      key={eIdx}
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      className="absolute w-2.5 h-2.5 rounded-full border border-white shadow-sm"
+                      style={{ 
+                        left: `calc(50% + ${x}px - 5px)`, 
+                        top: `calc(50% + ${y}px - 5px)`,
+                        backgroundColor: shellColor
+                      }}
+                    />
+                  );
+                })}
+              </div>
+            );
+          })}
+        </div>
+      );
+    };
+
+    const CustomTooltip = ({ active, payload, label }: any) => {
+      if (active && payload && payload.length) {
+        const data = payload[0].payload;
+        if (view === 'first') {
+          return (
+            <div className="bg-white p-3 border-2 border-gray-100 rounded-xl shadow-xl">
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Z = {data.z}</p>
+              <p className="text-sm font-black text-gray-800">{data.symbol}</p>
+              <p className="text-xs font-bold text-indigo-600">1st IE: {data.ie} kJ mol⁻¹</p>
+            </div>
+          );
+        } else {
+          return (
+            <div className="bg-white p-3 border-2 border-gray-100 rounded-xl shadow-xl">
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{data.num === 1 ? '1st' : data.num === 2 ? '2nd' : data.num === 3 ? '3rd' : `${data.num}th`} IE</p>
+              <p className="text-sm font-black text-gray-800">{data.realVal} kJ mol⁻¹</p>
+              <div className="flex items-center gap-2 mt-1">
+                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: data.color }} />
+                <p className="text-[8px] font-black text-gray-400 uppercase">Shell Level</p>
+              </div>
+            </div>
+          );
+        }
+      }
+      return null;
+    };
+
+    return (
+      <div className="space-y-8">
+        {/* Controls */}
+        <div className="flex flex-col md:flex-row gap-6 items-center justify-between bg-gray-50 p-6 rounded-[2rem] border-2 border-gray-100">
+          <div className="flex bg-white p-1 rounded-2xl border-2 border-gray-100 shadow-sm">
+            <button
+              onClick={() => setView('first')}
+              className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${view === 'first' ? 'bg-indigo-600 text-white shadow-lg' : 'text-gray-400 hover:text-gray-600'}`}
+            >
+              1st IE Trend
+            </button>
+            <button
+              onClick={() => setView('successive')}
+              className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${view === 'successive' ? 'bg-indigo-600 text-white shadow-lg' : 'text-gray-400 hover:text-gray-600'}`}
+            >
+              Successive IE
+            </button>
+          </div>
+
+          {view === 'successive' && (
+            <div className="flex items-center gap-4 overflow-x-auto pb-2 max-w-full">
+              {ieData.map(el => (
+                <button
+                  key={el.z}
+                  onClick={() => setSelectedZ(el.z)}
+                  className={`flex-shrink-0 w-10 h-10 rounded-xl font-black text-xs transition-all border-2 ${selectedZ === el.z ? 'bg-indigo-600 text-white border-indigo-600 scale-110 shadow-md' : 'bg-white text-gray-400 border-gray-100 hover:border-indigo-200'}`}
+                >
+                  {el.symbol}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Main Graph Area */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2 bg-white p-8 rounded-[3rem] border-2 border-gray-100 shadow-sm relative overflow-hidden">
+            <div className="flex justify-between items-center mb-8">
+              <div>
+                <h3 className="text-xl font-black text-gray-800 uppercase tracking-tight">
+                  {view === 'first' ? '1st Ionization Energy Trend' : `Successive IE: ${currentElement.symbol}`}
+                </h3>
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                  {view === 'first' ? 'Across Period 1-3 & Start of 4' : `Atomic Number Z = ${currentElement.z}`}
+                </p>
+              </div>
+              {view === 'successive' && (
+                <div className="flex gap-4">
+                  <div className="text-right">
+                    <p className="text-[8px] font-black text-gray-400 uppercase">Group</p>
+                    <p className="text-sm font-black text-indigo-600">{currentElement.group}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[8px] font-black text-gray-400 uppercase">Period</p>
+                    <p className="text-sm font-black text-indigo-600">{currentElement.period}</p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="h-80 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                {view === 'first' ? (
+                  <LineChart data={ieData} margin={{ top: 5, right: 20, bottom: 25, left: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                    <XAxis 
+                      dataKey="symbol" 
+                      stroke="#94a3b8" 
+                      fontSize={10} 
+                      fontWeight="bold"
+                      tickLine={false}
+                      axisLine={false}
+                    />
+                    <YAxis 
+                      stroke="#94a3b8" 
+                      fontSize={10} 
+                      fontWeight="bold"
+                      tickLine={false}
+                      axisLine={false}
+                      label={{ value: '1st IE (kJ/mol)', angle: -90, position: 'insideLeft', fontSize: 10, fontWeight: 'black', offset: 10 }}
+                    />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Line 
+                      type="monotone" 
+                      dataKey="ie" 
+                      stroke="#6366f1" 
+                      strokeWidth={4} 
+                      dot={{ r: 5, fill: '#6366f1', strokeWidth: 2, stroke: '#fff' }}
+                      activeDot={{ r: 7, fill: '#4f46e5' }}
+                    />
+                  </LineChart>
+                ) : (
+                  <BarChart data={successiveChartData} margin={{ top: 5, right: 20, bottom: 25, left: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                    <XAxis 
+                      dataKey="num" 
+                      stroke="#94a3b8" 
+                      fontSize={10} 
+                      fontWeight="bold"
+                      tickLine={false}
+                      axisLine={false}
+                      label={{ value: 'Electron Removed', position: 'insideBottom', offset: -15, fontSize: 10, fontWeight: 'black' }}
+                    />
+                    <YAxis 
+                      stroke="#94a3b8" 
+                      fontSize={10} 
+                      fontWeight="bold"
+                      tickLine={false}
+                      axisLine={false}
+                      label={{ value: 'log₁₀(IE)', angle: -90, position: 'insideLeft', fontSize: 10, fontWeight: 'black', offset: 10 }}
+                    />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Bar dataKey="ie" radius={[4, 4, 0, 0]}>
+                      {successiveChartData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                )}
+              </ResponsiveContainer>
+            </div>
+            
+            {view === 'successive' && (
+              <div className="mt-6 flex flex-wrap gap-4 justify-center">
+                {[4, 3, 2, 1].map(s => (
+                  <div key={s} className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: { 1: '#ef4444', 2: '#f59e0b', 3: '#10b981', 4: '#3b82f6' }[s as 1|2|3|4] }} />
+                    <span className="text-[10px] font-black text-gray-400 uppercase">Shell {s}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="bg-indigo-900 rounded-[3rem] p-8 text-white flex flex-col items-center justify-center shadow-xl shadow-indigo-200 relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
+              <div className="absolute top-[-10%] right-[-10%] w-64 h-64 bg-white rounded-full blur-3xl" />
+              <div className="absolute bottom-[-10%] left-[-10%] w-64 h-64 bg-indigo-400 rounded-full blur-3xl" />
+            </div>
+            
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] mb-8 opacity-60">Atomic Visualization</p>
+            <BohrModel z={currentElement.z} />
+            
+            <div className="mt-12 text-center space-y-2">
+              <h4 className="text-3xl font-black tracking-tighter">{currentElement.symbol}</h4>
+              <p className="text-[10px] font-black uppercase tracking-widest text-indigo-300">
+                {currentElement.z} Protons • {currentElement.z} Electrons
+              </p>
+            </div>
+
+            <div className="mt-8 grid grid-cols-2 gap-4 w-full">
+              <div className="bg-white/10 p-4 rounded-2xl border border-white/10 backdrop-blur-sm">
+                <p className="text-[8px] font-black uppercase opacity-60 mb-1">Config</p>
+                <p className="text-xs font-bold">
+                  {currentElement.z <= 2 ? '1s' : currentElement.z <= 10 ? '[He] 2s 2p' : currentElement.z <= 18 ? '[Ne] 3s 3p' : '[Ar] 4s'}
+                </p>
+              </div>
+              <div className="bg-white/10 p-4 rounded-2xl border border-white/10 backdrop-blur-sm">
+                <p className="text-[8px] font-black uppercase opacity-60 mb-1">Valence</p>
+                <p className="text-xs font-bold">
+                  {currentElement.group === 18 ? 8 : currentElement.group > 10 ? currentElement.group - 10 : currentElement.group} e⁻
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Explanations Grid - Only show in 1st IE view or as general info */}
+        {view === 'first' && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* G2 vs G13 Dip */}
+            <div className="bg-emerald-50 p-8 rounded-[2.5rem] border-2 border-emerald-100 space-y-6">
+              <div className="flex items-center gap-3">
+                <div className="bg-emerald-500 p-2 rounded-xl text-white">
+                  <Zap size={18} />
+                </div>
+                <h3 className="text-lg font-black text-emerald-900 uppercase tracking-tight">Group 2 vs Group 13</h3>
+              </div>
+              
+              <p className="text-xs font-bold text-emerald-800/70 leading-relaxed">
+                1st IE decreases from <span className="font-black">Be (2s²)</span> to <span className="font-black">B (2s² 2p¹)</span>.
+              </p>
+
+              <div className="space-y-4">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 text-[10px] font-black text-emerald-600">Be (G2)</div>
+                  <div className="flex gap-1">
+                    <div className="w-8 h-8 bg-white border-2 border-emerald-200 rounded-lg flex items-center justify-center relative">
+                      <span className="text-[8px] font-black text-emerald-400 absolute -top-4">2s</span>
+                      <div className="flex flex-col items-center">
+                        <ArrowRight size={12} className="text-rose-500 rotate-[-90deg]" />
+                        <ArrowRight size={12} className="text-blue-500 rotate-[90deg]" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="w-12 text-[10px] font-black text-emerald-600">B (G13)</div>
+                  <div className="flex gap-1">
+                    <div className="w-8 h-8 bg-white border-2 border-emerald-200 rounded-lg flex items-center justify-center relative opacity-50">
+                      <span className="text-[8px] font-black text-emerald-400 absolute -top-4">2s</span>
+                      <div className="flex flex-col items-center">
+                        <ArrowRight size={12} className="text-rose-500 rotate-[-90deg]" />
+                        <ArrowRight size={12} className="text-blue-500 rotate-[90deg]" />
+                      </div>
+                    </div>
+                    <div className="w-8 h-8 bg-emerald-100 border-2 border-emerald-400 rounded-lg flex items-center justify-center relative ring-2 ring-emerald-500 ring-offset-2">
+                      <span className="text-[8px] font-black text-emerald-600 absolute -top-4">2p</span>
+                      <ArrowRight size={12} className="text-rose-500 rotate-[-90deg]" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-4 bg-white/60 rounded-2xl border border-emerald-200">
+                <p className="text-[10px] font-bold text-emerald-900 leading-relaxed">
+                  The <span className="font-black">2p electron</span> in Boron is in a higher energy subshell, experiences <span className="font-black">more shielding</span> from the 2s electrons, and is <span className="font-black">further from the nucleus</span>, making it easier to remove.
+                </p>
+              </div>
+            </div>
+
+            {/* G15 vs G16 Dip */}
+            <div className="bg-rose-50 p-8 rounded-[2.5rem] border-2 border-rose-100 space-y-6">
+              <div className="flex items-center gap-3">
+                <div className="bg-rose-500 p-2 rounded-xl text-white">
+                  <Zap size={18} />
+                </div>
+                <h3 className="text-lg font-black text-rose-900 uppercase tracking-tight">Group 15 vs Group 16</h3>
+              </div>
+              
+              <p className="text-xs font-bold text-rose-800/70 leading-relaxed">
+                1st IE decreases from <span className="font-black">N (2p³)</span> to <span className="font-black">O (2p⁴)</span>.
+              </p>
+
+              <div className="space-y-4">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 text-[10px] font-black text-rose-600">N (G15)</div>
+                  <div className="flex gap-1">
+                    <div className="w-6 h-6 bg-white border-2 border-rose-200 rounded-md flex items-center justify-center">
+                      <ArrowRight size={10} className="text-rose-500 rotate-[-90deg]" />
+                    </div>
+                    <div className="w-6 h-6 bg-white border-2 border-rose-200 rounded-md flex items-center justify-center">
+                      <ArrowRight size={10} className="text-rose-500 rotate-[-90deg]" />
+                    </div>
+                    <div className="w-6 h-6 bg-white border-2 border-rose-200 rounded-md flex items-center justify-center">
+                      <ArrowRight size={10} className="text-rose-500 rotate-[-90deg]" />
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="w-12 text-[10px] font-black text-rose-600">O (G16)</div>
+                  <div className="flex gap-1">
+                    <div className="w-6 h-6 bg-rose-100 border-2 border-rose-400 rounded-md flex items-center justify-center ring-2 ring-rose-500 ring-offset-2">
+                      <div className="flex flex-col items-center">
+                        <ArrowRight size={10} className="text-rose-500 rotate-[-90deg]" />
+                        <ArrowRight size={10} className="text-blue-500 rotate-[90deg]" />
+                      </div>
+                    </div>
+                    <div className="w-6 h-6 bg-white border-2 border-rose-200 rounded-md flex items-center justify-center">
+                      <ArrowRight size={10} className="text-rose-500 rotate-[-90deg]" />
+                    </div>
+                    <div className="w-6 h-6 bg-white border-2 border-rose-200 rounded-md flex items-center justify-center">
+                      <ArrowRight size={10} className="text-rose-500 rotate-[-90deg]" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-4 bg-white/60 rounded-2xl border border-rose-200">
+                <p className="text-[10px] font-bold text-rose-900 leading-relaxed">
+                  In Oxygen, the <span className="font-black">paired electrons</span> in the 2p orbital experience <span className="font-black">inter-electronic repulsion</span>. This repulsion makes it easier to remove one of the paired electrons compared to the unpaired electrons in Nitrogen.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {view === 'successive' && (
+          <div className="bg-white p-8 rounded-[3rem] border-2 border-gray-100 shadow-sm">
+            <h4 className="text-lg font-black text-gray-800 uppercase tracking-tight mb-4">Understanding Successive IE</h4>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="p-4 bg-indigo-50 rounded-2xl border border-indigo-100">
+                <p className="text-[10px] font-black text-indigo-600 uppercase mb-2">Large Jumps</p>
+                <p className="text-xs font-bold text-gray-600">A large jump in IE indicates the removal of an electron from a <span className="font-black">new inner shell</span> closer to the nucleus.</p>
+              </div>
+              <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-100">
+                <p className="text-[10px] font-black text-emerald-600 uppercase mb-2">Valence Electrons</p>
+                <p className="text-xs font-bold text-gray-600">The number of electrons removed <span className="font-black">before</span> the first large jump equals the group number (valence electrons).</p>
+              </div>
+              <div className="p-4 bg-amber-50 rounded-2xl border border-amber-100">
+                <p className="text-[10px] font-black text-amber-600 uppercase mb-2">General Increase</p>
+                <p className="text-xs font-bold text-gray-600">IE always increases as more electrons are removed because the <span className="font-black">effective nuclear charge</span> increases on the remaining electrons.</p>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   const RedoxBalancing = () => {
     const [selectedExample, setSelectedExample] = useState(0);
 
@@ -2354,61 +2943,61 @@ export default function App() {
 
     const examples = [
       {
-        title: 'MnO₄⁻ + Fe²⁺',
+        title: 'MnO4- + Fe2+',
         reduction: [
-          { step: 1, eq: 'MnO₄⁻ → Mn²⁺', note: 'Mn is already balanced.' },
-          { step: 2, eq: 'MnO₄⁻ → Mn²⁺ + <span class="text-blue-500 font-black">4H₂O</span>', note: 'Added 4 water molecules to balance 4 oxygens.' },
-          { step: 3, eq: 'MnO₄⁻ + <span class="text-orange-500 font-black">8H⁺</span> → Mn²⁺ + 4H₂O', note: 'Added 8 H⁺ to balance hydrogen from water.' },
-          { step: 4, eq: 'MnO₄⁻ + 8H⁺ + <span class="text-rose-500 font-black">5e⁻</span> → Mn²⁺ + 4H₂O', note: 'Total charge (+7 → +2). Added 5e⁻ to reduction side.' }
+          { step: 1, eq: 'MnO4- → Mn2+', note: 'Mn is already balanced.' },
+          { step: 2, eq: 'MnO4- → Mn2+ + <span class="text-blue-500 font-black">4H2O</span>', note: 'Added 4 water molecules to balance 4 oxygens.' },
+          { step: 3, eq: 'MnO4- + <span class="text-orange-500 font-black">8H+</span> → Mn2+ + 4H2O', note: 'Added 8 H+ to balance hydrogen from water.' },
+          { step: 4, eq: 'MnO4- + 8H+ + <span class="text-rose-500 font-black">5e-</span> → Mn2+ + 4H2O', note: 'Total charge (+7 → +2). Added 5e- to reduction side.' }
         ],
         oxidation: [
-          { step: 4, eq: 'Fe²⁺ → Fe³⁺ + <span class="text-rose-500 font-black">e⁻</span>', note: 'Charge (+2 → +3). Added 1e⁻ to oxidation side.' }
+          { step: 4, eq: 'Fe2+ → Fe3+ + <span class="text-rose-500 font-black">e-</span>', note: 'Charge (+2 → +3). Added 1e- to oxidation side.' }
         ],
-        combined: 'MnO₄⁻ + 8H⁺ + 5Fe²⁺ → Mn²⁺ + 4H₂O + 5Fe³⁺',
-        multiplier: 'Multiply Oxidation by 5 to cancel 5e⁻.'
+        combined: 'MnO4- + 8H+ + 5Fe2+ → Mn2+ + 4H2O + 5Fe3+',
+        multiplier: 'Multiply Oxidation by 5 to cancel 5e-.'
       },
       {
-        title: 'Cu + NO₃⁻',
+        title: 'Cu + NO3-',
         reduction: [
-          { step: 1, eq: 'NO₃⁻ → NO₂', note: 'N is balanced.' },
-          { step: 2, eq: 'NO₃⁻ → NO₂ + <span class="text-blue-500 font-black">H₂O</span>', note: 'Added 1 H₂O to balance oxygen.' },
-          { step: 3, eq: 'NO₃⁻ + <span class="text-orange-500 font-black">2H⁺</span> → NO₂ + H₂O', note: 'Added 2 H⁺ to balance hydrogen.' },
-          { step: 4, eq: 'NO₃⁻ + 2H⁺ + <span class="text-rose-500 font-black">e⁻</span> → NO₂ + H₂O', note: 'Total charge (+1 → 0). Added 1e⁻.' }
+          { step: 1, eq: 'NO3- → NO2', note: 'N is balanced.' },
+          { step: 2, eq: 'NO3- → NO2 + <span class="text-blue-500 font-black">H2O</span>', note: 'Added 1 H2O to balance oxygen.' },
+          { step: 3, eq: 'NO3- + <span class="text-orange-500 font-black">2H+</span> → NO2 + H2O', note: 'Added 2 H+ to balance hydrogen.' },
+          { step: 4, eq: 'NO3- + 2H+ + <span class="text-rose-500 font-black">e-</span> → NO2 + H2O', note: 'Total charge (+1 → 0). Added 1e-.' }
         ],
         oxidation: [
-          { step: 4, eq: 'Cu → Cu²⁺ + <span class="text-rose-500 font-black">2e⁻</span>', note: 'Charge (0 → +2). Added 2e⁻.' }
+          { step: 4, eq: 'Cu → Cu2+ + <span class="text-rose-500 font-black">2e-</span>', note: 'Charge (0 → +2). Added 2e-.' }
         ],
-        combined: 'Cu + 2NO₃⁻ + 4H⁺ → Cu²⁺ + 2NO₂ + 2H₂O',
-        multiplier: 'Multiply Reduction by 2 to cancel 2e⁻.'
+        combined: 'Cu + 2NO3- + 4H+ → Cu2+ + 2NO2 + 2H2O',
+        multiplier: 'Multiply Reduction by 2 to cancel 2e-.'
       },
       {
-        title: 'Cr₂O₇²⁻ + Fe²⁺',
+        title: 'Cr2O72- + Fe2+',
         reduction: [
-          { step: 1, eq: '<span class="text-emerald-500 font-black">Cr₂</span>O₇²⁻ → <span class="text-emerald-500 font-black">2</span>Cr³⁺', note: 'Balanced Cr atoms.' },
-          { step: 2, eq: 'Cr₂O₇²⁻ → 2Cr³⁺ + <span class="text-blue-500 font-black">7H₂O</span>', note: 'Added 7 H₂O to balance 7 oxygens.' },
-          { step: 3, eq: 'Cr₂O₇²⁻ + <span class="text-orange-500 font-black">14H⁺</span> → 2Cr³⁺ + 7H₂O', note: 'Added 14 H⁺ to balance hydrogen.' },
-          { step: 4, eq: 'Cr₂O₇²⁻ + 14H⁺ + <span class="text-rose-500 font-black">6e⁻</span> → 2Cr³⁺ + 7H₂O', note: 'Total charge (+12 → +6). Added 6e⁻.' }
+          { step: 1, eq: '<span class="text-emerald-500 font-black">Cr2</span>O72- → <span class="text-emerald-500 font-black">2</span>Cr3+', note: 'Balanced Cr atoms.' },
+          { step: 2, eq: 'Cr2O72- → 2Cr3+ + <span class="text-blue-500 font-black">7H2O</span>', note: 'Added 7 H2O to balance 7 oxygens.' },
+          { step: 3, eq: 'Cr2O72- + <span class="text-orange-500 font-black">14H+</span> → 2Cr3+ + 7H2O', note: 'Added 14 H+ to balance hydrogen.' },
+          { step: 4, eq: 'Cr2O72- + 14H+ + <span class="text-rose-500 font-black">6e-</span> → 2Cr3+ + 7H2O', note: 'Total charge (+12 → +6). Added 6e-.' }
         ],
         oxidation: [
-          { step: 4, eq: 'Fe²⁺ → Fe³⁺ + <span class="text-rose-500 font-black">e⁻</span>', note: 'Charge (+2 → +3). Added 1e⁻.' }
+          { step: 4, eq: 'Fe2+ → Fe3+ + <span class="text-rose-500 font-black">e-</span>', note: 'Charge (+2 → +3). Added 1e-.' }
         ],
-        combined: 'Cr₂O₇²⁻ + 14H⁺ + 6Fe²⁺ → 2Cr³⁺ + 7H₂O + 6Fe³⁺',
-        multiplier: 'Multiply Oxidation by 6 to cancel 6e⁻.'
+        combined: 'Cr2O72- + 14H+ + 6Fe2+ → 2Cr3+ + 7H2O + 6Fe3+',
+        multiplier: 'Multiply Oxidation by 6 to cancel 6e-.'
       },
       {
-        title: 'MnO₄⁻ + Cl⁻',
+        title: 'MnO4- + Cl-',
         reduction: [
-          { step: 1, eq: 'MnO₄⁻ → Mn²⁺', note: 'Mn is balanced.' },
-          { step: 2, eq: 'MnO₄⁻ → Mn²⁺ + <span class="text-blue-500 font-black">4H₂O</span>', note: 'Added 4 H₂O.' },
-          { step: 3, eq: 'MnO₄⁻ + <span class="text-orange-500 font-black">8H⁺</span> → Mn²⁺ + 4H₂O', note: 'Added 8 H⁺.' },
-          { step: 4, eq: 'MnO₄⁻ + 8H⁺ + <span class="text-rose-500 font-black">5e⁻</span> → Mn²⁺ + 4H₂O', note: 'Added 5e⁻.' }
+          { step: 1, eq: 'MnO4- → Mn2+', note: 'Mn is balanced.' },
+          { step: 2, eq: 'MnO4- → Mn2+ + <span class="text-blue-500 font-black">4H2O</span>', note: 'Added 4 H2O.' },
+          { step: 3, eq: 'MnO4- + <span class="text-orange-500 font-black">8H+</span> → Mn2+ + 4H2O', note: 'Added 8 H+.' },
+          { step: 4, eq: 'MnO4- + 8H+ + <span class="text-rose-500 font-black">5e-</span> → Mn2+ + 4H2O', note: 'Added 5e-.' }
         ],
         oxidation: [
-          { step: 1, eq: '<span class="text-emerald-500 font-black">2</span>Cl⁻ → Cl₂', note: 'Balanced Cl atoms.' },
-          { step: 4, eq: '2Cl⁻ → Cl₂ + <span class="text-rose-500 font-black">2e⁻</span>', note: 'Total charge (-2 → 0). Added 2e⁻.' }
+          { step: 1, eq: '<span class="text-emerald-500 font-black">2</span>Cl- → Cl2', note: 'Balanced Cl atoms.' },
+          { step: 4, eq: '2Cl- → Cl2 + <span class="text-rose-500 font-black">2e-</span>', note: 'Total charge (-2 → 0). Added 2e-.' }
         ],
-        combined: '2MnO₄⁻ + 16H⁺ + 10Cl⁻ → 2Mn²⁺ + 8H₂O + 5Cl₂',
-        multiplier: 'Multiply Red by 2 and Ox by 5 to cancel 10e⁻.'
+        combined: '2MnO4- + 16H+ + 10Cl- → 2Mn2+ + 8H2O + 5Cl2',
+        multiplier: 'Multiply Red by 2 and Ox by 5 to cancel 10e-.'
       }
     ];
 
@@ -2475,7 +3064,7 @@ export default function App() {
                     className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 bg-white rounded-2xl border border-gray-100 shadow-sm"
                   >
                     <div className="flex-1">
-                      <p className="text-lg font-mono font-bold text-gray-800" dangerouslySetInnerHTML={{ __html: s.eq }} />
+                      <p className="text-lg font-mono font-bold text-gray-800" dangerouslySetInnerHTML={{ __html: formatFormula(s.eq) }} />
                     </div>
                     <div className="sm:w-1/3">
                       <p className="text-[10px] font-bold text-gray-400 italic">{s.note}</p>
@@ -2500,7 +3089,7 @@ export default function App() {
                     className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 bg-white rounded-2xl border border-gray-100 shadow-sm"
                   >
                     <div className="flex-1">
-                      <p className="text-lg font-mono font-bold text-gray-800" dangerouslySetInnerHTML={{ __html: s.eq }} />
+                      <p className="text-lg font-mono font-bold text-gray-800" dangerouslySetInnerHTML={{ __html: formatFormula(s.eq) }} />
                     </div>
                     <div className="sm:w-1/3">
                       <p className="text-[10px] font-bold text-gray-400 italic">{s.note}</p>
@@ -2517,7 +3106,7 @@ export default function App() {
                   <RefreshCw size={80} />
                 </div>
                 <p className="text-[10px] font-black uppercase tracking-[0.2em] mb-4 opacity-70">Final Balanced Equation</p>
-                <p className="text-xl sm:text-2xl font-mono font-bold mb-4 leading-relaxed" dangerouslySetInnerHTML={{ __html: current.combined }} />
+                <p className="text-xl sm:text-2xl font-mono font-bold mb-4 leading-relaxed" dangerouslySetInnerHTML={{ __html: formatFormula(current.combined) }} />
                 <div className="flex items-center gap-2 text-indigo-200">
                   <div className="w-1.5 h-1.5 rounded-full bg-indigo-300" />
                   <p className="text-xs font-bold italic">{current.multiplier}</p>
@@ -4231,7 +4820,7 @@ export default function App() {
                 { 
                   id: 2, 
                   eq: "n = C × V", 
-                  info: "C = concentration (mol/dm³) and V = volume (dm³)",
+                  info: "C = concentration (mol dm⁻³) and V = volume (dm³)",
                   desc: "Calculating moles from concentration"
                 },
                 { 
@@ -4282,6 +4871,25 @@ export default function App() {
             </div>
           </motion.div>
           </div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.75 }}
+            className="bg-white border-2 border-gray-200 rounded-[3rem] p-6 md:p-10 shadow-[0_12px_0_0_rgba(0,0,0,0.05)]"
+          >
+            <div className="flex items-center gap-5 mb-10">
+              <div className="bg-emerald-500 p-4 rounded-3xl text-white shadow-lg shadow-emerald-200">
+                <Calculator size={28} />
+              </div>
+              <div>
+                <h2 className="text-3xl font-black text-gray-900 uppercase tracking-tighter leading-none">Equilibrium Constants</h2>
+                <p className="text-emerald-500 font-bold text-xs uppercase tracking-widest mt-1">K<sub>c</sub> Expression & Units</p>
+              </div>
+            </div>
+
+            <EquilibriumConstants />
+          </motion.div>
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -4342,7 +4950,7 @@ export default function App() {
                     <div key={species.id} className="bg-white p-4 rounded-2xl border-2 border-gray-100 shadow-sm space-y-2">
                       <div className="flex justify-between items-center">
                         <span className="text-[10px] font-black text-gray-600 uppercase tracking-tighter">{species.label}</span>
-                        <span className="text-[10px] font-black text-gray-400">{leChatelierState.concentrations[species.id].toFixed(1)} mol/dm³</span>
+                        <span className="text-[10px] font-black text-gray-400">{leChatelierState.concentrations[species.id].toFixed(1)} mol dm⁻³</span>
                       </div>
                       <input 
                         type="range"
@@ -4483,7 +5091,7 @@ export default function App() {
                                   {payload.map((entry: any, index: number) => (
                                     <div key={index} className="flex items-center justify-between gap-4">
                                       <span className="text-[10px] font-bold text-gray-500">{entry.name}:</span>
-                                      <span className="text-[10px] font-black" style={{ color: entry.color }}>{entry.value} mol/dm³</span>
+                                      <span className="text-[10px] font-black" style={{ color: entry.color }}>{entry.value} mol dm⁻³</span>
                                     </div>
                                   ))}
                                   <div className="mt-2 pt-2 border-t border-gray-100 space-y-1">
@@ -4594,6 +5202,25 @@ export default function App() {
             </div>
 
             <PeriodicTrends />
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.88 }}
+            className="bg-white border-2 border-gray-200 rounded-[3rem] p-6 md:p-10 shadow-[0_12px_0_0_rgba(0,0,0,0.05)]"
+          >
+            <div className="flex items-center gap-5 mb-10">
+              <div className="bg-indigo-600 p-4 rounded-3xl text-white shadow-lg shadow-indigo-200">
+                <TrendingUp size={28} />
+              </div>
+              <div>
+                <h2 className="text-3xl font-black text-gray-900 uppercase tracking-tighter leading-none">1st IE VS Successive IE</h2>
+                <p className="text-indigo-600 font-bold text-xs uppercase tracking-widest mt-1">Ionization Energy Trends & Anomalies</p>
+              </div>
+            </div>
+
+            <IonizationEnergy />
           </motion.div>
 
           <motion.div
@@ -6546,7 +7173,7 @@ export default function App() {
                 </div>
                 <p className="text-gray-500 text-xs font-bold mt-2 uppercase tracking-widest">
                   {calcMode === 'mass' && "m = mass (g), Mr = molar mass (g/mol)"}
-                  {calcMode === 'conc' && "C = conc (mol/dm³), V = volume (dm³)"}
+                  {calcMode === 'conc' && "C = conc (mol dm⁻³), V = volume (dm³)"}
                   {calcMode === 'gas' && "V = gas volume (dm³), 24 dm³/mol = molar volume"}
                 </p>
                 {(calcMode === 'conc' || calcMode === 'gas') && (
@@ -6565,7 +7192,7 @@ export default function App() {
                     <div className="space-y-1 mb-4">
                       {ex.mass && <p className="text-xs font-bold text-gray-700">m = <span className="text-orange-500">{ex.mass} g</span></p>}
                       {ex.mr && <p className="text-xs font-bold text-gray-700">M<sub>r</sub> = <span className="text-blue-500">{ex.mr}</span></p>}
-                      {ex.conc && <p className="text-xs font-bold text-gray-700">C = <span className="text-orange-500">{ex.conc} mol/dm³</span></p>}
+                      {ex.conc && <p className="text-xs font-bold text-gray-700">C = <span className="text-orange-500">{ex.conc} mol dm⁻³</span></p>}
                       {ex.vol && <p className="text-xs font-bold text-gray-700">V = <span className="text-blue-500">{ex.vol} cm³</span></p>}
                     </div>
                     <div className="relative">
@@ -7383,7 +8010,7 @@ export default function App() {
         unit: 'mol',
         variables: [
           { symbol: 'n', name: 'Moles', unit: 'mol' },
-          { symbol: 'C', name: 'Concentration', unit: 'mol/dm³' },
+          { symbol: 'C', name: 'Concentration', unit: 'mol dm⁻³' },
           { symbol: 'V', name: 'Volume', unit: 'dm³' }
         ]
       },
@@ -9546,7 +10173,7 @@ export default function App() {
         correctAnswer = v1;
         unit = 'mol';
       } else if (equation.id === 'mole_conc') {
-        questionText = `If the concentration is ${v1}mol/dm³ and the volume is ${v2}dm³, how many moles are there?`;
+        questionText = `If the concentration is ${v1}mol dm⁻³ and the volume is ${v2}dm³, how many moles are there?`;
         correctAnswer = v1 * v2;
         unit = 'mol';
       } else if (equation.id === 'mole_gas') {

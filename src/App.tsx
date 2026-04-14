@@ -64,8 +64,9 @@ interface SessionStats {
 export default function App() {
   const formatFormula = (formula: string) => {
     return formula
-      .replace(/([a-zA-Z)])(\d+)/g, '$1<sub>$2</sub>')
-      .replace(/(\d*)([+-])/g, '<sup>$1$2</sup>');
+      .replace(/(\d+)([+-])/g, '<sup>$1$2</sup>') // Match 2+, 3- etc
+      .replace(/([+-])(?!\d)/g, '<sup>$1</sup>') // Match solitary + or -
+      .replace(/([a-zA-Z)])(\d+)(?!<sup>)/g, '$1<sub>$2</sub>'); // Match subscripts, but only if not already part of a superscript
   };
   const [mode, setMode] = useState<AppMode>('splash');
   const [selectedUnit, setSelectedUnit] = useState<Unit | null>(null);
@@ -2567,31 +2568,39 @@ export default function App() {
       }
 
       return (
-        <div className="relative w-48 h-48 flex items-center justify-center">
+        <div className="relative w-56 h-56 flex items-center justify-center bg-indigo-950/40 rounded-full border-2 border-white/5 shadow-inner">
           {/* Nucleus */}
-          <div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center z-10 shadow-lg border-2 border-white">
-            <span className="text-[10px] font-black text-white">{z}+</span>
+          <div className="w-12 h-12 bg-indigo-500 rounded-full flex items-center justify-center z-20 shadow-[0_0_30px_rgba(99,102,241,0.6)] border-2 border-white/30">
+            <span className="text-sm font-black text-white drop-shadow-md">{z}+</span>
           </div>
           
           {shellCounts.map((count, sIdx) => {
             if (count === 0) return null;
-            const radius = 30 + sIdx * 20;
+            const radius = 40 + sIdx * 25;
             const shellColor = { 0: '#ef4444', 1: '#f59e0b', 2: '#10b981', 3: '#3b82f6' }[sIdx];
             return (
-              <div key={sIdx} className="absolute border border-gray-200 rounded-full" style={{ width: radius * 2, height: radius * 2 }}>
+              <div 
+                key={sIdx} 
+                className="absolute border border-white/10 rounded-full" 
+                style={{ width: radius * 2, height: radius * 2 }}
+              >
                 {[...Array(count)].map((_, eIdx) => {
-                  const angle = (eIdx / count) * 2 * Math.PI;
+                  const angle = (eIdx / count) * 2 * Math.PI - Math.PI / 2;
                   const x = radius * Math.cos(angle);
                   const y = radius * Math.sin(angle);
                   return (
                     <motion.div
                       key={eIdx}
                       initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      className="absolute w-2.5 h-2.5 rounded-full border border-white shadow-sm"
+                      animate={{ 
+                        scale: 1,
+                        boxShadow: [`0 0 8px ${shellColor}`, `0 0 15px ${shellColor}`, `0 0 8px ${shellColor}`]
+                      }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                      className="absolute w-3.5 h-3.5 rounded-full border border-white/50 z-10"
                       style={{ 
-                        left: `calc(50% + ${x}px - 5px)`, 
-                        top: `calc(50% + ${y}px - 5px)`,
+                        left: `calc(50% + ${x}px - 7px)`, 
+                        top: `calc(50% + ${y}px - 7px)`,
                         backgroundColor: shellColor
                       }}
                     />
@@ -2651,16 +2660,23 @@ export default function App() {
           </div>
 
           {view === 'successive' && (
-            <div className="flex items-center gap-4 overflow-x-auto pb-2 max-w-full">
-              {ieData.map(el => (
-                <button
-                  key={el.z}
-                  onClick={() => setSelectedZ(el.z)}
-                  className={`flex-shrink-0 w-10 h-10 rounded-xl font-black text-xs transition-all border-2 ${selectedZ === el.z ? 'bg-indigo-600 text-white border-indigo-600 scale-110 shadow-md' : 'bg-white text-gray-400 border-gray-100 hover:border-indigo-200'}`}
-                >
-                  {el.symbol}
-                </button>
-              ))}
+            <div className="flex-1 w-full max-w-md space-y-4">
+              <div className="flex justify-between items-center px-2">
+                <span className="text-[10px] font-black text-gray-400 uppercase">Select Element</span>
+                <span className="text-sm font-black text-indigo-600">{currentElement.symbol} (Z={selectedZ})</span>
+              </div>
+              <input 
+                type="range" 
+                min="1" 
+                max="20" 
+                value={selectedZ} 
+                onChange={(e) => setSelectedZ(parseInt(e.target.value))}
+                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+              />
+              <div className="flex justify-between px-1">
+                <span className="text-[8px] font-bold text-gray-400">H</span>
+                <span className="text-[8px] font-bold text-gray-400">Ca</span>
+              </div>
             </div>
           )}
         </div>
@@ -2943,60 +2959,60 @@ export default function App() {
 
     const examples = [
       {
-        title: 'MnO4- + Fe2+',
+        title: 'MnO4 - + Fe2+',
         reduction: [
-          { step: 1, eq: 'MnO4- → Mn2+', note: 'Mn is already balanced.' },
-          { step: 2, eq: 'MnO4- → Mn2+ + <span class="text-blue-500 font-black">4H2O</span>', note: 'Added 4 water molecules to balance 4 oxygens.' },
-          { step: 3, eq: 'MnO4- + <span class="text-orange-500 font-black">8H+</span> → Mn2+ + 4H2O', note: 'Added 8 H+ to balance hydrogen from water.' },
-          { step: 4, eq: 'MnO4- + 8H+ + <span class="text-rose-500 font-black">5e-</span> → Mn2+ + 4H2O', note: 'Total charge (+7 → +2). Added 5e- to reduction side.' }
+          { step: 1, eq: 'MnO4 - → Mn2+', note: 'Mn is already balanced.' },
+          { step: 2, eq: 'MnO4 - → Mn2+ + <span class="text-blue-500 font-black">4H2O</span>', note: 'Added 4 water molecules to balance 4 oxygens.' },
+          { step: 3, eq: 'MnO4 - + <span class="text-orange-500 font-black">8H+</span> → Mn2+ + 4H2O', note: 'Added 8 H+ to balance hydrogen from water.' },
+          { step: 4, eq: 'MnO4 - + 8H+ + <span class="text-rose-500 font-black">5e-</span> → Mn2+ + 4H2O', note: 'Total charge (+7 → +2). Added 5e- to reduction side.' }
         ],
         oxidation: [
           { step: 4, eq: 'Fe2+ → Fe3+ + <span class="text-rose-500 font-black">e-</span>', note: 'Charge (+2 → +3). Added 1e- to oxidation side.' }
         ],
-        combined: 'MnO4- + 8H+ + 5Fe2+ → Mn2+ + 4H2O + 5Fe3+',
+        combined: 'MnO4 - + 8H+ + 5Fe2+ → Mn2+ + 4H2O + 5Fe3+',
         multiplier: 'Multiply Oxidation by 5 to cancel 5e-.'
       },
       {
-        title: 'Cu + NO3-',
+        title: 'Cu + NO3 -',
         reduction: [
-          { step: 1, eq: 'NO3- → NO2', note: 'N is balanced.' },
-          { step: 2, eq: 'NO3- → NO2 + <span class="text-blue-500 font-black">H2O</span>', note: 'Added 1 H2O to balance oxygen.' },
-          { step: 3, eq: 'NO3- + <span class="text-orange-500 font-black">2H+</span> → NO2 + H2O', note: 'Added 2 H+ to balance hydrogen.' },
-          { step: 4, eq: 'NO3- + 2H+ + <span class="text-rose-500 font-black">e-</span> → NO2 + H2O', note: 'Total charge (+1 → 0). Added 1e-.' }
+          { step: 1, eq: 'NO3 - → NO2', note: 'N is balanced.' },
+          { step: 2, eq: 'NO3 - → NO2 + <span class="text-blue-500 font-black">H2O</span>', note: 'Added 1 H2O to balance oxygen.' },
+          { step: 3, eq: 'NO3 - + <span class="text-orange-500 font-black">2H+</span> → NO2 + H2O', note: 'Added 2 H+ to balance hydrogen.' },
+          { step: 4, eq: 'NO3 - + 2H+ + <span class="text-rose-500 font-black">e-</span> → NO2 + H2O', note: 'Total charge (+1 → 0). Added 1e-.' }
         ],
         oxidation: [
           { step: 4, eq: 'Cu → Cu2+ + <span class="text-rose-500 font-black">2e-</span>', note: 'Charge (0 → +2). Added 2e-.' }
         ],
-        combined: 'Cu + 2NO3- + 4H+ → Cu2+ + 2NO2 + 2H2O',
+        combined: 'Cu + 2NO3 - + 4H+ → Cu2+ + 2NO2 + 2H2O',
         multiplier: 'Multiply Reduction by 2 to cancel 2e-.'
       },
       {
-        title: 'Cr2O72- + Fe2+',
+        title: 'Cr2O7 2- + Fe2+',
         reduction: [
-          { step: 1, eq: '<span class="text-emerald-500 font-black">Cr2</span>O72- → <span class="text-emerald-500 font-black">2</span>Cr3+', note: 'Balanced Cr atoms.' },
-          { step: 2, eq: 'Cr2O72- → 2Cr3+ + <span class="text-blue-500 font-black">7H2O</span>', note: 'Added 7 H2O to balance 7 oxygens.' },
-          { step: 3, eq: 'Cr2O72- + <span class="text-orange-500 font-black">14H+</span> → 2Cr3+ + 7H2O', note: 'Added 14 H+ to balance hydrogen.' },
-          { step: 4, eq: 'Cr2O72- + 14H+ + <span class="text-rose-500 font-black">6e-</span> → 2Cr3+ + 7H2O', note: 'Total charge (+12 → +6). Added 6e-.' }
+          { step: 1, eq: '<span class="text-emerald-500 font-black">Cr2</span>O7 2- → <span class="text-emerald-500 font-black">2</span>Cr3+', note: 'Balanced Cr atoms.' },
+          { step: 2, eq: 'Cr2O7 2- → 2Cr3+ + <span class="text-blue-500 font-black">7H2O</span>', note: 'Added 7 H2O to balance 7 oxygens.' },
+          { step: 3, eq: 'Cr2O7 2- + <span class="text-orange-500 font-black">14H+</span> → 2Cr3+ + 7H2O', note: 'Added 14 H+ to balance hydrogen.' },
+          { step: 4, eq: 'Cr2O7 2- + 14H+ + <span class="text-rose-500 font-black">6e-</span> → 2Cr3+ + 7H2O', note: 'Total charge (+12 → +6). Added 6e-.' }
         ],
         oxidation: [
           { step: 4, eq: 'Fe2+ → Fe3+ + <span class="text-rose-500 font-black">e-</span>', note: 'Charge (+2 → +3). Added 1e-.' }
         ],
-        combined: 'Cr2O72- + 14H+ + 6Fe2+ → 2Cr3+ + 7H2O + 6Fe3+',
+        combined: 'Cr2O7 2- + 14H+ + 6Fe2+ → 2Cr3+ + 7H2O + 6Fe3+',
         multiplier: 'Multiply Oxidation by 6 to cancel 6e-.'
       },
       {
-        title: 'MnO4- + Cl-',
+        title: 'MnO4 - + Cl -',
         reduction: [
-          { step: 1, eq: 'MnO4- → Mn2+', note: 'Mn is balanced.' },
-          { step: 2, eq: 'MnO4- → Mn2+ + <span class="text-blue-500 font-black">4H2O</span>', note: 'Added 4 H2O.' },
-          { step: 3, eq: 'MnO4- + <span class="text-orange-500 font-black">8H+</span> → Mn2+ + 4H2O', note: 'Added 8 H+.' },
-          { step: 4, eq: 'MnO4- + 8H+ + <span class="text-rose-500 font-black">5e-</span> → Mn2+ + 4H2O', note: 'Added 5e-.' }
+          { step: 1, eq: 'MnO4 - → Mn2+', note: 'Mn is balanced.' },
+          { step: 2, eq: 'MnO4 - → Mn2+ + <span class="text-blue-500 font-black">4H2O</span>', note: 'Added 4 H2O.' },
+          { step: 3, eq: 'MnO4 - + <span class="text-orange-500 font-black">8H+</span> → Mn2+ + 4H2O', note: 'Added 8 H+.' },
+          { step: 4, eq: 'MnO4 - + 8H+ + <span class="text-rose-500 font-black">5e-</span> → Mn2+ + 4H2O', note: 'Added 5e-.' }
         ],
         oxidation: [
-          { step: 1, eq: '<span class="text-emerald-500 font-black">2</span>Cl- → Cl2', note: 'Balanced Cl atoms.' },
-          { step: 4, eq: '2Cl- → Cl2 + <span class="text-rose-500 font-black">2e-</span>', note: 'Total charge (-2 → 0). Added 2e-.' }
+          { step: 1, eq: '<span class="text-emerald-500 font-black">2</span>Cl - → Cl2', note: 'Balanced Cl atoms.' },
+          { step: 4, eq: '2Cl - → Cl2 + <span class="text-rose-500 font-black">2e-</span>', note: 'Total charge (-2 → 0). Added 2e-.' }
         ],
-        combined: '2MnO4- + 16H+ + 10Cl- → 2Mn2+ + 8H2O + 5Cl2',
+        combined: '2MnO4 - + 16H+ + 10Cl - → 2Mn2+ + 8H2O + 5Cl2',
         multiplier: 'Multiply Red by 2 and Ox by 5 to cancel 10e-.'
       }
     ];
@@ -3040,9 +3056,8 @@ export default function App() {
                   ? 'bg-gray-800 text-white shadow-lg' 
                   : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}
               `}
-            >
-              {ex.title}
-            </button>
+              dangerouslySetInnerHTML={{ __html: formatFormula(ex.title) }}
+            />
           ))}
         </div>
 
@@ -3120,6 +3135,319 @@ export default function App() {
   };
 
   const QuickFacts = () => {
+  const ElectronicConfiguration = () => {
+    const [z, setZ] = useState(1);
+
+    const elements = [
+      { z: 1, symbol: 'H', name: 'Hydrogen', block: 's', period: 1, group: 1 },
+      { z: 2, symbol: 'He', name: 'Helium', block: 's', period: 1, group: 18 },
+      { z: 3, symbol: 'Li', name: 'Lithium', block: 's', period: 2, group: 1 },
+      { z: 4, symbol: 'Be', name: 'Beryllium', block: 's', period: 2, group: 2 },
+      { z: 5, symbol: 'B', name: 'Boron', block: 'p', period: 2, group: 13 },
+      { z: 6, symbol: 'C', name: 'Carbon', block: 'p', period: 2, group: 14 },
+      { z: 7, symbol: 'N', name: 'Nitrogen', block: 'p', period: 2, group: 15 },
+      { z: 8, symbol: 'O', name: 'Oxygen', block: 'p', period: 2, group: 16 },
+      { z: 9, symbol: 'F', name: 'Fluorine', block: 'p', period: 2, group: 17 },
+      { z: 10, symbol: 'Ne', name: 'Neon', block: 'p', period: 2, group: 18 },
+      { z: 11, symbol: 'Na', name: 'Sodium', block: 's', period: 3, group: 1 },
+      { z: 12, symbol: 'Mg', name: 'Magnesium', block: 's', period: 3, group: 2 },
+      { z: 13, symbol: 'Al', name: 'Aluminium', block: 'p', period: 3, group: 13 },
+      { z: 14, symbol: 'Si', name: 'Silicon', block: 'p', period: 3, group: 14 },
+      { z: 15, symbol: 'P', name: 'Phosphorus', block: 'p', period: 3, group: 15 },
+      { z: 16, symbol: 'S', name: 'Sulfur', block: 'p', period: 3, group: 16 },
+      { z: 17, symbol: 'Cl', name: 'Chlorine', block: 'p', period: 3, group: 17 },
+      { z: 18, symbol: 'Ar', name: 'Argon', block: 'p', period: 3, group: 18 },
+      { z: 19, symbol: 'K', name: 'Potassium', block: 's', period: 4, group: 1 },
+      { z: 20, symbol: 'Ca', name: 'Calcium', block: 's', period: 4, group: 2 },
+      { z: 21, symbol: 'Sc', name: 'Scandium', block: 'd', period: 4, group: 3 },
+      { z: 22, symbol: 'Ti', name: 'Titanium', block: 'd', period: 4, group: 4 },
+      { z: 23, symbol: 'V', name: 'Vanadium', block: 'd', period: 4, group: 5 },
+      { z: 24, symbol: 'Cr', name: 'Chromium', block: 'd', period: 4, group: 6 },
+      { z: 25, symbol: 'Mn', name: 'Manganese', block: 'd', period: 4, group: 7 },
+      { z: 26, symbol: 'Fe', name: 'Iron', block: 'd', period: 4, group: 8 },
+      { z: 27, symbol: 'Co', name: 'Cobalt', block: 'd', period: 4, group: 9 },
+      { z: 28, symbol: 'Ni', name: 'Nickel', block: 'd', period: 4, group: 10 },
+      { z: 29, symbol: 'Cu', name: 'Copper', block: 'd', period: 4, group: 11 },
+      { z: 30, symbol: 'Zn', name: 'Zinc', block: 'd', period: 4, group: 12 },
+    ];
+
+    const currentElement = elements.find(e => e.z === z) || elements[0];
+
+    const orbitalGroups = [
+      { id: '1s', label: '1s', boxes: 1, block: 's', energy: 1 },
+      { id: '2s', label: '2s', boxes: 1, block: 's', energy: 2 },
+      { id: '2p', label: '2p', boxes: 3, block: 'p', energy: 3 },
+      { id: '3s', label: '3s', boxes: 1, block: 's', energy: 4 },
+      { id: '3p', label: '3p', boxes: 3, block: 'p', energy: 5 },
+      { id: '4s', label: '4s', boxes: 1, block: 's', energy: 6 },
+      { id: '3d', label: '3d', boxes: 5, block: 'd', energy: 7 },
+    ];
+
+    const getDistribution = (atomicNumber: number) => {
+      const dist: Record<string, number> = {};
+      let remaining = atomicNumber;
+
+      // Exceptions
+      if (atomicNumber === 24) { // Cr: [Ar] 4s1 3d5
+        dist['1s'] = 2; dist['2s'] = 2; dist['2p'] = 6; dist['3s'] = 2; dist['3p'] = 6;
+        dist['4s'] = 1; dist['3d'] = 5;
+        return dist;
+      }
+      if (atomicNumber === 29) { // Cu: [Ar] 4s1 3d10
+        dist['1s'] = 2; dist['2s'] = 2; dist['2p'] = 6; dist['3s'] = 2; dist['3p'] = 6;
+        dist['4s'] = 1; dist['3d'] = 10;
+        return dist;
+      }
+
+      for (const og of orbitalGroups) {
+        const cap = og.boxes * 2;
+        const fill = Math.min(remaining, cap);
+        dist[og.id] = fill;
+        remaining -= fill;
+        if (remaining <= 0) break;
+      }
+      return dist;
+    };
+
+    const distribution = getDistribution(z);
+
+    const getBoxElectrons = (orbitalId: string, boxIndex: number, totalElectrons: number) => {
+      const og = orbitalGroups.find(o => o.id === orbitalId)!;
+      const spins: number[] = [];
+      
+      // Hund's Rule: Fill each box with one electron first
+      if (totalElectrons > boxIndex) spins.push(1); // Spin up
+      // Then pair them up
+      if (totalElectrons > og.boxes + boxIndex) spins.push(-1); // Spin down
+      
+      return spins;
+    };
+
+    const blockColors = {
+      s: { bg: 'bg-rose-500', text: 'text-rose-600', light: 'bg-rose-100', border: 'border-rose-500/50', glow: 'bg-rose-500/10', accent: 'text-rose-400', muted: 'text-rose-300', bgLight: 'bg-rose-50' },
+      p: { bg: 'bg-blue-500', text: 'text-blue-600', light: 'bg-blue-100', border: 'border-blue-500/50', glow: 'bg-blue-500/10', accent: 'text-blue-400', muted: 'text-blue-300', bgLight: 'bg-blue-50' },
+      d: { bg: 'bg-amber-500', text: 'text-amber-600', light: 'bg-amber-100', border: 'border-amber-500/50', glow: 'bg-amber-500/10', accent: 'text-amber-400', muted: 'text-amber-300', bgLight: 'bg-amber-50' },
+      f: { bg: 'bg-emerald-500', text: 'text-emerald-600', light: 'bg-emerald-100', border: 'border-emerald-500/50', glow: 'bg-emerald-500/10', accent: 'text-emerald-400', muted: 'text-emerald-300', bgLight: 'bg-emerald-50' }
+    };
+
+    const fullConfig = orbitalGroups
+      .filter(og => distribution[og.id] > 0)
+      .map(og => `${og.label}${distribution[og.id]}`)
+      .join(' ');
+
+    const getCondensedConfig = () => {
+      if (z <= 2) return fullConfig;
+      if (z <= 10) return `[He] ${orbitalGroups.slice(1).filter(og => distribution[og.id] > 0).map(og => `${og.label}${distribution[og.id]}`).join(' ')}`;
+      if (z <= 18) return `[Ne] ${orbitalGroups.slice(3).filter(og => distribution[og.id] > 0).map(og => `${og.label}${distribution[og.id]}`).join(' ')}`;
+      return `[Ar] ${orbitalGroups.slice(5).filter(og => distribution[og.id] > 0).map(og => `${og.label}${distribution[og.id]}`).join(' ')}`;
+    };
+
+    const PeriodicTable = () => {
+      const grid = Array(4).fill(null).map(() => Array(18).fill(null));
+      elements.forEach(el => {
+        const row = el.period - 1;
+        const col = el.group - 1;
+        grid[row][col] = el;
+      });
+
+      return (
+        <div className="grid grid-cols-[repeat(18,minmax(0,1fr))] gap-1 w-full max-w-md mx-auto">
+          {grid.map((row, rIdx) => (
+            row.map((el, cIdx) => {
+              const colors = el ? blockColors[el.block as keyof typeof blockColors] : null;
+              return (
+                <div 
+                  key={`${rIdx}-${cIdx}`} 
+                  className={`aspect-square rounded-sm flex items-center justify-center text-[6px] font-black transition-all duration-300
+                    ${el 
+                      ? el.z <= z 
+                        ? `${colors?.bg} text-white shadow-sm scale-105 z-10`
+                        : `${colors?.light} ${colors?.muted}`
+                      : 'bg-transparent'}
+                  `}
+                >
+                  {el?.symbol}
+                </div>
+              );
+            })
+          ))}
+        </div>
+      );
+    };
+
+    const currentColors = blockColors[currentElement.block as keyof typeof blockColors];
+
+    return (
+      <div className="space-y-8">
+        {/* Slider Section */}
+        <div className="bg-white p-6 rounded-3xl border-2 border-gray-100 shadow-sm space-y-4">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-3">
+              <div className={`w-12 h-12 rounded-2xl ${currentColors.light} flex items-center justify-center ${currentColors.text} font-black text-xl`}>
+                {currentElement.symbol}
+              </div>
+              <div>
+                <h3 className="text-lg font-black text-gray-800 uppercase tracking-tight">{currentElement.name}</h3>
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Atomic Number: {z}</p>
+              </div>
+            </div>
+            <div className="text-right">
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Block</p>
+              <p className={`text-sm font-black ${currentColors.bg.replace('bg-', 'text-')} uppercase`}>{currentElement.block}-block</p>
+            </div>
+          </div>
+          
+          <input 
+            type="range" 
+            min="1" 
+            max="30" 
+            value={z} 
+            onChange={(e) => setZ(parseInt(e.target.value))}
+            className="w-full h-2 bg-gray-100 rounded-lg appearance-none cursor-pointer accent-gray-800"
+          />
+          <div className="flex justify-between px-1">
+            <span className="text-[8px] font-bold text-gray-400 uppercase">Hydrogen (1)</span>
+            <span className="text-[8px] font-bold text-gray-400 uppercase">Zinc (30)</span>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Left Column: Orbital Diagram */}
+          <div className="bg-gray-900 p-8 rounded-[2.5rem] border-4 border-gray-800 shadow-2xl space-y-8">
+            <div className="flex items-center justify-between">
+              <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Electron-in-Box Diagram</h4>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-[8px] font-black text-emerald-500 uppercase tracking-widest">Energy Ascending</span>
+              </div>
+            </div>
+
+            <div className="flex flex-col-reverse gap-6">
+              {orbitalGroups.map((og) => {
+                const fill = distribution[og.id] || 0;
+                if (fill === 0 && og.energy > orbitalGroups.find(o => distribution[o.id] > 0)?.energy! + 1) return null;
+                const colors = blockColors[og.block as keyof typeof blockColors];
+
+                return (
+                  <div key={og.id} className="flex items-center gap-4">
+                    <div className="w-8 text-right">
+                      <span className="text-xs font-black text-gray-500 font-mono">{og.label}</span>
+                    </div>
+                    <div className="flex gap-2">
+                      {[...Array(og.boxes)].map((_, bIdx) => {
+                        const spins = getBoxElectrons(og.id, bIdx, fill);
+                        return (
+                          <div 
+                            key={bIdx} 
+                            className={`w-10 h-10 border-2 rounded-lg flex items-center justify-center relative transition-all duration-300
+                              ${fill > 0 ? `${colors.border} ${colors.glow}` : 'border-gray-800 bg-gray-800/50'}
+                            `}
+                          >
+                            {spins.includes(1) && (
+                              <motion.div 
+                                initial={{ y: 10, opacity: 0 }}
+                                animate={{ y: 0, opacity: 1 }}
+                                className={`absolute left-1/4 ${colors.accent}`}
+                              >
+                                <ChevronUp size={20} strokeWidth={4} />
+                              </motion.div>
+                            )}
+                            {spins.includes(-1) && (
+                              <motion.div 
+                                initial={{ y: -10, opacity: 0 }}
+                                animate={{ y: 0, opacity: 1 }}
+                                className={`absolute right-1/4 ${colors.accent}`}
+                              >
+                                <ChevronDown size={20} strokeWidth={4} />
+                              </motion.div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Right Column: Config & Periodic Table */}
+          <div className="space-y-8">
+            {/* Written Configuration */}
+            <div className="bg-white p-8 rounded-[2.5rem] border-2 border-gray-100 shadow-sm space-y-6">
+              <div>
+                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Full Configuration</p>
+                <div className="flex flex-wrap gap-2">
+                  {orbitalGroups.filter(og => distribution[og.id] > 0).map(og => {
+                    const colors = blockColors[og.block as keyof typeof blockColors];
+                    return (
+                      <div key={og.id} className={`px-3 py-1 rounded-lg ${colors.bgLight} ${colors.text} font-mono font-black text-sm`}>
+                        {og.label}<sup>{distribution[og.id]}</sup>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div>
+                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Condensed Configuration</p>
+                <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100 font-mono font-black text-gray-800">
+                  {getCondensedConfig().split(' ').map((part, i) => {
+                    if (part.startsWith('[')) return <span key={i} className="text-gray-400 mr-2">{part}</span>;
+                    const match = part.match(/(\d[spd])(\d+)/);
+                    if (match) {
+                      const og = orbitalGroups.find(o => o.label === match[1])!;
+                      const colors = blockColors[og.block as keyof typeof blockColors];
+                      return (
+                        <span key={i} className={`${colors.bg.replace('bg-', 'text-')} mr-2`}>
+                          {match[1]}<sup>{match[2]}</sup>
+                        </span>
+                      );
+                    }
+                    return <span key={i} className="mr-2">{part}</span>;
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* Periodic Table Highlight */}
+            <div className="bg-white p-8 rounded-[2.5rem] border-2 border-gray-100 shadow-sm">
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-6">Periodic Table Position</p>
+              <PeriodicTable />
+              <div className="mt-6 flex justify-center gap-4">
+                {Object.entries(blockColors).map(([block, colors]) => (
+                  <div key={block} className="flex items-center gap-1.5">
+                    <div className={`w-2 h-2 rounded-full ${colors.bg}`} />
+                    <span className="text-[8px] font-black text-gray-400 uppercase">{block}-block</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Principles Note */}
+            <div className="bg-indigo-50 p-6 rounded-3xl border-2 border-indigo-100">
+              <div className="flex items-center gap-3 mb-3">
+                <Info size={18} className="text-indigo-600" />
+                <h5 className="text-xs font-black text-indigo-700 uppercase tracking-tight">Key Principles Applied</h5>
+              </div>
+              <ul className="space-y-2">
+                {[
+                  { name: 'Aufbau', desc: 'Electrons fill lowest energy orbitals first.' },
+                  { name: 'Pauli', desc: 'Max 2 electrons per orbital with opposite spins.' },
+                  { name: 'Hund', desc: 'Fill degenerate orbitals singly first.' }
+                ].map(p => (
+                  <li key={p.name} className="flex items-start gap-2">
+                    <span className="text-[10px] font-black text-indigo-600 mt-0.5">•</span>
+                    <p className="text-[10px] font-bold text-gray-600"><span className="text-indigo-700">{p.name}:</span> {p.desc}</p>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
     const [hoveredRule, setHoveredRule] = useState<string | null>(null);
     const [hoveredApparatus, setHoveredApparatus] = useState<string | null>(null);
     const [hoveredMoleEq, setHoveredMoleEq] = useState<number | null>(null);
@@ -3528,6 +3856,22 @@ export default function App() {
 
 
 
+
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+            className="bg-white border-2 border-gray-200 rounded-[2.5rem] p-8 shadow-[0_8px_0_0_rgba(0,0,0,0.05)]"
+          >
+            <div className="flex items-center gap-4 mb-12">
+              <div className="bg-emerald-100 p-3 rounded-2xl text-emerald-600">
+                <Layers size={24} />
+              </div>
+              <h2 className="text-2xl font-black text-gray-800 uppercase tracking-tight">Electronic Configuration</h2>
+            </div>
+            <ElectronicConfiguration />
+          </motion.div>
 
 
           <motion.div
@@ -6777,6 +7121,19 @@ export default function App() {
   );
 };
 
+  const PlaygroundView = () => {
+    const [subMode, setSubMode] = useState<'select' | 'equations' | 'chemicals' | 'graphs' | 'simulations' | 'solubility' | 'mole' | 'mole-calc' | 'ionic'>('select');
+    const [selectedEquation, setSelectedEquation] = useState<any>(null);
+    const [equationSubject, setEquationSubject] = useState<string>('');
+    const [isPracticeMode, setIsPracticeMode] = useState(false);
+    const [practiceQuestion, setPracticeQuestion] = useState<any>(null);
+    const [practiceAnswer, setPracticeAnswer] = useState<string | null>(null);
+    const [isPracticeChecked, setIsPracticeChecked] = useState(false);
+    const [selectedChemical, setSelectedChemical] = useState<any>(null);
+    const [selectedGraph, setSelectedGraph] = useState<string | null>(null);
+    const [graphSpeed1, setGraphSpeed1] = useState(5);
+    const [graphSpeed2, setGraphSpeed2] = useState(10);
+
     const VirtualCalculator = ({ onClose }: { onClose: () => void }) => {
       const [display, setDisplay] = useState('0');
       const [prevValue, setPrevValue] = useState<number | null>(null);
@@ -6903,12 +7260,6 @@ export default function App() {
       const [examples, setExamples] = useState<any[]>([]);
       const [userAnswers, setUserAnswers] = useState<string[]>(['', '', '', '', '', '']);
       const [isChecked, setIsChecked] = useState(false);
-
-      const formatFormula = (formula: string) => {
-        return formula.split(/(\d+)/).map((part, i) => 
-          /\d+/.test(part) ? <sub key={i} className="text-[0.7em]">{part}</sub> : part
-        );
-      };
 
       const generateExamples = useCallback(() => {
         const massList = [
@@ -7465,18 +7816,6 @@ export default function App() {
       );
     };
 
-  const PlaygroundView = () => {
-    const [subMode, setSubMode] = useState<'select' | 'equations' | 'chemicals' | 'graphs' | 'simulations' | 'solubility' | 'mole' | 'mole-calc' | 'ionic'>('select');
-    const [selectedEquation, setSelectedEquation] = useState<any>(null);
-    const [equationSubject, setEquationSubject] = useState<string>('');
-    const [isPracticeMode, setIsPracticeMode] = useState(false);
-    const [practiceQuestion, setPracticeQuestion] = useState<any>(null);
-    const [practiceAnswer, setPracticeAnswer] = useState<string | null>(null);
-    const [isPracticeChecked, setIsPracticeChecked] = useState(false);
-    const [selectedChemical, setSelectedChemical] = useState<any>(null);
-    const [selectedGraph, setSelectedGraph] = useState<string | null>(null);
-    const [graphSpeed1, setGraphSpeed1] = useState(5);
-    const [graphSpeed2, setGraphSpeed2] = useState(10);
 
     const MolePlayground = () => {
       const moleQuestions = [

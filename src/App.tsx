@@ -809,8 +809,8 @@ export default function App() {
     const isIonization = from === 1 && to === 7;
 
     return (
-      <div className="relative w-full h-56 bg-gray-950 rounded-2xl overflow-hidden border-2 border-gray-800 flex items-center justify-center">
-        <svg className="w-full h-full" viewBox="0 0 200 200">
+      <div className="relative w-full h-64 bg-gray-950 rounded-2xl overflow-hidden border-2 border-gray-800 flex items-center justify-center">
+        <svg className="w-full h-full" viewBox="0 0 400 200" preserveAspectRatio="xMidYMid meet">
           <defs>
             <marker id="arrowhead-yellow" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
               <polygon points="0 0, 10 3.5, 0 7" fill="#fbbf24" />
@@ -827,7 +827,7 @@ export default function App() {
             </filter>
           </defs>
           {view === 'circles' ? (
-            <>
+            <g transform="translate(100, 0)">
               <circle cx="100" cy="100" r="8" fill="#ef4444" filter="url(#glow)" />
               {levels.map(n => (
                 <circle
@@ -872,35 +872,35 @@ export default function App() {
                 animate={to === 7 ? { cx: 220, opacity: 0 } : { cx: 100 + getRadius(to), cy: 100 }}
                 transition={{ duration: 0.8, ease: "easeInOut" }}
               />
-            </>
+            </g>
           ) : (
             <>
               {levels.map(n => (
                 <g key={n}>
-                  <line x1="40" y1={getY(n)} x2="160" y2={getY(n)} stroke="rgba(255,255,255,0.15)" strokeWidth="1" />
-                  <text x="15" y={getY(n) + 3} fill="rgba(255,255,255,0.4)" fontSize="8" fontWeight="black">n={n}</text>
+                  <line x1="40" y1={getY(n)} x2="360" y2={getY(n)} stroke="rgba(255,255,255,0.15)" strokeWidth="1.5" />
+                  <text x="15" y={getY(n) + 3} fill="rgba(255,255,255,0.4)" fontSize="10" fontWeight="black">n={n}</text>
                 </g>
               ))}
-              <line x1="40" y1="20" x2="160" y2="20" stroke="rgba(255,255,255,0.4)" strokeWidth="1" strokeDasharray="4 2" />
-              <text x="15" y="23" fill="rgba(255,255,255,0.5)" fontSize="8" fontWeight="black">n=∞</text>
+              <line x1="40" y1="20" x2="360" y2="20" stroke="rgba(255,255,255,0.4)" strokeWidth="1.5" strokeDasharray="4 2" />
+              <text x="15" y="23" fill="rgba(255,255,255,0.5)" fontSize="10" fontWeight="black">n=∞</text>
               
               <motion.line
-                x1="100"
+                x1="200"
                 y1={getY(from)}
-                x2="100"
+                x2="200"
                 y2={to === 7 ? 20 : getY(to)}
                 stroke={isEmission ? "#fbbf24" : "#60a5fa"}
-                strokeWidth="2.5"
+                strokeWidth="3"
                 markerEnd={isEmission ? "url(#arrowhead-yellow)" : "url(#arrowhead-blue)"}
                 initial={{ pathLength: 0 }}
                 animate={{ pathLength: 1 }}
                 key={`${from}-${to}-${view}`}
               />
               <motion.circle
-                r="4"
+                r="5"
                 fill="#3b82f6"
                 filter="url(#glow)"
-                animate={{ cx: 100, cy: to === 7 ? 20 : getY(to) }}
+                animate={{ cx: 200, cy: to === 7 ? 20 : getY(to) }}
                 transition={{ duration: 0.8, ease: "easeInOut" }}
               />
             </>
@@ -1007,8 +1007,8 @@ export default function App() {
           {/* Energy Levels */}
           {[1, 2, 3, 4, 5, 6, 7].map(n => (
             <g key={n}>
-              <line x1="30" y1={getEnergyY(n)} x2="370" y2={getEnergyY(n)} stroke="url(#level-grad)" strokeWidth="1.5" />
-              <text x="10" y={getEnergyY(n) + 4} className="fill-gray-600 text-[10px] font-black">n={n === 7 ? '∞' : n}</text>
+              <line x1="30" y1={getEnergyY(n)} x2="370" y2={getEnergyY(n)} stroke="white" strokeOpacity="0.3" strokeWidth="1.5" />
+              <text x="10" y={getEnergyY(n) + 4} className="fill-gray-400 text-[10px] font-black">n={n === 7 ? '∞' : n}</text>
             </g>
           ))}
 
@@ -1413,7 +1413,7 @@ export default function App() {
         let color = ph < 6.5 ? "text-rose-500" : ph > 7.5 ? "text-blue-500" : "text-purple-500";
         return (
           <div className="bg-white p-3 border-2 border-gray-100 rounded-xl shadow-xl">
-            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Volume: {vol} ml</p>
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Volume: {vol} cm³</p>
             <p className={`text-sm font-black ${color}`}>pH: {ph.toFixed(2)}</p>
             <p className={`text-[8px] font-black uppercase tracking-widest ${color}`}>{state}</p>
           </div>
@@ -1483,7 +1483,7 @@ export default function App() {
 
         <div className="flex flex-col lg:flex-row gap-8 items-start">
           {/* Visual Representation */}
-          <div className="w-full lg:w-1/4 flex flex-col items-center justify-center bg-gray-50 rounded-3xl p-6 border-2 border-gray-100 min-h-[400px]">
+          <div className="w-full lg:w-1/3 flex flex-col items-center justify-center bg-gray-50 rounded-3xl p-6 border-2 border-gray-100 min-h-[400px]">
             <div className="relative w-32 h-80 scale-90 sm:scale-100">
               <div className="absolute top-0 left-1/2 -translate-x-1/2 w-6 h-48 border-2 border-gray-300 rounded-b-lg bg-white/50 overflow-hidden">
                 <motion.div 
@@ -1513,20 +1513,25 @@ export default function App() {
               )}
 
               <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-24 h-24">
-                <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-sm">
+                <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-sm overflow-visible">
                   <defs>
                     <clipPath id="flask-clip">
                       <path d="M40 0 L60 0 L60 20 L90 90 L10 90 L40 20 Z" />
                     </clipPath>
                   </defs>
-                  <path d="M40 0 L60 0 L60 20 L90 90 L10 90 L40 20 Z" fill="none" stroke="#d1d5db" strokeWidth="2" />
+                  {/* Background Liquid - Fixed Graphic */}
                   <motion.rect 
                     x="0" y="0" width="100" height="100"
                     fill={currentPH < 6.5 ? '#f43f5e' : currentPH > 7.5 ? '#3b82f6' : '#a855f7'}
                     fillOpacity="0.4"
                     clipPath="url(#flask-clip)"
-                    animate={{ y: 90 - (25 + volumeAdded) * 0.8 }}
+                    animate={{ 
+                      y: 90 - (25 + volumeAdded) * 0.8
+                    }}
+                    transition={{ type: 'spring', stiffness: 100, damping: 20 }}
                   />
+                  {/* Flask Outline */}
+                  <path d="M40 0 L60 0 L60 20 L90 90 L10 90 L40 20 Z" fill="none" stroke="#d1d5db" strokeWidth="2" />
                 </svg>
               </div>
             </div>
@@ -1559,13 +1564,14 @@ export default function App() {
                     axisLine={false}
                     tickLine={false}
                   />
-                  <Tooltip content={<CustomTooltip />} />
+                  <Tooltip content={<CustomTooltip />} isAnimationActive={false} />
                   <Line 
                     type="monotone" 
                     dataKey="ph" 
                     stroke="#8b5cf6" 
                     strokeWidth={4} 
                     dot={false}
+                    isAnimationActive={false}
                     activeDot={{ r: 6, stroke: '#fff', strokeWidth: 2 }}
                   />
                   <Line 
@@ -1573,6 +1579,7 @@ export default function App() {
                     type="monotone" 
                     dataKey="ph" 
                     stroke="transparent"
+                    isAnimationActive={false}
                     dot={{ r: 8, fill: currentPH < 6.5 ? '#f43f5e' : currentPH > 7.5 ? '#3b82f6' : '#a855f7', stroke: '#fff', strokeWidth: 3 }}
                   />
                 </LineChart>
@@ -1593,15 +1600,15 @@ export default function App() {
                 <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Volume Added</p>
                 <div className="flex items-baseline gap-2">
                   <span className="text-4xl font-black text-gray-800">{volumeAdded.toFixed(1)}</span>
-                  <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">ml</span>
+                  <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">cm³</span>
                 </div>
               </div>
             </div>
 
-            <div className="flex flex-wrap gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <button
                 onClick={handleAddSolution}
-                className={`flex-1 flex items-center justify-center gap-3 px-8 py-5 rounded-2xl font-black uppercase tracking-widest transition-all
+                className={`flex items-center justify-center gap-3 px-8 py-5 rounded-2xl font-black uppercase tracking-widest transition-all
                   ${isAdding 
                     ? 'bg-rose-500 text-white shadow-[0_6px_0_0_#be123c] active:shadow-none active:translate-y-1' 
                     : 'bg-emerald-500 text-white shadow-[0_6px_0_0_#047857] hover:bg-emerald-400 active:shadow-none active:translate-y-1'}
@@ -2911,31 +2918,68 @@ export default function App() {
                       2: { molecular: "Square Planar", electron: "Octahedral", example: "XeF₄" }
                     }
                   };
-                  const current = data[vseprDomains]?.[vseprLonePairs] || data[vseprDomains][0];
+                      const current = data[vseprDomains]?.[vseprLonePairs] || data[vseprDomains][0];
 
-                  return (
-                    <>
-                      <div className="bg-gray-50 p-6 rounded-3xl border-2 border-gray-100 relative overflow-hidden">
-                        <div className="absolute top-0 right-0 p-4 opacity-10">
-                          <Atom size={40} className="text-indigo-600" />
-                        </div>
-                        <div className="relative z-10">
-                          <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest mb-2">Molecular Geometry</p>
-                          <h3 className="text-2xl font-black text-gray-800 uppercase mb-1">{current.molecular}</h3>
-                          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4">
-                            Electron Domain Geometry: <span className="text-indigo-500">{current.electron}</span>
-                          </p>
-                          <div className="flex items-center gap-4 p-3 bg-white rounded-2xl border border-gray-100">
-                            <div className="bg-indigo-50 p-2 rounded-lg text-indigo-600">
-                              <FlaskConical size={16} />
+                      const getBondAngle = (d: number, lp: number) => {
+                        if (d === 2) return "180°";
+                        if (d === 3) {
+                          if (lp === 0) return "120°";
+                          return "≈ 118°"; // 120 - 2
+                        }
+                        if (d === 4) {
+                          if (lp === 0) return "109.5°";
+                          if (lp === 1) return "≈ 107.5°"; // 109.5 - 2
+                          return "≈ 105.5°"; // 109.5 - 4
+                        }
+                        if (d === 5) {
+                          if (lp === 0) return "120° & 90°";
+                          if (lp === 1) return "< 120° & < 90°";
+                          if (lp === 2) return "< 90°";
+                          if (lp === 3) return "180°";
+                        }
+                        if (d === 6) {
+                          if (lp === 0) return "90°";
+                          if (lp === 1) return "< 90°";
+                          if (lp === 2) return "90°";
+                        }
+                        return "N/A";
+                      };
+
+                      return (
+                        <>
+                          <div className="bg-gray-50 p-6 rounded-3xl border-2 border-gray-100 relative overflow-hidden">
+                            <div className="absolute top-0 right-0 p-4 opacity-10">
+                              <Atom size={40} className="text-indigo-600" />
                             </div>
-                            <div>
-                              <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Example Chemical</p>
-                              <p className="text-sm font-black text-gray-800" dangerouslySetInnerHTML={{ __html: current.example.replace(/(\d+)/g, '<sub>$1</sub>') }} />
+                            <div className="relative z-10">
+                              <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest mb-2">Molecular Geometry</p>
+                              <h3 className="text-2xl font-black text-gray-800 uppercase mb-1">{current.molecular}</h3>
+                              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4">
+                                Electron Domain Geometry: <span className="text-indigo-500">{current.electron}</span>
+                              </p>
+                              
+                              <div className="grid grid-cols-2 gap-4 mb-4">
+                                <div className="flex items-center gap-4 p-3 bg-white rounded-2xl border border-gray-100">
+                                  <div className="bg-indigo-50 p-2 rounded-lg text-indigo-600">
+                                    <FlaskConical size={16} />
+                                  </div>
+                                  <div>
+                                    <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Example</p>
+                                    <p className="text-sm font-black text-gray-800" dangerouslySetInnerHTML={{ __html: current.example.replace(/(\d+)/g, '<sub>$1</sub>') }} />
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-4 p-3 bg-white rounded-2xl border border-gray-100">
+                                  <div className="bg-indigo-50 p-2 rounded-lg text-indigo-600">
+                                    <TrendingUp size={16} />
+                                  </div>
+                                  <div>
+                                    <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Bond Angle</p>
+                                    <p className="text-sm font-black text-gray-800">{getBondAngle(vseprDomains, vseprLonePairs)}</p>
+                                  </div>
+                                </div>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </div>
 
                       <div className="grid grid-cols-2 gap-4">
                         <div className="bg-white border-2 border-gray-100 p-4 rounded-2xl">
@@ -3042,25 +3086,48 @@ export default function App() {
                   </div>
                   <div className="relative z-10 text-center">
                     <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-4">Summary for <span dangerouslySetInnerHTML={{ __html: lewisExample.replace(/(\d+)/g, '<sub>$1</sub>') }} /></p>
-                    <div className="flex justify-center gap-8">
-                      <div>
-                        <p className="text-4xl font-black text-gray-800">
-                          {(() => {
-                            const data: any = { 'NH3': 3, 'CH4': 4, 'H2O': 2, 'CO2': 4, 'SF6': 6 };
-                            return data[lewisExample];
-                          })()}
-                        </p>
-                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Bonds</p>
+                    <div className="flex flex-col gap-6">
+                      <div className="flex justify-center gap-8">
+                        <div>
+                          <p className="text-4xl font-black text-gray-800">
+                            {(() => {
+                              const data: any = { 'NH3': 3, 'CH4': 4, 'H2O': 2, 'CO2': 4, 'SF6': 6 };
+                              return data[lewisExample];
+                            })()}
+                          </p>
+                          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Bonds</p>
+                        </div>
+                        <div className="w-[2px] h-12 bg-emerald-200" />
+                        <div>
+                          <p className="text-4xl font-black text-emerald-500">
+                            {(() => {
+                              const data: any = { 'NH3': 1, 'CH4': 0, 'H2O': 2, 'CO2': 4, 'SF6': 18 };
+                              return data[lewisExample];
+                            })()}
+                          </p>
+                          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Lone Pairs</p>
+                        </div>
                       </div>
-                      <div className="w-[2px] h-12 bg-emerald-200" />
-                      <div>
-                        <p className="text-4xl font-black text-emerald-500">
-                          {(() => {
-                            const data: any = { 'NH3': 1, 'CH4': 0, 'H2O': 2, 'CO2': 4, 'SF6': 18 };
-                            return data[lewisExample];
-                          })()}
-                        </p>
-                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Lone Pairs</p>
+
+                      <div className="grid grid-cols-2 gap-4 pt-4 border-t border-emerald-200/50">
+                        <div>
+                          <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-1">Electron Geometry</p>
+                          <p className="text-[10px] font-black text-gray-800 uppercase">
+                            {(() => {
+                              const data: any = { 'NH3': 'Tetrahedral', 'CH4': 'Tetrahedral', 'H2O': 'Tetrahedral', 'CO2': 'Linear', 'SF6': 'Octahedral' };
+                              return data[lewisExample];
+                            })()}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-1">Molecular Geometry</p>
+                          <p className="text-[10px] font-black text-emerald-600 uppercase">
+                            {(() => {
+                              const data: any = { 'NH3': 'Trigonal Pyramidal', 'CH4': 'Tetrahedral', 'H2O': 'Bent', 'CO2': 'Linear', 'SF6': 'Octahedral' };
+                              return data[lewisExample];
+                            })()}
+                          </p>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -3122,86 +3189,90 @@ export default function App() {
               </div>
             </div>
 
-            <div className="grid lg:grid-cols-2 gap-12 mb-12">
-              <div className="space-y-6">
-                <AtomicTransitionDrawing view={atomicTransitionView} from={atomicFrom} to={atomicTo} />
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Initial State (n)</p>
-                    <div className="flex flex-wrap gap-2">
-                      {[1, 2, 3, 4, 5, 6].map(n => (
-                        <button
-                          key={n}
-                          onClick={() => setAtomicFrom(n)}
-                          className={`w-8 h-8 rounded-lg font-black text-xs transition-all border-2 ${atomicFrom === n ? 'bg-indigo-600 text-white border-indigo-700' : 'bg-white text-gray-400 border-gray-100 hover:border-gray-200'}`}
-                        >
-                          {n}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Final State (n)</p>
-                    <div className="flex flex-wrap gap-2">
-                      {[1, 2, 3, 4, 5, 6, 7].map(n => (
-                        <button
-                          key={n}
-                          onClick={() => setAtomicTo(n)}
-                          className={`w-8 h-8 rounded-lg font-black text-xs transition-all border-2 ${atomicTo === n ? 'bg-indigo-600 text-white border-indigo-700' : 'bg-white text-gray-400 border-gray-100 hover:border-gray-200'}`}
-                        >
-                          {n === 7 ? '∞' : n}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-6">
-                <div className="bg-gray-50 p-6 rounded-3xl border-2 border-gray-100">
-                  <h3 className="text-lg font-black text-gray-800 uppercase mb-4 flex items-center gap-2">
-                    <div className={`w-2 h-2 rounded-full ${atomicFrom < atomicTo ? 'bg-blue-500' : 'bg-yellow-500'}`} />
-                    {atomicFrom === 1 && atomicTo === 7 ? 'Ionization Process' : atomicFrom < atomicTo ? 'Absorption Process' : 'Emission Process'}
-                  </h3>
-                  <p className="text-sm font-bold text-gray-600 leading-relaxed mb-4">
-                    {atomicFrom === 1 && atomicTo === 7 
-                      ? 'The electron absorbs enough energy to completely escape the attraction of the nucleus (n=1 to n=∞). This energy is the Ionization Energy.'
-                      : atomicFrom < atomicTo 
-                        ? 'The electron absorbs a photon of specific energy and moves to a higher energy level (excited state). Energy is ABSORBED.' 
-                        : 'The electron falls to a lower energy level and releases the excess energy as a photon. Energy is RELEASED.'}
-                  </p>
+            <div className="space-y-12">
+              <div className="grid grid-cols-1 gap-12">
+                <div className="space-y-8">
+                  <AtomicTransitionDrawing view={atomicTransitionView} from={atomicFrom} to={atomicTo} />
                   
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between bg-white p-3 rounded-xl border border-gray-200">
-                      <span className="text-[10px] font-black text-gray-400 uppercase">Series</span>
-                      <span className="text-xs font-black text-gray-800 uppercase">
-                        {atomicTo === 1 ? 'Lyman (UV)' : atomicTo === 2 ? 'Balmer (Visible)' : atomicTo === 3 ? 'Paschen (IR)' : 'N/A'}
-                      </span>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="bg-gray-50 p-6 rounded-3xl border-2 border-gray-100">
+                      <div className="flex justify-between items-center mb-4">
+                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Initial State (n)</p>
+                        <span className="text-sm font-black text-indigo-600">n = {atomicFrom}</span>
+                      </div>
+                      <input 
+                        type="range" min="1" max="6" step="1"
+                        value={atomicFrom}
+                        onChange={(e) => setAtomicFrom(parseInt(e.target.value))}
+                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                      />
+                      <div className="flex justify-between mt-2 px-1">
+                        {[1, 2, 3, 4, 5, 6].map(v => <span key={v} className="text-[8px] font-bold text-gray-400">{v}</span>)}
+                      </div>
                     </div>
-                    <div className="flex items-center justify-between bg-white p-3 rounded-xl border border-gray-200">
-                      <span className="text-[10px] font-black text-gray-400 uppercase">Energy Change</span>
-                      <span className={`text-xs font-black uppercase ${atomicFrom < atomicTo ? 'text-blue-600' : 'text-yellow-600'}`}>
-                        {atomicFrom < atomicTo ? '+ ΔE (Endothermic)' : '- ΔE (Exothermic)'}
-                      </span>
+                    <div className="bg-gray-50 p-6 rounded-3xl border-2 border-gray-100">
+                      <div className="flex justify-between items-center mb-4">
+                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Final State (n)</p>
+                        <span className="text-sm font-black text-indigo-600">n = {atomicTo === 7 ? '∞' : atomicTo}</span>
+                      </div>
+                      <input 
+                        type="range" min="1" max="7" step="1"
+                        value={atomicTo}
+                        onChange={(e) => setAtomicTo(parseInt(e.target.value))}
+                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                      />
+                      <div className="flex justify-between mt-2 px-1">
+                        {[1, 2, 3, 4, 5, 6, '∞'].map((v, i) => <span key={i} className="text-[8px] font-bold text-gray-400">{v}</span>)}
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="bg-indigo-50 p-6 rounded-3xl border-2 border-indigo-100">
-                  <h4 className="text-xs font-black text-indigo-600 uppercase tracking-widest mb-4">Spectral Identification</h4>
-                  <div className="grid grid-cols-1 gap-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center font-black text-[10px]">UV</div>
-                      <p className="text-[10px] font-bold text-gray-600">Transitions to <span className="font-black text-gray-800">n = 1</span> produce Ultra-Violet light.</p>
+                <div className="flex flex-col gap-8">
+                  <div className="bg-gray-50 p-8 rounded-[2.5rem] border-2 border-gray-100">
+                    <h3 className="text-xl font-black text-gray-800 uppercase mb-6 flex items-center gap-3">
+                      <div className={`w-3 h-3 rounded-full ${atomicFrom < atomicTo ? 'bg-blue-500' : 'bg-yellow-500'}`} />
+                      {atomicFrom === 1 && atomicTo === 7 ? 'Ionization Process' : atomicFrom < atomicTo ? 'Absorption Process' : 'Emission Process'}
+                    </h3>
+                    <p className="text-base font-bold text-gray-600 leading-relaxed mb-8">
+                      {atomicFrom === 1 && atomicTo === 7 
+                        ? 'The electron absorbs enough energy to completely escape the attraction of the nucleus (n=1 to n=∞). This energy is the Ionization Energy.'
+                        : atomicFrom < atomicTo 
+                          ? 'The electron absorbs a photon of specific energy and moves to a higher energy level (excited state). Energy is ABSORBED.' 
+                          : 'The electron falls to a lower energy level and releases the excess energy as a photon. Energy is RELEASED.'}
+                    </p>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="bg-white p-4 rounded-2xl border border-gray-200">
+                        <span className="text-[10px] font-black text-gray-400 uppercase block mb-1">Series</span>
+                        <span className="text-sm font-black text-gray-800 uppercase">
+                          {atomicTo === 1 ? 'Lyman (UV)' : atomicTo === 2 ? 'Balmer (Visible)' : atomicTo === 3 ? 'Paschen (IR)' : 'N/A'}
+                        </span>
+                      </div>
+                      <div className="bg-white p-4 rounded-2xl border border-gray-200">
+                        <span className="text-[10px] font-black text-gray-400 uppercase block mb-1">Energy Change</span>
+                        <span className={`text-sm font-black uppercase ${atomicFrom < atomicTo ? 'text-blue-600' : 'text-yellow-600'}`}>
+                          {atomicFrom < atomicTo ? '+ ΔE (Endo)' : '- ΔE (Exo)'}
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center font-black text-[10px]">VIS</div>
-                      <p className="text-[10px] font-bold text-gray-600">Transitions to <span className="font-black text-gray-800">n = 2</span> produce Visible light.</p>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-red-100 text-red-600 flex items-center justify-center font-black text-[10px]">IR</div>
-                      <p className="text-[10px] font-bold text-gray-600">Transitions to <span className="font-black text-gray-800">n = 3</span> produce Infra-Red light.</p>
+                  </div>
+
+                  <div className="bg-indigo-50 p-8 rounded-[2.5rem] border-2 border-indigo-100">
+                    <h4 className="text-xs font-black text-indigo-600 uppercase tracking-widest mb-6">Spectral Identification</h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div className="flex flex-col items-center text-center gap-3 bg-white/50 p-4 rounded-2xl">
+                        <div className="w-10 h-10 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center font-black text-xs">UV</div>
+                        <p className="text-[10px] font-bold text-gray-600 leading-tight">Transitions to <span className="font-black text-gray-800">n = 1</span> produce Ultra-Violet light.</p>
+                      </div>
+                      <div className="flex flex-col items-center text-center gap-3 bg-white/50 p-4 rounded-2xl">
+                        <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center font-black text-xs">VIS</div>
+                        <p className="text-[10px] font-bold text-gray-600 leading-tight">Transitions to <span className="font-black text-gray-800">n = 2</span> produce Visible light.</p>
+                      </div>
+                      <div className="flex flex-col items-center text-center gap-3 bg-white/50 p-4 rounded-2xl">
+                        <div className="w-10 h-10 rounded-xl bg-red-100 text-red-600 flex items-center justify-center font-black text-xs">IR</div>
+                        <p className="text-[10px] font-bold text-gray-600 leading-tight">Transitions to <span className="font-black text-gray-800">n = 3</span> produce Infra-Red light.</p>
+                      </div>
                     </div>
                   </div>
                 </div>

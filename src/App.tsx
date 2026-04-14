@@ -61,13 +61,315 @@ interface SessionStats {
   }
 }
 
-export default function App() {
-  const formatFormula = (formula: string) => {
-    return formula
-      .replace(/(\d+)([+-])/g, '<sup>$1$2</sup>') // Match 2+, 3- etc
-      .replace(/([+-])(?!\d)/g, '<sup>$1</sup>') // Match solitary + or -
-      .replace(/([a-zA-Z)])(\d+)(?!<sup>)/g, '$1<sub>$2</sub>'); // Match subscripts, but only if not already part of a superscript
+const formatFormula = (formula: string) => {
+  return formula
+    .replace(/(\d+)([+-])/g, '<sup>$1$2</sup>') // Match 2+, 3- etc
+    .replace(/([+-])(?!\d)/g, '<sup>$1</sup>') // Match solitary + or -
+    .replace(/([a-zA-Z)])(\d+)(?!<sup>)/g, '$1<sub>$2</sub>'); // Match subscripts, but only if not already part of a superscript
+};
+
+const ELEMENTS_DATA = [
+  { z: 1, symbol: 'H', name: 'Hydrogen', block: 's', period: 1, group: 1 },
+  { z: 2, symbol: 'He', name: 'Helium', block: 's', period: 1, group: 18 },
+  { z: 3, symbol: 'Li', name: 'Lithium', block: 's', period: 2, group: 1 },
+  { z: 4, symbol: 'Be', name: 'Beryllium', block: 's', period: 2, group: 2 },
+  { z: 5, symbol: 'B', name: 'Boron', block: 'p', period: 2, group: 13 },
+  { z: 6, symbol: 'C', name: 'Carbon', block: 'p', period: 2, group: 14 },
+  { z: 7, symbol: 'N', name: 'Nitrogen', block: 'p', period: 2, group: 15 },
+  { z: 8, symbol: 'O', name: 'Oxygen', block: 'p', period: 2, group: 16 },
+  { z: 9, symbol: 'F', name: 'Fluorine', block: 'p', period: 2, group: 17 },
+  { z: 10, symbol: 'Ne', name: 'Neon', block: 'p', period: 2, group: 18 },
+  { z: 11, symbol: 'Na', name: 'Sodium', block: 's', period: 3, group: 1 },
+  { z: 12, symbol: 'Mg', name: 'Magnesium', block: 's', period: 3, group: 2 },
+  { z: 13, symbol: 'Al', name: 'Aluminium', block: 'p', period: 3, group: 13 },
+  { z: 14, symbol: 'Si', name: 'Silicon', block: 'p', period: 3, group: 14 },
+  { z: 15, symbol: 'P', name: 'Phosphorus', block: 'p', period: 3, group: 15 },
+  { z: 16, symbol: 'S', name: 'Sulfur', block: 'p', period: 3, group: 16 },
+  { z: 17, symbol: 'Cl', name: 'Chlorine', block: 'p', period: 3, group: 17 },
+  { z: 18, symbol: 'Ar', name: 'Argon', block: 'p', period: 3, group: 18 },
+  { z: 19, symbol: 'K', name: 'Potassium', block: 's', period: 4, group: 1 },
+  { z: 20, symbol: 'Ca', name: 'Calcium', block: 's', period: 4, group: 2 },
+  { z: 21, symbol: 'Sc', name: 'Scandium', block: 'd', period: 4, group: 3 },
+  { z: 22, symbol: 'Ti', name: 'Titanium', block: 'd', period: 4, group: 4 },
+  { z: 23, symbol: 'V', name: 'Vanadium', block: 'd', period: 4, group: 5 },
+  { z: 24, symbol: 'Cr', name: 'Chromium', block: 'd', period: 4, group: 6 },
+  { z: 25, symbol: 'Mn', name: 'Manganese', block: 'd', period: 4, group: 7 },
+  { z: 26, symbol: 'Fe', name: 'Iron', block: 'd', period: 4, group: 8 },
+  { z: 27, symbol: 'Co', name: 'Cobalt', block: 'd', period: 4, group: 9 },
+  { z: 28, symbol: 'Ni', name: 'Nickel', block: 'd', period: 4, group: 10 },
+  { z: 29, symbol: 'Cu', name: 'Copper', block: 'd', period: 4, group: 11 },
+  { z: 30, symbol: 'Zn', name: 'Zinc', block: 'd', period: 4, group: 12 },
+];
+
+const ORBITAL_GROUPS = [
+  { id: '1s', label: '1s', boxes: 1, block: 's', energy: 1 },
+  { id: '2s', label: '2s', boxes: 1, block: 's', energy: 2 },
+  { id: '2p', label: '2p', boxes: 3, block: 'p', energy: 3 },
+  { id: '3s', label: '3s', boxes: 1, block: 's', energy: 4 },
+  { id: '3p', label: '3p', boxes: 3, block: 'p', energy: 5 },
+  { id: '4s', label: '4s', boxes: 1, block: 's', energy: 6 },
+  { id: '3d', label: '3d', boxes: 5, block: 'd', energy: 7 },
+];
+
+const BLOCK_COLORS = {
+  s: { bg: 'bg-rose-500', text: 'text-rose-600', light: 'bg-rose-100', border: 'border-rose-500/50', glow: 'bg-rose-500/10', accent: 'text-rose-400', muted: 'text-rose-300', bgLight: 'bg-rose-50' },
+  p: { bg: 'bg-blue-500', text: 'text-blue-600', light: 'bg-blue-100', border: 'border-blue-500/50', glow: 'bg-blue-500/10', accent: 'text-blue-400', muted: 'text-blue-300', bgLight: 'bg-blue-50' },
+  d: { bg: 'bg-amber-500', text: 'text-amber-600', light: 'bg-amber-100', border: 'border-amber-500/50', glow: 'bg-amber-500/10', accent: 'text-amber-400', muted: 'text-amber-300', bgLight: 'bg-amber-50' },
+  f: { bg: 'bg-emerald-500', text: 'text-emerald-600', light: 'bg-emerald-100', border: 'border-emerald-500/50', glow: 'bg-emerald-500/10', accent: 'text-emerald-400', muted: 'text-emerald-300', bgLight: 'bg-emerald-50' }
+};
+
+const ElectronicConfiguration = () => {
+  const [z, setZ] = useState(1);
+  
+  const currentElement = ELEMENTS_DATA.find(e => e.z === z) || ELEMENTS_DATA[0];
+  
+  const getDistribution = (atomicNumber: number) => {
+    const dist: Record<string, number> = {};
+    let remaining = atomicNumber;
+
+    // Exceptions
+    if (atomicNumber === 24) { // Cr: [Ar] 4s1 3d5
+      dist['1s'] = 2; dist['2s'] = 2; dist['2p'] = 6; dist['3s'] = 2; dist['3p'] = 6;
+      dist['4s'] = 1; dist['3d'] = 5;
+      return dist;
+    }
+    if (atomicNumber === 29) { // Cu: [Ar] 4s1 3d10
+      dist['1s'] = 2; dist['2s'] = 2; dist['2p'] = 6; dist['3s'] = 2; dist['3p'] = 6;
+      dist['4s'] = 1; dist['3d'] = 10;
+      return dist;
+    }
+
+    for (const og of ORBITAL_GROUPS) {
+      const cap = og.boxes * 2;
+      const fill = Math.min(remaining, cap);
+      dist[og.id] = fill;
+      remaining -= fill;
+      if (remaining <= 0) break;
+    }
+    return dist;
   };
+
+  const distribution = getDistribution(z);
+
+  const getBoxElectrons = (orbitalId: string, boxIndex: number, totalElectrons: number) => {
+    const og = ORBITAL_GROUPS.find(o => o.id === orbitalId)!;
+    const spins: number[] = [];
+    if (totalElectrons > boxIndex) spins.push(1);
+    if (totalElectrons > og.boxes + boxIndex) spins.push(-1);
+    return spins;
+  };
+
+  const getCondensedConfig = () => {
+    const full = ORBITAL_GROUPS
+      .filter(og => distribution[og.id] > 0)
+      .map(og => `${og.label}${distribution[og.id]}`)
+      .join(' ');
+    if (z <= 2) return full;
+    if (z <= 10) return `[He] ${ORBITAL_GROUPS.slice(1).filter(og => distribution[og.id] > 0).map(og => `${og.label}${distribution[og.id]}`).join(' ')}`;
+    if (z <= 18) return `[Ne] ${ORBITAL_GROUPS.slice(3).filter(og => distribution[og.id] > 0).map(og => `${og.label}${distribution[og.id]}`).join(' ')}`;
+    return `[Ar] ${ORBITAL_GROUPS.slice(5).filter(og => distribution[og.id] > 0).map(og => `${og.label}${distribution[og.id]}`).join(' ')}`;
+  };
+
+  const currentColors = BLOCK_COLORS[currentElement.block as keyof typeof BLOCK_COLORS];
+
+  return (
+    <div className="space-y-8">
+      {/* Periodic Table Mini-Map */}
+      <div className="bg-white p-6 rounded-[2rem] border-2 border-gray-100 shadow-sm">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Select Element (Z=1 to 30)</h3>
+          <div className="flex gap-4">
+            {['s', 'p', 'd'].map(b => (
+              <div key={b} className="flex items-center gap-1.5">
+                <div className={`w-2 h-2 rounded-full ${BLOCK_COLORS[b as keyof typeof BLOCK_COLORS].bg}`} />
+                <span className="text-[8px] font-black text-gray-400 uppercase">{b} block</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="grid grid-cols-[repeat(18,minmax(0,1fr))] gap-1">
+          {Array(4).fill(null).map((_, rIdx) => (
+            Array(18).fill(null).map((_, cIdx) => {
+              const el = ELEMENTS_DATA.find(e => e.period === rIdx + 1 && e.group === cIdx + 1);
+              if (!el) return <div key={`${rIdx}-${cIdx}`} className="aspect-square" />;
+              const isSelected = el.z === z;
+              const colors = BLOCK_COLORS[el.block as keyof typeof BLOCK_COLORS];
+              return (
+                <button
+                  key={el.z}
+                  onClick={() => setZ(el.z)}
+                  className={`aspect-square rounded-sm flex flex-col items-center justify-center transition-all duration-200
+                    ${isSelected 
+                      ? `${colors.bg} text-white shadow-lg scale-110 z-10 ring-2 ring-offset-1 ring-gray-800`
+                      : `bg-gray-50 text-gray-400 hover:bg-white hover:shadow-md hover:scale-105 hover:z-10 border border-gray-100`}
+                  `}
+                >
+                  <span className="text-[6px] font-black leading-none">{el.symbol}</span>
+                  <span className="text-[4px] font-bold opacity-60 leading-none mt-0.5">{el.z}</span>
+                </button>
+              );
+            })
+          ))}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        {/* Orbital Energy Ladder */}
+        <div className="lg:col-span-7 bg-gray-900 p-8 rounded-[2.5rem] border-4 border-gray-800 shadow-2xl relative overflow-hidden">
+          <div className="absolute left-4 top-8 bottom-8 w-[1px] bg-gray-800 flex flex-col justify-between items-center py-4">
+            <ChevronUp size={12} className="text-gray-600" />
+            <span className="text-[8px] font-black text-gray-600 uppercase tracking-widest [writing-mode:vertical-lr] rotate-180">Energy Level</span>
+            <div className="w-2 h-[1px] bg-gray-800" />
+          </div>
+
+          <div className="ml-8 space-y-6">
+            <div className="flex items-center justify-between mb-8">
+              <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Orbital Energy Diagram</h4>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-[8px] font-black text-emerald-500 uppercase tracking-widest">Real-time distribution</span>
+              </div>
+            </div>
+
+            <div className="flex flex-col-reverse gap-6">
+              {ORBITAL_GROUPS.map((og) => {
+                const fill = distribution[og.id] || 0;
+                const colors = BLOCK_COLORS[og.block as keyof typeof BLOCK_COLORS];
+                const isActive = fill > 0;
+
+                return (
+                  <motion.div 
+                    key={og.id}
+                    initial={false}
+                    animate={{ opacity: isActive ? 1 : 0.3, x: isActive ? 0 : -5 }}
+                    className="flex items-center gap-6"
+                  >
+                    <div className="w-10 text-right">
+                      <span className={`text-sm font-black font-mono ${isActive ? 'text-white' : 'text-gray-700'}`}>{og.label}</span>
+                    </div>
+                    <div className="flex gap-2">
+                      {[...Array(og.boxes)].map((_, bIdx) => {
+                        const spins = getBoxElectrons(og.id, bIdx, fill);
+                        return (
+                          <div 
+                            key={bIdx} 
+                            className={`w-12 h-12 border-2 rounded-xl flex items-center justify-center relative transition-all duration-500
+                              ${isActive ? `${colors.border} bg-gray-800/50 shadow-[0_0_15px_rgba(0,0,0,0.2)]` : 'border-gray-800 bg-transparent'}
+                            `}
+                          >
+                            <AnimatePresence mode="popLayout">
+                              {spins.includes(1) && (
+                                <motion.div 
+                                  key="up"
+                                  initial={{ y: 10, opacity: 0, scale: 0 }}
+                                  animate={{ y: 0, opacity: 1, scale: 1 }}
+                                  exit={{ y: 10, opacity: 0, scale: 0 }}
+                                  className={`absolute left-2 ${colors.accent}`}
+                                >
+                                  <ChevronUp size={24} strokeWidth={4} />
+                                </motion.div>
+                              )}
+                              {spins.includes(-1) && (
+                                <motion.div 
+                                  key="down"
+                                  initial={{ y: -10, opacity: 0, scale: 0 }}
+                                  animate={{ y: 0, opacity: 1, scale: 1 }}
+                                  exit={{ y: -10, opacity: 0, scale: 0 }}
+                                  className={`absolute right-2 ${colors.accent}`}
+                                >
+                                  <ChevronDown size={24} strokeWidth={4} />
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* Info & Config Card */}
+        <div className="lg:col-span-5 space-y-6">
+          <div className="bg-white p-8 rounded-[2.5rem] border-2 border-gray-100 shadow-sm space-y-8">
+            <div className="flex items-center gap-6">
+              <div className={`w-20 h-20 rounded-[2rem] ${currentColors.light} flex items-center justify-center ${currentColors.text} font-black text-3xl shadow-inner border-2 ${currentColors.border}`}>
+                {currentElement.symbol}
+              </div>
+              <div>
+                <h3 className="text-2xl font-black text-gray-800 tracking-tight lowercase">{currentElement.name}</h3>
+                <div className="flex gap-3 mt-1">
+                  <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Z = {z}</span>
+                  <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${currentColors.light} ${currentColors.text} uppercase tracking-widest`}>{currentElement.block} block</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-6">
+              <div>
+                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Full Configuration</p>
+                <div className="flex flex-wrap gap-2">
+                  {ORBITAL_GROUPS.filter(og => distribution[og.id] > 0).map(og => {
+                    const colors = BLOCK_COLORS[og.block as keyof typeof BLOCK_COLORS];
+                    return (
+                      <div key={og.id} className={`px-3 py-1.5 rounded-xl ${colors.bgLight} ${colors.text} font-mono font-black text-sm border ${colors.border}`}>
+                        {og.label}<sup>{distribution[og.id]}</sup>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div>
+                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Condensed Configuration</p>
+                <div className="p-5 bg-gray-50 rounded-2xl border-2 border-gray-100 font-mono font-black text-lg text-gray-800 shadow-inner">
+                  {getCondensedConfig().split(' ').map((part, i) => {
+                    if (part.startsWith('[')) return <span key={i} className="text-gray-400 mr-2">{part}</span>;
+                    const match = part.match(/(\d[spd])(\d+)/);
+                    if (match) {
+                      const og = ORBITAL_GROUPS.find(o => o.label === match[1])!;
+                      const colors = BLOCK_COLORS[og.block as keyof typeof BLOCK_COLORS];
+                      return (
+                        <span key={i} className={`${colors.text} mr-2`}>
+                          {match[1]}<sup>{match[2]}</sup>
+                        </span>
+                      );
+                    }
+                    return <span key={i} className="mr-2">{part}</span>;
+                  })}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-indigo-600 p-8 rounded-[2.5rem] text-white shadow-xl relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-6 opacity-10">
+              <Zap size={60} />
+            </div>
+            <h5 className="text-[10px] font-black uppercase tracking-[0.2em] mb-4 opacity-70">Key Principles</h5>
+            <div className="space-y-4">
+              {[
+                { name: 'Aufbau', desc: 'Fill lowest energy first' },
+                { name: 'Pauli', desc: 'Opposite spins in same orbital' },
+                { name: 'Hund', desc: 'Fill singly before pairing' }
+              ].map(p => (
+                <div key={p.name} className="flex items-center gap-3">
+                  <div className="w-1.5 h-1.5 rounded-full bg-indigo-300" />
+                  <p className="text-xs font-bold"><span className="text-indigo-200 uppercase tracking-widest mr-2">{p.name}:</span> {p.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default function App() {
   const [mode, setMode] = useState<AppMode>('splash');
   const [selectedUnit, setSelectedUnit] = useState<Unit | null>(null);
   const [quizProgress, setQuizProgress] = useState(0);
@@ -2523,30 +2825,21 @@ export default function App() {
     const currentElement = ieData.find(e => e.z === selectedZ) || ieData[0];
 
     const getShellColor = (electronIndex: number, totalZ: number) => {
-      // Electron index is 0-based, from outermost to innermost removed
-      // But usually successive IE is plotted from 1st to Zth.
-      // Let's map electron number (1 to Z) to shell.
-      // For Z=11 (Na): 1st (3s), 2nd-9th (2p, 2s), 10th-11th (1s)
-      // Shell capacities: 2, 8, 8, 2 (up to Ca)
-      
       const shellMapping: number[] = [];
       for (let i = 1; i <= totalZ; i++) {
-        if (i <= 2) shellMapping.push(1); // 1s
-        else if (i <= 10) shellMapping.push(2); // 2s, 2p
-        else if (i <= 18) shellMapping.push(3); // 3s, 3p
-        else shellMapping.push(4); // 4s
+        if (i <= 2) shellMapping.push(1);
+        else if (i <= 10) shellMapping.push(2);
+        else if (i <= 18) shellMapping.push(3);
+        else shellMapping.push(4);
       }
-      // Successive IE is usually plotted as 1st, 2nd... so i=1 is 1st IE
-      // The shell mapping above is from innermost (1s) to outermost.
-      // We need to reverse it because 1st IE removes the outermost electron.
       const reversedShells = [...shellMapping].reverse();
       const shell = reversedShells[electronIndex];
       
       const colors = {
-        1: '#ef4444', // Red (Innermost)
-        2: '#f59e0b', // Orange
-        3: '#10b981', // Emerald
-        4: '#3b82f6', // Blue (Outermost)
+        1: '#f43f5e', // rose-500
+        2: '#f59e0b', // amber-500
+        3: '#10b981', // emerald-500
+        4: '#3b82f6', // blue-500
       };
       return colors[shell as keyof typeof colors] || '#6366f1';
     };
@@ -2555,10 +2848,18 @@ export default function App() {
       num: idx + 1,
       ie: Math.log10(val),
       realVal: val,
-      color: getShellColor(idx, currentElement.z)
+      color: getShellColor(idx, currentElement.z),
+      shell: [4, 3, 2, 1].reverse()[[...Array(currentElement.z)].map((_, i) => {
+        if (i < 2) return 1;
+        if (i < 10) return 2;
+        if (i < 18) return 3;
+        return 4;
+      }).reverse()[idx] - 1]
     }));
 
-    const BohrModel = ({ z }: { z: number }) => {
+    const [hoveredElectron, setHoveredElectron] = useState<number | null>(null);
+
+    const BohrModel = ({ z, highlightIndex }: { z: number, highlightIndex: number | null }) => {
       const shellCounts = [0, 0, 0, 0];
       for (let i = 1; i <= z; i++) {
         if (i <= 2) shellCounts[0]++;
@@ -2568,42 +2869,67 @@ export default function App() {
       }
 
       return (
-        <div className="relative w-56 h-56 flex items-center justify-center bg-indigo-950/40 rounded-full border-2 border-white/5 shadow-inner">
+        <div className="relative w-72 h-72 flex items-center justify-center bg-slate-950/50 rounded-full border-2 border-white/10 shadow-2xl overflow-hidden">
+          {/* Background Glow */}
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(99,102,241,0.15)_0%,transparent_70%)]" />
+          
           {/* Nucleus */}
-          <div className="w-12 h-12 bg-indigo-500 rounded-full flex items-center justify-center z-20 shadow-[0_0_30px_rgba(99,102,241,0.6)] border-2 border-white/30">
+          <motion.div 
+            initial={false}
+            animate={{ scale: 1 }}
+            className="w-14 h-14 bg-gradient-to-br from-indigo-400 to-indigo-600 rounded-full flex items-center justify-center z-20 shadow-[0_0_40px_rgba(99,102,241,0.4)] border-2 border-white/20"
+          >
             <span className="text-sm font-black text-white drop-shadow-md">{z}+</span>
-          </div>
+          </motion.div>
           
           {shellCounts.map((count, sIdx) => {
             if (count === 0) return null;
-            const radius = 40 + sIdx * 25;
-            const shellColor = { 0: '#ef4444', 1: '#f59e0b', 2: '#10b981', 3: '#3b82f6' }[sIdx];
+            const radius = 50 + sIdx * 30;
+            const shellColor = { 0: '#f43f5e', 1: '#f59e0b', 2: '#10b981', 3: '#3b82f6' }[sIdx];
+            
+            let startIndex = 0;
+            for (let i = 0; i < sIdx; i++) startIndex += shellCounts[i];
+
             return (
               <div 
-                key={sIdx} 
-                className="absolute border border-white/10 rounded-full" 
+                key={`shell-${sIdx}`}
+                className="absolute border border-white/10 rounded-full pointer-events-none" 
                 style={{ width: radius * 2, height: radius * 2 }}
               >
                 {[...Array(count)].map((_, eIdx) => {
+                  const globalIdx = startIndex + eIdx;
+                  const isHighlighted = highlightIndex !== null && (z - 1 - highlightIndex) === globalIdx;
+                  
                   const angle = (eIdx / count) * 2 * Math.PI - Math.PI / 2;
                   const x = radius * Math.cos(angle);
                   const y = radius * Math.sin(angle);
+                  
                   return (
                     <motion.div
-                      key={eIdx}
-                      initial={{ scale: 0 }}
+                      key={`electron-${globalIdx}`}
+                      layout
                       animate={{ 
-                        scale: 1,
-                        boxShadow: [`0 0 8px ${shellColor}`, `0 0 15px ${shellColor}`, `0 0 8px ${shellColor}`]
+                        scale: isHighlighted ? 1.5 : 1,
+                        boxShadow: isHighlighted 
+                          ? `0 0 20px ${shellColor}`
+                          : `0 0 8px ${shellColor}`
                       }}
-                      transition={{ duration: 2, repeat: Infinity }}
-                      className="absolute w-3.5 h-3.5 rounded-full border border-white/50 z-10"
+                      transition={{ 
+                        type: 'spring', stiffness: 300, damping: 20
+                      }}
+                      className="absolute w-4 h-4 rounded-full border border-white/40 z-10"
                       style={{ 
-                        left: `calc(50% + ${x}px - 7px)`, 
-                        top: `calc(50% + ${y}px - 7px)`,
+                        left: `calc(50% + ${x}px - 8px)`, 
+                        top: `calc(50% + ${y}px - 8px)`,
                         backgroundColor: shellColor
                       }}
-                    />
+                    >
+                      {isHighlighted && (
+                        <motion.div 
+                          className="absolute inset-0 border-2 border-white rounded-full animate-ping"
+                        />
+                      )}
+                    </motion.div>
                   );
                 })}
               </div>
@@ -2619,19 +2945,19 @@ export default function App() {
         if (view === 'first') {
           return (
             <div className="bg-white p-3 border-2 border-gray-100 rounded-xl shadow-xl">
-              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Z = {data.z}</p>
+              <p className="text-[10px] font-black text-gray-400 tracking-widest mb-1">z = {data.z}</p>
               <p className="text-sm font-black text-gray-800">{data.symbol}</p>
-              <p className="text-xs font-bold text-indigo-600">1st IE: {data.ie} kJ mol⁻¹</p>
+              <p className="text-xs font-bold text-indigo-600">1st ie: {data.ie} kj mol⁻¹</p>
             </div>
           );
         } else {
           return (
             <div className="bg-white p-3 border-2 border-gray-100 rounded-xl shadow-xl">
-              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{data.num === 1 ? '1st' : data.num === 2 ? '2nd' : data.num === 3 ? '3rd' : `${data.num}th`} IE</p>
-              <p className="text-sm font-black text-gray-800">{data.realVal} kJ mol⁻¹</p>
+              <p className="text-[10px] font-black text-gray-400 tracking-widest mb-1">{data.num === 1 ? '1st' : data.num === 2 ? '2nd' : data.num === 3 ? '3rd' : `${data.num}th`} ie</p>
+              <p className="text-sm font-black text-gray-800">{data.realVal} kj mol⁻¹</p>
               <div className="flex items-center gap-2 mt-1">
                 <div className="w-2 h-2 rounded-full" style={{ backgroundColor: data.color }} />
-                <p className="text-[8px] font-black text-gray-400 uppercase">Shell Level</p>
+                <p className="text-[8px] font-black text-gray-400">shell level</p>
               </div>
             </div>
           );
@@ -2647,23 +2973,23 @@ export default function App() {
           <div className="flex bg-white p-1 rounded-2xl border-2 border-gray-100 shadow-sm">
             <button
               onClick={() => setView('first')}
-              className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${view === 'first' ? 'bg-indigo-600 text-white shadow-lg' : 'text-gray-400 hover:text-gray-600'}`}
+              className={`px-6 py-2 rounded-xl text-[10px] font-black transition-all ${view === 'first' ? 'bg-indigo-600 text-white shadow-lg' : 'text-gray-400 hover:text-gray-600'}`}
             >
-              1st IE Trend
+              1st ie trend
             </button>
             <button
               onClick={() => setView('successive')}
-              className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${view === 'successive' ? 'bg-indigo-600 text-white shadow-lg' : 'text-gray-400 hover:text-gray-600'}`}
+              className={`px-6 py-2 rounded-xl text-[10px] font-black transition-all ${view === 'successive' ? 'bg-indigo-600 text-white shadow-lg' : 'text-gray-400 hover:text-gray-600'}`}
             >
-              Successive IE
+              successive ie
             </button>
           </div>
 
           {view === 'successive' && (
             <div className="flex-1 w-full max-w-md space-y-4">
               <div className="flex justify-between items-center px-2">
-                <span className="text-[10px] font-black text-gray-400 uppercase">Select Element</span>
-                <span className="text-sm font-black text-indigo-600">{currentElement.symbol} (Z={selectedZ})</span>
+                <span className="text-[10px] font-black text-gray-400">select element</span>
+                <span className="text-sm font-black text-indigo-600">{currentElement.symbol} (z={selectedZ})</span>
               </div>
               <input 
                 type="range" 
@@ -2686,21 +3012,21 @@ export default function App() {
           <div className="lg:col-span-2 bg-white p-8 rounded-[3rem] border-2 border-gray-100 shadow-sm relative overflow-hidden">
             <div className="flex justify-between items-center mb-8">
               <div>
-                <h3 className="text-xl font-black text-gray-800 uppercase tracking-tight">
-                  {view === 'first' ? '1st Ionization Energy Trend' : `Successive IE: ${currentElement.symbol}`}
+                <h3 className="text-xl font-black text-gray-800 tracking-tight lowercase">
+                  {view === 'first' ? '1st ionization energy trend' : `successive ie: ${currentElement.symbol}`}
                 </h3>
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                  {view === 'first' ? 'Across Period 1-3 & Start of 4' : `Atomic Number Z = ${currentElement.z}`}
+                <p className="text-[10px] font-bold text-gray-400 tracking-widest lowercase">
+                  {view === 'first' ? 'across period 1-3 & start of 4' : `atomic number z = ${currentElement.z}`}
                 </p>
               </div>
               {view === 'successive' && (
                 <div className="flex gap-4">
                   <div className="text-right">
-                    <p className="text-[8px] font-black text-gray-400 uppercase">Group</p>
+                    <p className="text-[8px] font-black text-gray-400">group</p>
                     <p className="text-sm font-black text-indigo-600">{currentElement.group}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-[8px] font-black text-gray-400 uppercase">Period</p>
+                    <p className="text-[8px] font-black text-gray-400">period</p>
                     <p className="text-sm font-black text-indigo-600">{currentElement.period}</p>
                   </div>
                 </div>
@@ -2726,7 +3052,7 @@ export default function App() {
                       fontWeight="bold"
                       tickLine={false}
                       axisLine={false}
-                      label={{ value: '1st IE (kJ/mol)', angle: -90, position: 'insideLeft', fontSize: 10, fontWeight: 'black', offset: 10 }}
+                      label={{ value: '1st ie (kj/mol)', angle: -90, position: 'insideLeft', fontSize: 10, fontWeight: 'black', offset: 10 }}
                     />
                     <Tooltip content={<CustomTooltip />} />
                     <Line 
@@ -2748,7 +3074,7 @@ export default function App() {
                       fontWeight="bold"
                       tickLine={false}
                       axisLine={false}
-                      label={{ value: 'Electron Removed', position: 'insideBottom', offset: -15, fontSize: 10, fontWeight: 'black' }}
+                      label={{ value: 'electron removed', position: 'insideBottom', offset: -15, fontSize: 10, fontWeight: 'black' }}
                     />
                     <YAxis 
                       stroke="#94a3b8" 
@@ -2756,12 +3082,24 @@ export default function App() {
                       fontWeight="bold"
                       tickLine={false}
                       axisLine={false}
-                      label={{ value: 'log₁₀(IE)', angle: -90, position: 'insideLeft', fontSize: 10, fontWeight: 'black', offset: 10 }}
+                      label={{ value: 'log₁₀ ie (kj/mol)', angle: -90, position: 'insideLeft', fontSize: 10, fontWeight: 'black', offset: 10 }}
                     />
                     <Tooltip content={<CustomTooltip />} />
-                    <Bar dataKey="ie" radius={[4, 4, 0, 0]}>
+                    <Bar 
+                      dataKey="ie" 
+                      radius={[6, 6, 0, 0]}
+                      onMouseEnter={(_, index) => setHoveredElectron(index)}
+                      onMouseLeave={() => setHoveredElectron(null)}
+                    >
                       {successiveChartData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
+                        <Cell 
+                          key={`cell-${index}`} 
+                          fill={entry.color}
+                          fillOpacity={hoveredElectron === null || hoveredElectron === index ? 1 : 0.3}
+                          stroke={hoveredElectron === index ? '#fff' : 'none'}
+                          strokeWidth={2}
+                          className="transition-all duration-300"
+                        />
                       ))}
                     </Bar>
                   </BarChart>
@@ -2773,39 +3111,46 @@ export default function App() {
               <div className="mt-6 flex flex-wrap gap-4 justify-center">
                 {[4, 3, 2, 1].map(s => (
                   <div key={s} className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: { 1: '#ef4444', 2: '#f59e0b', 3: '#10b981', 4: '#3b82f6' }[s as 1|2|3|4] }} />
-                    <span className="text-[10px] font-black text-gray-400 uppercase">Shell {s}</span>
+                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: { 1: '#f43f5e', 2: '#f59e0b', 3: '#10b981', 4: '#3b82f6' }[s as 1|2|3|4] }} />
+                    <span className="text-[10px] font-black text-gray-400">shell {s}</span>
                   </div>
                 ))}
               </div>
             )}
           </div>
 
-          <div className="bg-indigo-900 rounded-[3rem] p-8 text-white flex flex-col items-center justify-center shadow-xl shadow-indigo-200 relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
-              <div className="absolute top-[-10%] right-[-10%] w-64 h-64 bg-white rounded-full blur-3xl" />
-              <div className="absolute bottom-[-10%] left-[-10%] w-64 h-64 bg-indigo-400 rounded-full blur-3xl" />
+          <div className="bg-slate-900 rounded-[3rem] p-8 text-white flex flex-col items-center justify-center shadow-2xl shadow-slate-200/50 relative overflow-hidden border-2 border-slate-800">
+            <div className="absolute top-0 left-0 w-full h-full opacity-20 pointer-events-none">
+              <div className="absolute top-[-10%] right-[-10%] w-64 h-64 bg-indigo-500/20 rounded-full blur-3xl" />
+              <div className="absolute bottom-[-10%] left-[-10%] w-64 h-64 bg-rose-500/20 rounded-full blur-3xl" />
             </div>
             
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] mb-8 opacity-60">Atomic Visualization</p>
-            <BohrModel z={currentElement.z} />
+            <p className="text-[10px] font-black tracking-[0.2em] mb-8 opacity-40 uppercase">atomic visualization</p>
+            <BohrModel z={currentElement.z} highlightIndex={hoveredElectron} />
             
             <div className="mt-12 text-center space-y-2">
-              <h4 className="text-3xl font-black tracking-tighter">{currentElement.symbol}</h4>
-              <p className="text-[10px] font-black uppercase tracking-widest text-indigo-300">
-                {currentElement.z} Protons • {currentElement.z} Electrons
+              <motion.h4 
+                key={currentElement.symbol}
+                initial={{ y: 10, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                className="text-4xl font-black tracking-tighter"
+              >
+                {currentElement.symbol}
+              </motion.h4>
+              <p className="text-[10px] font-black tracking-widest text-slate-400 uppercase">
+                {currentElement.z} protons • {currentElement.z} electrons
               </p>
             </div>
 
             <div className="mt-8 grid grid-cols-2 gap-4 w-full">
-              <div className="bg-white/10 p-4 rounded-2xl border border-white/10 backdrop-blur-sm">
-                <p className="text-[8px] font-black uppercase opacity-60 mb-1">Config</p>
-                <p className="text-xs font-bold">
+              <div className="bg-white/5 p-4 rounded-2xl border border-white/10 backdrop-blur-md">
+                <p className="text-[8px] font-black uppercase opacity-40 mb-1">config</p>
+                <p className="text-xs font-bold font-mono">
                   {currentElement.z <= 2 ? '1s' : currentElement.z <= 10 ? '[He] 2s 2p' : currentElement.z <= 18 ? '[Ne] 3s 3p' : '[Ar] 4s'}
                 </p>
               </div>
-              <div className="bg-white/10 p-4 rounded-2xl border border-white/10 backdrop-blur-sm">
-                <p className="text-[8px] font-black uppercase opacity-60 mb-1">Valence</p>
+              <div className="bg-white/5 p-4 rounded-2xl border border-white/10 backdrop-blur-md">
+                <p className="text-[8px] font-black uppercase opacity-40 mb-1">valence</p>
                 <p className="text-xs font-bold">
                   {currentElement.group === 18 ? 8 : currentElement.group > 10 ? currentElement.group - 10 : currentElement.group} e⁻
                 </p>
@@ -3251,23 +3596,29 @@ export default function App() {
       });
 
       return (
-        <div className="grid grid-cols-[repeat(18,minmax(0,1fr))] gap-1 w-full max-w-md mx-auto">
+        <div className="grid grid-cols-[repeat(18,minmax(0,1fr))] gap-1 w-full max-w-2xl mx-auto p-4 bg-gray-50 rounded-2xl border border-gray-100">
           {grid.map((row, rIdx) => (
             row.map((el, cIdx) => {
               const colors = el ? blockColors[el.block as keyof typeof blockColors] : null;
+              const isSelected = el?.z === z;
               return (
-                <div 
+                <button 
                   key={`${rIdx}-${cIdx}`} 
-                  className={`aspect-square rounded-sm flex items-center justify-center text-[6px] font-black transition-all duration-300
+                  onClick={() => el && setZ(el.z)}
+                  disabled={!el}
+                  className={`aspect-square rounded-sm flex flex-col items-center justify-center transition-all duration-200
                     ${el 
-                      ? el.z <= z 
-                        ? `${colors?.bg} text-white shadow-sm scale-105 z-10`
-                        : `${colors?.light} ${colors?.muted}`
-                      : 'bg-transparent'}
+                      ? isSelected 
+                        ? `${colors?.bg} text-white shadow-lg scale-110 z-10 ring-2 ring-offset-1 ring-gray-800`
+                        : el.z < z 
+                          ? `${colors?.bg} text-white opacity-40 hover:opacity-100`
+                          : `${colors?.light} ${colors?.muted} hover:bg-white hover:shadow-md hover:scale-105 hover:z-10`
+                      : 'bg-transparent cursor-default'}
                   `}
                 >
-                  {el?.symbol}
-                </div>
+                  <span className="text-[6px] font-black leading-none">{el?.symbol}</span>
+                  <span className="text-[4px] font-bold opacity-60 leading-none mt-0.5">{el?.z}</span>
+                </button>
               );
             })
           ))}
@@ -3279,35 +3630,36 @@ export default function App() {
 
     return (
       <div className="space-y-8">
-        {/* Slider Section */}
-        <div className="bg-white p-6 rounded-3xl border-2 border-gray-100 shadow-sm space-y-4">
+        {/* Periodic Table Selection Section */}
+        <div className="bg-white p-8 rounded-[3rem] border-2 border-gray-100 shadow-sm space-y-6">
           <div className="flex justify-between items-center">
-            <div className="flex items-center gap-3">
-              <div className={`w-12 h-12 rounded-2xl ${currentColors.light} flex items-center justify-center ${currentColors.text} font-black text-xl`}>
+            <div className="flex items-center gap-4">
+              <div className={`w-16 h-16 rounded-3xl ${currentColors.light} flex items-center justify-center ${currentColors.text} font-black text-2xl shadow-inner`}>
                 {currentElement.symbol}
               </div>
               <div>
-                <h3 className="text-lg font-black text-gray-800 uppercase tracking-tight">{currentElement.name}</h3>
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Atomic Number: {z}</p>
+                <h3 className="text-xl font-black text-gray-800 tracking-tight lowercase">{currentElement.name}</h3>
+                <div className="flex gap-3 mt-1">
+                  <p className="text-[10px] font-bold text-gray-400 tracking-widest lowercase">z = {z}</p>
+                  <p className={`text-[10px] font-black px-2 py-0.5 rounded-full ${currentColors.light} ${currentColors.text} lowercase tracking-widest`}>{currentElement.block}-block</p>
+                </div>
               </div>
             </div>
-            <div className="text-right">
-              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Block</p>
-              <p className={`text-sm font-black ${currentColors.bg.replace('bg-', 'text-')} uppercase`}>{currentElement.block}-block</p>
+            <div className="hidden md:block text-right">
+              <p className="text-[10px] font-black text-gray-400 tracking-widest lowercase">period {currentElement.period}</p>
+              <p className="text-[10px] font-black text-gray-400 tracking-widest lowercase">group {currentElement.group}</p>
             </div>
           </div>
           
-          <input 
-            type="range" 
-            min="1" 
-            max="30" 
-            value={z} 
-            onChange={(e) => setZ(parseInt(e.target.value))}
-            className="w-full h-2 bg-gray-100 rounded-lg appearance-none cursor-pointer accent-gray-800"
-          />
-          <div className="flex justify-between px-1">
-            <span className="text-[8px] font-bold text-gray-400 uppercase">Hydrogen (1)</span>
-            <span className="text-[8px] font-bold text-gray-400 uppercase">Zinc (30)</span>
+          <PeriodicTable />
+          
+          <div className="flex justify-center gap-8 pt-2">
+            {['s', 'p', 'd'].map(block => (
+              <div key={block} className="flex items-center gap-2">
+                <div className={`w-3 h-3 rounded-full ${blockColors[block as keyof typeof blockColors].bg}`} />
+                <span className="text-[10px] font-black text-gray-400 lowercase">{block}-block</span>
+              </div>
+            ))}
           </div>
         </div>
 
@@ -3315,59 +3667,72 @@ export default function App() {
           {/* Left Column: Orbital Diagram */}
           <div className="bg-gray-900 p-8 rounded-[2.5rem] border-4 border-gray-800 shadow-2xl space-y-8">
             <div className="flex items-center justify-between">
-              <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Electron-in-Box Diagram</h4>
+              <h4 className="text-[10px] font-black text-gray-500 tracking-widest">electron-in-box diagram</h4>
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-[8px] font-black text-emerald-500 uppercase tracking-widest">Energy Ascending</span>
+                <span className="text-[8px] font-black text-emerald-500 tracking-widest">energy ascending</span>
               </div>
             </div>
 
-            <div className="flex flex-col-reverse gap-6">
+            <div className="flex flex-col-reverse gap-4">
               {orbitalGroups.map((og) => {
                 const fill = distribution[og.id] || 0;
-                if (fill === 0 && og.energy > orbitalGroups.find(o => distribution[o.id] > 0)?.energy! + 1) return null;
+                const maxEnergy = orbitalGroups.reduce((max, o) => distribution[o.id] > 0 ? Math.max(max, o.energy) : max, 0);
+                if (fill === 0 && og.energy > maxEnergy + 1) return null;
                 const colors = blockColors[og.block as keyof typeof blockColors];
 
                 return (
-                  <div key={og.id} className="flex items-center gap-4">
-                    <div className="w-8 text-right">
-                      <span className="text-xs font-black text-gray-500 font-mono">{og.label}</span>
-                    </div>
-                    <div className="flex gap-2">
-                      {[...Array(og.boxes)].map((_, bIdx) => {
-                        const spins = getBoxElectrons(og.id, bIdx, fill);
-                        return (
-                          <div 
-                            key={bIdx} 
-                            className={`w-10 h-10 border-2 rounded-lg flex items-center justify-center relative transition-all duration-300
-                              ${fill > 0 ? `${colors.border} ${colors.glow}` : 'border-gray-800 bg-gray-800/50'}
-                            `}
-                          >
-                            {spins.includes(1) && (
-                              <motion.div 
-                                initial={{ y: 10, opacity: 0 }}
-                                animate={{ y: 0, opacity: 1 }}
-                                className={`absolute left-1/4 ${colors.accent}`}
-                              >
-                                <ChevronUp size={20} strokeWidth={4} />
-                              </motion.div>
-                            )}
-                            {spins.includes(-1) && (
-                              <motion.div 
-                                initial={{ y: -10, opacity: 0 }}
-                                animate={{ y: 0, opacity: 1 }}
-                                className={`absolute right-1/4 ${colors.accent}`}
-                              >
-                                <ChevronDown size={20} strokeWidth={4} />
-                              </motion.div>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                );
-              })}
+                  <motion.div 
+                    key={og.id} 
+                    layout
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    className="flex items-center gap-4"
+                  >
+                      <div className="w-8 text-right">
+                        <span className="text-xs font-black text-gray-500 font-mono">{og.label}</span>
+                      </div>
+                      <div className="flex gap-2">
+                        {[...Array(og.boxes)].map((_, bIdx) => {
+                          const spins = getBoxElectrons(og.id, bIdx, fill);
+                          return (
+                            <div 
+                              key={bIdx} 
+                              className={`w-10 h-10 border-2 rounded-lg flex items-center justify-center relative transition-all duration-300
+                                ${fill > 0 ? `${colors.border} ${colors.glow}` : 'border-gray-800 bg-gray-800/50'}
+                              `}
+                            >
+                              <AnimatePresence>
+                                {spins.includes(1) && (
+                                  <motion.div 
+                                    key={`${og.id}-${bIdx}-up`}
+                                    initial={{ y: 10, opacity: 0, scale: 0.5 }}
+                                    animate={{ y: 0, opacity: 1, scale: 1 }}
+                                    exit={{ y: 10, opacity: 0, scale: 0.5 }}
+                                    className={`absolute left-1/4 ${colors.accent}`}
+                                  >
+                                    <ChevronUp size={20} strokeWidth={4} />
+                                  </motion.div>
+                                )}
+                                {spins.includes(-1) && (
+                                  <motion.div 
+                                    key={`${og.id}-${bIdx}-down`}
+                                    initial={{ y: -10, opacity: 0, scale: 0.5 }}
+                                    animate={{ y: 0, opacity: 1, scale: 1 }}
+                                    exit={{ y: -10, opacity: 0, scale: 0.5 }}
+                                    className={`absolute right-1/4 ${colors.accent}`}
+                                  >
+                                    <ChevronDown size={20} strokeWidth={4} />
+                                  </motion.div>
+                                )}
+                              </AnimatePresence>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </motion.div>
+                  );
+                })}
             </div>
           </div>
 
@@ -3376,7 +3741,7 @@ export default function App() {
             {/* Written Configuration */}
             <div className="bg-white p-8 rounded-[2.5rem] border-2 border-gray-100 shadow-sm space-y-6">
               <div>
-                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Full Configuration</p>
+                <p className="text-[10px] font-black text-gray-400 tracking-widest mb-3 lowercase">full configuration</p>
                 <div className="flex flex-wrap gap-2">
                   {orbitalGroups.filter(og => distribution[og.id] > 0).map(og => {
                     const colors = blockColors[og.block as keyof typeof blockColors];
@@ -3390,7 +3755,7 @@ export default function App() {
               </div>
 
               <div>
-                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Condensed Configuration</p>
+                <p className="text-[10px] font-black text-gray-400 tracking-widest mb-3 lowercase">condensed configuration</p>
                 <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100 font-mono font-black text-gray-800">
                   {getCondensedConfig().split(' ').map((part, i) => {
                     if (part.startsWith('[')) return <span key={i} className="text-gray-400 mr-2">{part}</span>;
@@ -3412,13 +3777,13 @@ export default function App() {
 
             {/* Periodic Table Highlight */}
             <div className="bg-white p-8 rounded-[2.5rem] border-2 border-gray-100 shadow-sm">
-              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-6">Periodic Table Position</p>
+              <p className="text-[10px] font-black text-gray-400 tracking-widest mb-6 lowercase">periodic table position</p>
               <PeriodicTable />
               <div className="mt-6 flex justify-center gap-4">
                 {Object.entries(blockColors).map(([block, colors]) => (
                   <div key={block} className="flex items-center gap-1.5">
                     <div className={`w-2 h-2 rounded-full ${colors.bg}`} />
-                    <span className="text-[8px] font-black text-gray-400 uppercase">{block}-block</span>
+                    <span className="text-[8px] font-black text-gray-400 lowercase">{block} block</span>
                   </div>
                 ))}
               </div>
@@ -3428,7 +3793,7 @@ export default function App() {
             <div className="bg-indigo-50 p-6 rounded-3xl border-2 border-indigo-100">
               <div className="flex items-center gap-3 mb-3">
                 <Info size={18} className="text-indigo-600" />
-                <h5 className="text-xs font-black text-indigo-700 uppercase tracking-tight">Key Principles Applied</h5>
+                <h5 className="text-xs font-black text-indigo-700 tracking-tight lowercase">key principles applied</h5>
               </div>
               <ul className="space-y-2">
                 {[

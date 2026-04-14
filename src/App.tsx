@@ -1890,6 +1890,646 @@ export default function App() {
     );
   };
 
+  const NuclearChargeSim = () => {
+    const [protons, setProtons] = useState(3);
+    const radius = 100 - (protons - 1) * 8;
+
+    return (
+      <div className="bg-white p-6 rounded-3xl border-2 border-indigo-100 flex flex-col items-center">
+        <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest mb-6">Nuclear Charge Simulation</p>
+        
+        <div className="relative w-48 h-48 flex items-center justify-center bg-gray-50 rounded-full border border-gray-100 mb-6">
+          {/* Nucleus */}
+          <motion.div 
+            animate={{ scale: 1 + protons * 0.05 }}
+            className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white font-black text-[10px] z-10 shadow-lg"
+          >
+            {protons}+
+          </motion.div>
+
+          {/* Orbit Path */}
+          <motion.div 
+            animate={{ width: radius * 2, height: radius * 2 }}
+            className="absolute border border-dashed border-gray-300 rounded-full"
+          />
+
+          {/* Valence Electron */}
+          <motion.div
+            animate={{ 
+              x: Math.cos(0) * radius,
+              y: Math.sin(0) * radius,
+            }}
+            className="absolute w-4 h-4 bg-red-500 rounded-full shadow-md flex items-center justify-center"
+          >
+            <div className="w-1 h-1 bg-white rounded-full" />
+          </motion.div>
+
+          {/* Attraction Force Lines */}
+          <svg className="absolute inset-0 w-full h-full pointer-events-none">
+            <motion.line 
+              animate={{ x2: 96 + Math.cos(0) * radius, y2: 96 + Math.sin(0) * radius }}
+              x1="96" y1="96" x2="150" y2="96" 
+              stroke="#6366f1" strokeWidth={protons * 0.5} strokeDasharray="4 2" opacity={0.3}
+            />
+          </svg>
+        </div>
+
+        <div className="w-full space-y-4">
+          <div className="flex justify-between items-center">
+            <span className="text-[10px] font-black text-gray-400 uppercase">Protons (Z)</span>
+            <span className="text-sm font-black text-blue-600">{protons}</span>
+          </div>
+          <input 
+            type="range" min="1" max="10" step="1"
+            value={protons}
+            onChange={(e) => setProtons(parseInt(e.target.value))}
+            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-500"
+          />
+          <p className="text-[9px] font-bold text-gray-500 text-center italic">
+            Increasing protons increases attraction, pulling the valence electron closer.
+          </p>
+        </div>
+      </div>
+    );
+  };
+
+  const ShieldingEffectSim = () => {
+    const [shells, setShells] = useState(2);
+    const valenceRadius = 40 + shells * 25;
+
+    return (
+      <div className="bg-white p-6 rounded-3xl border-2 border-orange-100 flex flex-col items-center">
+        <p className="text-[10px] font-black text-orange-600 uppercase tracking-widest mb-6">Shielding Effect Simulation</p>
+        
+        <div className="relative w-48 h-48 flex items-center justify-center bg-gray-50 rounded-full border border-gray-100 mb-6">
+          {/* Nucleus */}
+          <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center text-white font-black text-[8px] z-10 shadow-lg">
+            +
+          </div>
+
+          {/* Inner Shells */}
+          {[...Array(shells - 1)].map((_, i) => (
+            <div 
+              key={i}
+              style={{ width: (i + 1) * 50, height: (i + 1) * 50 }}
+              className="absolute border border-gray-200 rounded-full"
+            >
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-red-400 rounded-full" />
+              <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-2 h-2 bg-red-400 rounded-full" />
+            </div>
+          ))}
+
+          {/* Valence Shell */}
+          <motion.div 
+            animate={{ width: valenceRadius * 2, height: valenceRadius * 2 }}
+            className="absolute border border-dashed border-orange-300 rounded-full"
+          />
+
+          {/* Valence Electron */}
+          <motion.div
+            animate={{ 
+              x: Math.cos(Math.PI / 4) * valenceRadius,
+              y: Math.sin(Math.PI / 4) * valenceRadius,
+            }}
+            className="absolute w-4 h-4 bg-red-600 rounded-full shadow-md flex items-center justify-center"
+          >
+            <div className="w-1 h-1 bg-white rounded-full" />
+          </motion.div>
+
+          {/* Repulsion Arrows */}
+          {shells > 1 && (
+            <svg className="absolute inset-0 w-full h-full pointer-events-none">
+              <motion.path 
+                initial={{ pathLength: 0 }}
+                animate={{ pathLength: 1 }}
+                d={`M 96 96 L ${96 + Math.cos(Math.PI / 4) * valenceRadius} ${96 + Math.sin(Math.PI / 4) * valenceRadius}`}
+                stroke="#ef4444" strokeWidth="1" strokeDasharray="2 2" opacity={0.2}
+              />
+            </svg>
+          )}
+        </div>
+
+        <div className="w-full space-y-4">
+          <div className="flex justify-between items-center">
+            <span className="text-[10px] font-black text-gray-400 uppercase">Number of Shells</span>
+            <span className="text-sm font-black text-orange-600">{shells}</span>
+          </div>
+          <input 
+            type="range" min="1" max="4" step="1"
+            value={shells}
+            onChange={(e) => setShells(parseInt(e.target.value))}
+            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-orange-500"
+          />
+          <p className="text-[9px] font-bold text-gray-500 text-center italic">
+            More shells increase shielding, pushing the valence electron further away.
+          </p>
+        </div>
+      </div>
+    );
+  };
+
+  const PeriodicTrends = () => {
+    const [selectedTrend, setSelectedTrend] = useState('atomic-radii');
+
+    const trends: Record<string, { 
+      title: string, 
+      across: string, 
+      down: string, 
+      explanation: string, 
+      color: string,
+      periodData: { label: string, value: number, unit: string }[],
+      groupData: { label: string, value: number, unit: string }[]
+    }> = {
+      'atomic-radii': {
+        title: 'Atomic Radii',
+        across: 'Decreases',
+        down: 'Increases',
+        explanation: 'Across a period, nuclear charge increases while shielding remains constant, pulling electrons closer. Down a group, the number of occupied shells increases, which outweighs the increase in nuclear charge.',
+        color: 'indigo',
+        periodData: [
+          { label: 'Na', value: 186, unit: 'pm' },
+          { label: 'Mg', value: 160, unit: 'pm' },
+          { label: 'Al', value: 143, unit: 'pm' },
+          { label: 'Si', value: 118, unit: 'pm' },
+          { label: 'P', value: 110, unit: 'pm' },
+          { label: 'S', value: 102, unit: 'pm' },
+          { label: 'Cl', value: 99, unit: 'pm' }
+        ],
+        groupData: [
+          { label: 'Li', value: 152, unit: 'pm' },
+          { label: 'Na', value: 186, unit: 'pm' },
+          { label: 'K', value: 227, unit: 'pm' },
+          { label: 'Rb', value: 248, unit: 'pm' },
+          { label: 'Cs', value: 265, unit: 'pm' }
+        ]
+      },
+      'electronegativity': {
+        title: 'Electronegativity',
+        across: 'Increases',
+        down: 'Decreases',
+        explanation: 'Across a period, increased nuclear charge and constant shielding result in a stronger attraction for bonding electrons. Down a group, increased shielding and distance from the nucleus decrease the attraction.',
+        color: 'rose',
+        periodData: [
+          { label: 'Na', value: 0.9, unit: '' },
+          { label: 'Mg', value: 1.2, unit: '' },
+          { label: 'Al', value: 1.5, unit: '' },
+          { label: 'Si', value: 1.8, unit: '' },
+          { label: 'P', value: 2.1, unit: '' },
+          { label: 'S', value: 2.5, unit: '' },
+          { label: 'Cl', value: 3.0, unit: '' }
+        ],
+        groupData: [
+          { label: 'Li', value: 1.0, unit: '' },
+          { label: 'Na', value: 0.9, unit: '' },
+          { label: 'K', value: 0.8, unit: '' },
+          { label: 'Rb', value: 0.8, unit: '' },
+          { label: 'Cs', value: 0.7, unit: '' }
+        ]
+      },
+      'ionic-radii': {
+        title: 'Ionic Radii',
+        across: 'Decreases (Na⁺ to Si⁴⁺, then Si⁴⁻ to Cl⁻)',
+        down: 'Increases',
+        explanation: 'Cations are smaller than parent atoms (loss of shell/increased Zeff). Anions are larger (increased repulsion). Across a period, radii decrease within isoelectronic series. Down a group, more shells increase size.',
+        color: 'amber',
+        periodData: [
+          { label: 'Na⁺', value: 102, unit: 'pm' },
+          { label: 'Mg²⁺', value: 72, unit: 'pm' },
+          { label: 'Al³⁺', value: 54, unit: 'pm' },
+          { label: 'Si⁴⁺', value: 40, unit: 'pm' },
+          { label: 'P³⁻', value: 212, unit: 'pm' },
+          { label: 'S²⁻', value: 184, unit: 'pm' },
+          { label: 'Cl⁻', value: 181, unit: 'pm' }
+        ],
+        groupData: [
+          { label: 'Li⁺', value: 76, unit: 'pm' },
+          { label: 'Na⁺', value: 102, unit: 'pm' },
+          { label: 'K⁺', value: 138, unit: 'pm' },
+          { label: 'Rb⁺', value: 152, unit: 'pm' },
+          { label: 'Cs⁺', value: 167, unit: 'pm' }
+        ]
+      },
+      'ionization-energy': {
+        title: '1st Ionization Energy',
+        across: 'Generally Increases',
+        down: 'Decreases',
+        explanation: 'Across a period, increased nuclear charge makes it harder to remove an electron. Dips occur at G13 (p-orbital shielding) and G16 (electron pairing repulsion). Down a group, shielding and distance make removal easier.',
+        color: 'emerald',
+        periodData: [
+          { label: 'Na', value: 496, unit: 'kJ/mol' },
+          { label: 'Mg', value: 738, unit: 'kJ/mol' },
+          { label: 'Al', value: 578, unit: 'kJ/mol' },
+          { label: 'Si', value: 786, unit: 'kJ/mol' },
+          { label: 'P', value: 1012, unit: 'kJ/mol' },
+          { label: 'S', value: 1000, unit: 'kJ/mol' },
+          { label: 'Cl', value: 1251, unit: 'kJ/mol' }
+        ],
+        groupData: [
+          { label: 'Li', value: 520, unit: 'kJ/mol' },
+          { label: 'Na', value: 496, unit: 'kJ/mol' },
+          { label: 'K', value: 419, unit: 'kJ/mol' },
+          { label: 'Rb', value: 403, unit: 'kJ/mol' },
+          { label: 'Cs', value: 376, unit: 'kJ/mol' }
+        ]
+      }
+    };
+
+    const current = trends[selectedTrend];
+
+    return (
+      <div className="space-y-8">
+        <div className="flex flex-wrap gap-2">
+          {Object.entries(trends).map(([id, t]) => (
+            <button
+              key={id}
+              onClick={() => setSelectedTrend(id)}
+              className={`px-4 py-2 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all
+                ${selectedTrend === id 
+                  ? `bg-${t.color}-500 text-white shadow-[0_4px_0_0_rgba(0,0,0,0.2)]` 
+                  : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}
+              `}
+            >
+              {t.title}
+            </button>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+          {/* Main Trend Visualization */}
+          <div className="xl:col-span-2 bg-gray-50 p-8 rounded-[2.5rem] border-2 border-gray-100 relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-4 opacity-5">
+              <Layers size={80} />
+            </div>
+            
+            <div className="relative z-10">
+              <div className="flex items-center gap-3 mb-6">
+                <div className={`w-3 h-3 rounded-full bg-${current.color}-500`} />
+                <h3 className="text-xl font-black text-gray-800 uppercase">{current.title}</h3>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                {/* Across Period Visual */}
+                <div className="bg-white p-6 rounded-3xl border border-gray-200">
+                  <div className="flex justify-between items-end h-32 gap-1">
+                    {current.periodData.map((d, i) => {
+                      let size = 0;
+                      let intensity = 0;
+                      const maxVal = Math.max(...current.periodData.map(x => x.value));
+                      const minVal = Math.min(...current.periodData.map(x => x.value));
+                      
+                      if (selectedTrend === 'atomic-radii' || selectedTrend === 'ionic-radii') {
+                        size = (d.value / maxVal) * 50;
+                      } else if (selectedTrend === 'electronegativity') {
+                        size = 30;
+                        intensity = (d.value / 4.0);
+                      } else {
+                        size = (d.value / maxVal) * 60;
+                      }
+
+                      return (
+                        <div key={i} className="flex flex-col items-center gap-2 flex-1">
+                          <div className="h-20 flex items-center justify-center">
+                            <motion.div 
+                              animate={{ 
+                                height: size, 
+                                width: size,
+                                backgroundColor: selectedTrend === 'electronegativity' 
+                                  ? `rgba(244, 63, 94, ${0.2 + intensity})` 
+                                  : selectedTrend === 'atomic-radii' 
+                                    ? '#6366f1' 
+                                    : selectedTrend === 'ionization-energy'
+                                      ? '#10b981'
+                                      : '#f59e0b'
+                              }}
+                              className="rounded-full shadow-sm"
+                            />
+                          </div>
+                          <span className="text-[8px] font-black text-gray-400 uppercase" dangerouslySetInnerHTML={{ __html: d.label.replace(/(\d+)([+-])/g, '<sup>$1$2</sup>') }} />
+                          <span className="text-[8px] font-bold text-gray-800">{d.value}{d.unit}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest text-center mt-6">Across Period 3 (Real Data)</p>
+                </div>
+
+                {/* Down Group Visual */}
+                <div className="bg-white p-6 rounded-3xl border border-gray-200">
+                  <div className="flex justify-between items-end h-32 gap-1">
+                    {current.groupData.map((d, i) => {
+                      let size = 0;
+                      let intensity = 0;
+                      const maxVal = Math.max(...current.groupData.map(x => x.value));
+                      
+                      if (selectedTrend === 'atomic-radii' || selectedTrend === 'ionic-radii') {
+                        size = (d.value / maxVal) * 50;
+                      } else if (selectedTrend === 'electronegativity') {
+                        size = 30;
+                        intensity = (d.value / 4.0);
+                      } else {
+                        size = (d.value / maxVal) * 60;
+                      }
+
+                      return (
+                        <div key={i} className="flex flex-col items-center gap-2 flex-1">
+                          <div className="h-20 flex items-center justify-center">
+                            <motion.div 
+                              animate={{ 
+                                height: size, 
+                                width: size,
+                                backgroundColor: selectedTrend === 'electronegativity' 
+                                  ? `rgba(244, 63, 94, ${0.2 + intensity})` 
+                                  : selectedTrend === 'atomic-radii' 
+                                    ? '#6366f1' 
+                                    : selectedTrend === 'ionization-energy'
+                                      ? '#10b981'
+                                      : '#f59e0b'
+                              }}
+                              className="rounded-full shadow-sm"
+                            />
+                          </div>
+                          <span className="text-[8px] font-black text-gray-400 uppercase" dangerouslySetInnerHTML={{ __html: d.label.replace(/(\d+)([+-])/g, '<sup>$1$2</sup>') }} />
+                          <span className="text-[8px] font-bold text-gray-800">{d.value}{d.unit}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest text-center mt-6">Down Group 1 (Real Data)</p>
+                </div>
+              </div>
+
+              <div className="p-6 bg-white/50 rounded-2xl border border-gray-200">
+                <p className="text-xs font-bold text-gray-600 leading-relaxed">
+                  {current.explanation}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Persistent Simulations */}
+          <div className="space-y-6">
+            <NuclearChargeSim />
+            <ShieldingEffectSim />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="bg-indigo-50 p-8 rounded-[2.5rem] border-2 border-indigo-100">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="bg-indigo-500 p-2 rounded-xl text-white">
+                <TrendingUp size={16} />
+              </div>
+              <h4 className="text-sm font-black text-indigo-900 uppercase tracking-tight">Across Period Summary</h4>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="bg-white p-5 rounded-2xl border border-indigo-100">
+                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Nuclear Charge</p>
+                <div className="flex items-center gap-2 text-emerald-500">
+                  <TrendingUp size={16} />
+                  <span className="text-sm font-black">Increases</span>
+                </div>
+                <p className="text-[8px] font-bold text-gray-400 mt-1">More protons in nucleus</p>
+              </div>
+              <div className="bg-white p-5 rounded-2xl border border-indigo-100">
+                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Shielding</p>
+                <div className="flex items-center gap-2 text-gray-400">
+                  <RefreshCw size={16} />
+                  <span className="text-sm font-black">Constant</span>
+                </div>
+                <p className="text-[8px] font-bold text-gray-400 mt-1">Same number of shells</p>
+              </div>
+            </div>
+            <div className="mt-6 p-4 bg-indigo-500/10 rounded-xl border border-indigo-200">
+              <p className="text-[10px] font-black text-indigo-700 uppercase tracking-widest text-center">
+                Effective Nuclear Charge (Zeff) Increases
+              </p>
+            </div>
+          </div>
+
+          <div className="bg-orange-50 p-8 rounded-[2.5rem] border-2 border-orange-100">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="bg-orange-500 p-2 rounded-xl text-white">
+                <TrendingUp size={16} />
+              </div>
+              <h4 className="text-sm font-black text-orange-900 uppercase tracking-tight">Down Group Summary</h4>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="bg-white p-5 rounded-2xl border border-orange-100">
+                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Nuclear Charge</p>
+                <div className="flex items-center gap-2 text-emerald-500">
+                  <TrendingUp size={16} />
+                  <span className="text-sm font-black">Increases</span>
+                </div>
+                <p className="text-[8px] font-bold text-gray-400 mt-1">More protons</p>
+              </div>
+              <div className="bg-white p-5 rounded-2xl border border-orange-100">
+                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Shielding</p>
+                <div className="flex items-center gap-2 text-emerald-500">
+                  <TrendingUp size={16} />
+                  <span className="text-sm font-black">Increases</span>
+                </div>
+                <p className="text-[8px] font-bold text-gray-400 mt-1">More shells added</p>
+              </div>
+            </div>
+            <div className="mt-6 p-4 bg-orange-500/10 rounded-xl border border-orange-200">
+              <p className="text-[10px] font-black text-orange-700 uppercase tracking-widest text-center">
+                Shielding outweighs Nuclear Charge
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const RedoxBalancing = () => {
+    const [selectedExample, setSelectedExample] = useState(0);
+
+    const steps = [
+      { id: 1, title: 'Atoms', desc: 'Balance non-H and non-O atoms by modifying coefficients.', color: 'emerald' },
+      { id: 2, title: 'Oxygen', desc: 'Balance oxygen by adding H₂O to the O-deficient side.', color: 'blue' },
+      { id: 3, title: 'Hydrogen', desc: 'Balance hydrogen by adding H⁺ to the H-deficient side.', color: 'orange' },
+      { id: 4, title: 'Charge', desc: 'Balance charge by adding electrons (e⁻) to the more positive side.', color: 'rose' }
+    ];
+
+    const examples = [
+      {
+        title: 'MnO₄⁻ + Fe²⁺',
+        reduction: [
+          { step: 1, eq: 'MnO₄⁻ → Mn²⁺', note: 'Mn is already balanced.' },
+          { step: 2, eq: 'MnO₄⁻ → Mn²⁺ + <span class="text-blue-500 font-black">4H₂O</span>', note: 'Added 4 water molecules to balance 4 oxygens.' },
+          { step: 3, eq: 'MnO₄⁻ + <span class="text-orange-500 font-black">8H⁺</span> → Mn²⁺ + 4H₂O', note: 'Added 8 H⁺ to balance hydrogen from water.' },
+          { step: 4, eq: 'MnO₄⁻ + 8H⁺ + <span class="text-rose-500 font-black">5e⁻</span> → Mn²⁺ + 4H₂O', note: 'Total charge (+7 → +2). Added 5e⁻ to reduction side.' }
+        ],
+        oxidation: [
+          { step: 4, eq: 'Fe²⁺ → Fe³⁺ + <span class="text-rose-500 font-black">e⁻</span>', note: 'Charge (+2 → +3). Added 1e⁻ to oxidation side.' }
+        ],
+        combined: 'MnO₄⁻ + 8H⁺ + 5Fe²⁺ → Mn²⁺ + 4H₂O + 5Fe³⁺',
+        multiplier: 'Multiply Oxidation by 5 to cancel 5e⁻.'
+      },
+      {
+        title: 'Cu + NO₃⁻',
+        reduction: [
+          { step: 1, eq: 'NO₃⁻ → NO₂', note: 'N is balanced.' },
+          { step: 2, eq: 'NO₃⁻ → NO₂ + <span class="text-blue-500 font-black">H₂O</span>', note: 'Added 1 H₂O to balance oxygen.' },
+          { step: 3, eq: 'NO₃⁻ + <span class="text-orange-500 font-black">2H⁺</span> → NO₂ + H₂O', note: 'Added 2 H⁺ to balance hydrogen.' },
+          { step: 4, eq: 'NO₃⁻ + 2H⁺ + <span class="text-rose-500 font-black">e⁻</span> → NO₂ + H₂O', note: 'Total charge (+1 → 0). Added 1e⁻.' }
+        ],
+        oxidation: [
+          { step: 4, eq: 'Cu → Cu²⁺ + <span class="text-rose-500 font-black">2e⁻</span>', note: 'Charge (0 → +2). Added 2e⁻.' }
+        ],
+        combined: 'Cu + 2NO₃⁻ + 4H⁺ → Cu²⁺ + 2NO₂ + 2H₂O',
+        multiplier: 'Multiply Reduction by 2 to cancel 2e⁻.'
+      },
+      {
+        title: 'Cr₂O₇²⁻ + Fe²⁺',
+        reduction: [
+          { step: 1, eq: '<span class="text-emerald-500 font-black">Cr₂</span>O₇²⁻ → <span class="text-emerald-500 font-black">2</span>Cr³⁺', note: 'Balanced Cr atoms.' },
+          { step: 2, eq: 'Cr₂O₇²⁻ → 2Cr³⁺ + <span class="text-blue-500 font-black">7H₂O</span>', note: 'Added 7 H₂O to balance 7 oxygens.' },
+          { step: 3, eq: 'Cr₂O₇²⁻ + <span class="text-orange-500 font-black">14H⁺</span> → 2Cr³⁺ + 7H₂O', note: 'Added 14 H⁺ to balance hydrogen.' },
+          { step: 4, eq: 'Cr₂O₇²⁻ + 14H⁺ + <span class="text-rose-500 font-black">6e⁻</span> → 2Cr³⁺ + 7H₂O', note: 'Total charge (+12 → +6). Added 6e⁻.' }
+        ],
+        oxidation: [
+          { step: 4, eq: 'Fe²⁺ → Fe³⁺ + <span class="text-rose-500 font-black">e⁻</span>', note: 'Charge (+2 → +3). Added 1e⁻.' }
+        ],
+        combined: 'Cr₂O₇²⁻ + 14H⁺ + 6Fe²⁺ → 2Cr³⁺ + 7H₂O + 6Fe³⁺',
+        multiplier: 'Multiply Oxidation by 6 to cancel 6e⁻.'
+      },
+      {
+        title: 'MnO₄⁻ + Cl⁻',
+        reduction: [
+          { step: 1, eq: 'MnO₄⁻ → Mn²⁺', note: 'Mn is balanced.' },
+          { step: 2, eq: 'MnO₄⁻ → Mn²⁺ + <span class="text-blue-500 font-black">4H₂O</span>', note: 'Added 4 H₂O.' },
+          { step: 3, eq: 'MnO₄⁻ + <span class="text-orange-500 font-black">8H⁺</span> → Mn²⁺ + 4H₂O', note: 'Added 8 H⁺.' },
+          { step: 4, eq: 'MnO₄⁻ + 8H⁺ + <span class="text-rose-500 font-black">5e⁻</span> → Mn²⁺ + 4H₂O', note: 'Added 5e⁻.' }
+        ],
+        oxidation: [
+          { step: 1, eq: '<span class="text-emerald-500 font-black">2</span>Cl⁻ → Cl₂', note: 'Balanced Cl atoms.' },
+          { step: 4, eq: '2Cl⁻ → Cl₂ + <span class="text-rose-500 font-black">2e⁻</span>', note: 'Total charge (-2 → 0). Added 2e⁻.' }
+        ],
+        combined: '2MnO₄⁻ + 16H⁺ + 10Cl⁻ → 2Mn²⁺ + 8H₂O + 5Cl₂',
+        multiplier: 'Multiply Red by 2 and Ox by 5 to cancel 10e⁻.'
+      }
+    ];
+
+    const current = examples[selectedExample];
+
+    return (
+      <div className="space-y-8">
+        {/* 2x2 Steps Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {steps.map((s) => (
+            <div key={s.id} className={`p-6 rounded-3xl border-2 border-${s.color}-100 bg-${s.color}-50/30`}>
+              <div className="flex items-center gap-3 mb-2">
+                <div className={`w-6 h-6 rounded-lg bg-${s.color}-500 flex items-center justify-center text-white text-[10px] font-black`}>
+                  {s.id}
+                </div>
+                <h4 className={`text-sm font-black text-${s.color}-700 uppercase tracking-tight`}>{s.title}</h4>
+              </div>
+              <p className="text-xs font-bold text-gray-500 leading-relaxed">{s.desc}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Step 5 Banner */}
+        <div className="p-6 rounded-3xl border-2 border-indigo-100 bg-indigo-50/30">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-6 h-6 rounded-lg bg-indigo-500 flex items-center justify-center text-white text-[10px] font-black">5</div>
+            <h4 className="text-sm font-black text-indigo-700 uppercase tracking-tight">Combine & Cancel</h4>
+          </div>
+          <p className="text-xs font-bold text-gray-500">Multiply half-equations so electrons cancel, then add them together and simplify.</p>
+        </div>
+
+        {/* Example Selector */}
+        <div className="flex flex-wrap gap-2">
+          {examples.map((ex, idx) => (
+            <button
+              key={idx}
+              onClick={() => setSelectedExample(idx)}
+              className={`px-4 py-2 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all
+                ${selectedExample === idx 
+                  ? 'bg-gray-800 text-white shadow-lg' 
+                  : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}
+              `}
+            >
+              {ex.title}
+            </button>
+          ))}
+        </div>
+
+        {/* Interactive Balancing Display */}
+        <div className="bg-gray-50 p-8 rounded-[2.5rem] border-2 border-gray-100">
+          <div className="space-y-8">
+            {/* Reduction Half-Equation */}
+            <div>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="px-3 py-1 bg-rose-100 text-rose-600 rounded-lg text-[10px] font-black uppercase">Reduction</div>
+                <div className="h-[1px] flex-1 bg-gray-200" />
+              </div>
+              <div className="space-y-3">
+                {current.reduction.map((s, i) => (
+                  <motion.div 
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    key={i} 
+                    className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 bg-white rounded-2xl border border-gray-100 shadow-sm"
+                  >
+                    <div className="flex-1">
+                      <p className="text-lg font-mono font-bold text-gray-800" dangerouslySetInnerHTML={{ __html: s.eq }} />
+                    </div>
+                    <div className="sm:w-1/3">
+                      <p className="text-[10px] font-bold text-gray-400 italic">{s.note}</p>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+
+            {/* Oxidation Half-Equation */}
+            <div>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="px-3 py-1 bg-emerald-100 text-emerald-600 rounded-lg text-[10px] font-black uppercase">Oxidation</div>
+                <div className="h-[1px] flex-1 bg-gray-200" />
+              </div>
+              <div className="space-y-3">
+                {current.oxidation.map((s, i) => (
+                  <motion.div 
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    key={i} 
+                    className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 bg-white rounded-2xl border border-gray-100 shadow-sm"
+                  >
+                    <div className="flex-1">
+                      <p className="text-lg font-mono font-bold text-gray-800" dangerouslySetInnerHTML={{ __html: s.eq }} />
+                    </div>
+                    <div className="sm:w-1/3">
+                      <p className="text-[10px] font-bold text-gray-400 italic">{s.note}</p>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+
+            {/* Final Combined Equation */}
+            <div className="pt-8 border-t-2 border-dashed border-gray-200">
+              <div className="bg-indigo-600 p-8 rounded-3xl text-white shadow-xl relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-4 opacity-10">
+                  <RefreshCw size={80} />
+                </div>
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] mb-4 opacity-70">Final Balanced Equation</p>
+                <p className="text-xl sm:text-2xl font-mono font-bold mb-4 leading-relaxed" dangerouslySetInnerHTML={{ __html: current.combined }} />
+                <div className="flex items-center gap-2 text-indigo-200">
+                  <div className="w-1.5 h-1.5 rounded-full bg-indigo-300" />
+                  <p className="text-xs font-bold italic">{current.multiplier}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const QuickFacts = () => {
     const [hoveredRule, setHoveredRule] = useState<string | null>(null);
     const [hoveredApparatus, setHoveredApparatus] = useState<string | null>(null);
@@ -3936,6 +4576,44 @@ export default function App() {
               </div>
             </div>
           </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.85 }}
+            className="bg-white border-2 border-gray-200 rounded-[3rem] p-6 md:p-10 shadow-[0_12px_0_0_rgba(0,0,0,0.05)]"
+          >
+            <div className="flex items-center gap-5 mb-10">
+              <div className="bg-indigo-500 p-4 rounded-3xl text-white shadow-lg shadow-indigo-200">
+                <Layers size={28} />
+              </div>
+              <div>
+                <h2 className="text-3xl font-black text-gray-900 uppercase tracking-tighter leading-none">Periodic Trends</h2>
+                <p className="text-indigo-500 font-bold text-xs uppercase tracking-widest mt-1">Atomic Properties & Patterns</p>
+              </div>
+            </div>
+
+            <PeriodicTrends />
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.9 }}
+            className="bg-white border-2 border-gray-200 rounded-[3rem] p-6 md:p-10 shadow-[0_12px_0_0_rgba(0,0,0,0.05)]"
+          >
+            <div className="flex items-center gap-5 mb-10">
+              <div className="bg-rose-500 p-4 rounded-3xl text-white shadow-lg shadow-rose-200">
+                <RefreshCw size={28} />
+              </div>
+              <div>
+                <h2 className="text-3xl font-black text-gray-900 uppercase tracking-tighter leading-none">Redox Balancing</h2>
+                <p className="text-rose-500 font-bold text-xs uppercase tracking-widest mt-1">Step-by-Step Half-Equation Method</p>
+              </div>
+            </div>
+
+            <RedoxBalancing />
+          </motion.div>
         </main>
       </motion.div>
     );
@@ -4300,6 +4978,215 @@ export default function App() {
       </button>
     </div>
   );
+
+  const S13Graphics = ({ index }: { index: number }) => {
+    if (index === 0) {
+      return (
+        <div className="mt-4 bg-gray-900 p-6 rounded-2xl border border-gray-800 overflow-hidden relative">
+          <div className="flex justify-between items-end h-16 gap-0.5">
+            {[...Array(40)].map((_, i) => (
+              <motion.div
+                key={i}
+                animate={{ height: [10, 40, 10] }}
+                transition={{ 
+                  duration: 0.5 + (i * 0.05), 
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+                className="flex-1 bg-gradient-to-t from-indigo-500 to-purple-400 rounded-full"
+                style={{ opacity: 0.3 + (i / 40) * 0.7 }}
+              />
+            ))}
+          </div>
+          <div className="flex justify-between mt-4">
+            <div className="text-center">
+              <p className="text-[8px] font-black text-indigo-400 uppercase">High λ</p>
+              <p className="text-[8px] font-bold text-gray-500 uppercase">Low f, Low E</p>
+            </div>
+            <div className="text-center">
+              <p className="text-[8px] font-black text-purple-400 uppercase">Low λ</p>
+              <p className="text-[8px] font-bold text-gray-500 uppercase">High f, High E</p>
+            </div>
+          </div>
+          <div className="absolute top-2 right-4 flex items-center gap-1">
+            <Activity size={10} className="text-indigo-400" />
+            <span className="text-[8px] font-black text-gray-500 uppercase tracking-widest">EM Spectrum</span>
+          </div>
+        </div>
+      );
+    }
+
+    if (index === 13) {
+      return (
+        <div className="mt-4 grid grid-cols-2 gap-4">
+          <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100 flex flex-col items-center">
+            <div className="w-16 h-16 bg-indigo-500/20 rounded-full border-2 border-indigo-400 flex items-center justify-center relative">
+              <div className="absolute inset-0 bg-indigo-400/10 rounded-full blur-sm" />
+              <span className="text-indigo-600 font-black text-xs z-10">s</span>
+            </div>
+            <p className="text-[10px] font-black text-gray-400 uppercase mt-2">Spherical</p>
+          </div>
+          <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100 flex flex-col items-center">
+            <div className="w-16 h-16 flex items-center justify-center relative">
+              <div className="w-6 h-14 bg-rose-500/20 border-2 border-rose-400 rounded-full rotate-0 absolute" />
+              <div className="w-2 h-2 bg-gray-800 rounded-full z-10" />
+              <span className="text-rose-600 font-black text-xs z-10 mt-8">p</span>
+            </div>
+            <p className="text-[10px] font-black text-gray-400 uppercase mt-2">Dumbbell</p>
+          </div>
+        </div>
+      );
+    }
+
+    if (index === 15) {
+      const levels = [
+        { label: '4s', y: 20 },
+        { label: '3d', y: 35 },
+        { label: '3p', y: 60 },
+        { label: '3s', y: 80 },
+        { label: '2p', y: 110 },
+        { label: '2s', y: 130 },
+        { label: '1s', y: 160 },
+      ];
+      return (
+        <div className="mt-4 bg-gray-900 p-6 rounded-2xl border border-gray-800 relative h-48 overflow-hidden">
+          <div className="absolute left-4 top-4 bottom-4 w-0.5 bg-gray-700">
+            <div className="absolute top-0 -left-1 w-2 h-2 border-t-2 border-l-2 border-gray-700 rotate-45" />
+          </div>
+          <span className="absolute left-6 top-4 text-[8px] font-black text-gray-500 uppercase vertical-text">Energy</span>
+          
+          <div className="ml-12 h-full flex flex-col justify-between">
+            {levels.map((l, i) => (
+              <motion.div 
+                key={l.label}
+                initial={{ x: -20, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                transition={{ delay: i * 0.1 }}
+                className="flex items-center gap-4"
+              >
+                <div className="w-12 h-0.5 bg-indigo-500/50" />
+                <span className="text-[10px] font-black text-indigo-400">{l.label}</span>
+              </motion.div>
+            ))}
+          </div>
+          <div className="absolute bottom-2 right-4 flex items-center gap-1">
+            <Layers size={10} className="text-indigo-400" />
+            <span className="text-[8px] font-black text-gray-500 uppercase tracking-widest">Aufbau Principle</span>
+          </div>
+        </div>
+      );
+    }
+
+    return null;
+  };
+
+  const S14Graphics = ({ index }: { index: number }) => {
+    if (index === 0) {
+      return (
+        <div className="mt-4 bg-indigo-50 p-6 rounded-2xl border border-indigo-100 flex items-center gap-4">
+          <div className="bg-white p-3 rounded-xl shadow-sm">
+            <span className="text-xl font-black text-indigo-600">6.02 × 10²³</span>
+          </div>
+          <div className="flex-1">
+            <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">Avogadro Constant (Nₐ)</p>
+            <p className="text-[8px] font-bold text-gray-500">Number of particles in exactly 1 mole of substance.</p>
+          </div>
+        </div>
+      );
+    }
+
+    if (index === 7) {
+      return (
+        <div className="mt-4 bg-indigo-50 p-6 rounded-2xl border border-indigo-100 flex flex-col items-center">
+          <div className="relative w-32 h-32">
+            <svg viewBox="0 0 100 100" className="w-full h-full">
+              <path d="M 50 10 L 90 80 L 10 80 Z" fill="none" stroke="#6366f1" strokeWidth="2" />
+              <line x1="10" y1="50" x2="90" y2="50" stroke="#6366f1" strokeWidth="1" strokeDasharray="2 2" />
+              <line x1="50" y1="50" x2="50" y2="80" stroke="#6366f1" strokeWidth="1" strokeDasharray="2 2" />
+              <text x="50" y="40" textAnchor="middle" className="fill-indigo-600 font-black text-[10px]">m</text>
+              <text x="35" y="65" textAnchor="middle" className="fill-indigo-600 font-black text-[10px]">n</text>
+              <text x="65" y="65" textAnchor="middle" className="fill-indigo-600 font-black text-[10px]">M</text>
+            </svg>
+          </div>
+          <div className="mt-4 grid grid-cols-2 gap-2 w-full">
+            <div className="bg-white p-2 rounded-xl border border-indigo-100 text-center">
+              <p className="text-[8px] font-black text-gray-400 uppercase">n = m / M</p>
+            </div>
+            <div className="bg-white p-2 rounded-xl border border-indigo-100 text-center">
+              <p className="text-[8px] font-black text-gray-400 uppercase">m = n × M</p>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    if (index === 9) {
+      return (
+        <div className="mt-4 grid grid-cols-2 gap-4">
+          <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100">
+            <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-2">Empirical Formula</p>
+            <div className="flex items-center justify-center gap-1">
+              <span className="text-sm font-black text-gray-800">CH₂O</span>
+            </div>
+            <p className="text-[8px] font-bold text-gray-500 mt-2">Simplest Ratio</p>
+          </div>
+          <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100">
+            <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-2">Molecular Formula</p>
+            <div className="flex items-center justify-center gap-1">
+              <span className="text-sm font-black text-indigo-600">C₆H₁₂O₆</span>
+            </div>
+            <p className="text-[8px] font-bold text-gray-500 mt-2">Actual Numbers</p>
+          </div>
+        </div>
+      );
+    }
+
+    if (index === 10) {
+      return (
+        <div className="mt-4 bg-emerald-50 p-6 rounded-2xl border border-emerald-100">
+          <div className="flex items-center justify-around">
+            <div className="flex flex-col items-center gap-2">
+              <div className="w-12 h-12 bg-emerald-500 rounded-2xl flex items-center justify-center text-white shadow-lg">
+                <Droplets size={24} />
+              </div>
+              <span className="text-[10px] font-black text-emerald-600 uppercase">Solution</span>
+            </div>
+            <div className="flex flex-col items-center gap-1">
+              <span className="text-lg font-black text-emerald-600">c = n / V</span>
+              <div className="h-0.5 w-16 bg-emerald-200" />
+              <span className="text-[8px] font-black text-gray-400 uppercase">mol dm⁻³</span>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    if (index === 14) {
+      return (
+        <div className="mt-4 bg-purple-50 p-6 rounded-2xl border border-purple-100 relative overflow-hidden">
+          <div className="flex items-center gap-6">
+            <motion.div 
+              animate={{ scale: [1, 1.1, 1] }}
+              transition={{ duration: 2, repeat: Infinity }}
+              className="w-20 h-20 bg-purple-500/20 rounded-3xl border-2 border-purple-400 flex items-center justify-center"
+            >
+              <Box size={32} className="text-purple-600" />
+            </motion.div>
+            <div className="space-y-1">
+              <p className="text-xl font-black text-purple-600">22.7 dm³</p>
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Molar Volume at STP</p>
+              <div className="flex gap-2 mt-2">
+                <span className="text-[8px] font-bold bg-purple-200 text-purple-700 px-2 py-0.5 rounded-full">273 K</span>
+                <span className="text-[8px] font-bold bg-purple-200 text-purple-700 px-2 py-0.5 rounded-full">100 kPa</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    return null;
+  };
 
   const S12Graphics = ({ index }: { index: number }) => {
     if (index === 0) {
@@ -4876,6 +5763,8 @@ export default function App() {
                 </p>
                 {selectedUnit.id === 1 && <S11Graphics index={i} />}
                 {selectedUnit.id === 2 && <S12Graphics index={i} />}
+                {selectedUnit.id === 3 && <S13Graphics index={i} />}
+                {selectedUnit.id === 4 && <S14Graphics index={i} />}
               </div>
             </div>
           ))}

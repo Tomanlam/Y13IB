@@ -954,6 +954,115 @@ export default function App() {
     );
   };
 
+  const HydrogenSeriesDiagram = () => {
+    const getEnergyY = (n: number) => {
+      if (n === 7) return 40; // infinity
+      // Increased scale and adjusted base for more spacing
+      const scale = 220;
+      return 320 - (1 - 1 / (n * n)) * scale;
+    };
+
+    const series = [
+      { name: 'Lyman', to: 1, region: 'UV', color: '#a855f7', from: [2, 3, 4, 5, 6] },
+      { name: 'Balmer', to: 2, region: 'Vis', color: '#10b981', from: [3, 4, 5, 6], lineColors: ['#ff0000', '#00ffff', '#0000ff', '#4b0082'] },
+      { name: 'Paschen', to: 3, region: 'IR', color: '#ef4444', from: [4, 5, 6] }
+    ];
+
+    return (
+      <div className="mt-8 bg-gray-950 p-8 rounded-[3rem] border-2 border-gray-800 relative overflow-hidden w-full">
+        <div className="flex justify-between items-center mb-8">
+          <div className="flex items-center gap-3">
+            <div className="w-3 h-3 bg-indigo-500 rounded-full animate-pulse" />
+            <div>
+              <p className="text-[12px] font-black text-white uppercase tracking-widest">Hydrogen Series & Energy Levels</p>
+              <p className="text-[10px] font-bold text-gray-500 uppercase tracking-tighter">Electronic Transitions & Spectral Series</p>
+            </div>
+          </div>
+          <div className="flex gap-3">
+            {['UV (Lyman)', 'Vis (Balmer)', 'IR (Paschen)'].map(r => (
+              <span key={r} className={`text-[10px] font-black px-3 py-1 rounded-full border ${
+                r.includes('UV') ? 'bg-purple-500/10 text-purple-400 border-purple-500/20' :
+                r.includes('Vis') ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
+                'bg-red-500/10 text-red-400 border-red-500/20'
+              }`}>{r}</span>
+            ))}
+          </div>
+        </div>
+
+        <svg viewBox="0 0 400 380" className="w-full h-auto max-h-[500px]">
+          <defs>
+            <marker id="arrow-uv" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+              <path d="M0,0 L8,3 L0,6 Z" fill="#a855f7" />
+            </marker>
+            <marker id="arrow-ir" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+              <path d="M0,0 L8,3 L0,6 Z" fill="#ef4444" />
+            </marker>
+            <linearGradient id="level-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="rgba(255,255,255,0)" />
+              <stop offset="50%" stopColor="rgba(255,255,255,0.15)" />
+              <stop offset="100%" stopColor="rgba(255,255,255,0)" />
+            </linearGradient>
+          </defs>
+
+          {/* Energy Levels */}
+          {[1, 2, 3, 4, 5, 6, 7].map(n => (
+            <g key={n}>
+              <line x1="30" y1={getEnergyY(n)} x2="370" y2={getEnergyY(n)} stroke="url(#level-grad)" strokeWidth="1.5" />
+              <text x="10" y={getEnergyY(n) + 4} className="fill-gray-600 text-[10px] font-black">n={n === 7 ? '∞' : n}</text>
+            </g>
+          ))}
+
+          {/* Lyman Series */}
+          {series[0].from.map((f, i) => (
+            <motion.line
+              key={`lyman-${f}`}
+              x1={60 + i * 12} y1={getEnergyY(f)}
+              x2={60 + i * 12} y2={getEnergyY(1)}
+              stroke={series[0].color} strokeWidth="2"
+              markerEnd="url(#arrow-uv)"
+              initial={{ pathLength: 0 }} animate={{ pathLength: 1 }}
+              transition={{ duration: 1, delay: i * 0.1 }}
+            />
+          ))}
+          <text x="85" y={getEnergyY(1) + 20} textAnchor="middle" className="fill-purple-400 text-[10px] font-black uppercase tracking-tighter">Lyman (UV)</text>
+
+          {/* Balmer Series */}
+          {series[1].from.map((f, i) => {
+            const spectrumPos = [85, 45, 30, 20];
+            const x = 150 + (spectrumPos[i] / 100) * 150; 
+            return (
+              <g key={`balmer-${f}`}>
+                <motion.line
+                  x1={x} y1={getEnergyY(f)}
+                  x2={x} y2={getEnergyY(2)}
+                  stroke={series[1].lineColors![i]} strokeWidth="3"
+                  initial={{ pathLength: 0 }} animate={{ pathLength: 1 }}
+                  transition={{ duration: 1, delay: 0.5 + i * 0.1 }}
+                />
+                <circle cx={x} cy={getEnergyY(2)} r="3" fill={series[1].lineColors![i]} />
+              </g>
+            );
+          })}
+          <text x="225" y={getEnergyY(2) + 20} textAnchor="middle" className="fill-emerald-400 text-[10px] font-black uppercase tracking-tighter">Balmer (Visible)</text>
+
+          {/* Paschen Series */}
+          {series[2].from.map((f, i) => (
+            <motion.line
+              key={`paschen-${f}`}
+              x1={320 + i * 15} y1={getEnergyY(f)}
+              x2={320 + i * 15} y2={getEnergyY(3)}
+              stroke={series[2].color} strokeWidth="2"
+              markerEnd="url(#arrow-ir)"
+              initial={{ pathLength: 0 }} animate={{ pathLength: 1 }}
+              transition={{ duration: 1, delay: 1 + i * 0.1 }}
+            />
+          ))}
+          <text x="345" y={getEnergyY(3) + 20} textAnchor="middle" className="fill-red-400 text-[10px] font-black uppercase tracking-tighter">Paschen (IR)</text>
+        </svg>
+      </div>
+    );
+  };
+
   const EmissionSpectrum = () => {
     const lines = [
       { color: '#ff0000', label: '656nm', n: 'n=3 → n=2', pos: 85, name: 'H-alpha' },
@@ -962,15 +1071,18 @@ export default function App() {
       { color: '#4b0082', label: '410nm', n: 'n=6 → n=2', pos: 20, name: 'H-delta' },
     ];
     return (
-      <div className="mt-4 bg-black p-6 rounded-3xl border border-gray-800 shadow-2xl">
-        <div className="flex justify-between items-center mb-4">
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Hydrogen Emission Spectrum</p>
+      <div className="mt-8 bg-black p-8 rounded-[3rem] border-2 border-gray-800 shadow-2xl w-full">
+        <div className="flex justify-between items-center mb-6">
+          <div className="flex items-center gap-3">
+            <div className="w-3 h-3 bg-emerald-500 rounded-full animate-pulse" />
+            <div>
+              <p className="text-[12px] font-black text-gray-400 uppercase tracking-widest">Hydrogen Emission Spectrum</p>
+              <p className="text-[10px] font-bold text-gray-600 uppercase tracking-tighter">Visible Region (Balmer Series)</p>
+            </div>
           </div>
-          <span className="text-[8px] font-black text-emerald-400 bg-emerald-400/10 px-3 py-1 rounded-full border border-emerald-400/20 uppercase tracking-widest">Balmer Series</span>
+          <span className="text-[10px] font-black text-emerald-400 bg-emerald-400/10 px-4 py-1.5 rounded-full border border-emerald-400/20 uppercase tracking-widest">Visible Range</span>
         </div>
-        <div className="relative h-16 w-full bg-gray-900 rounded-2xl overflow-hidden flex items-center border-2 border-white/5">
+        <div className="relative h-24 w-full bg-gray-900 rounded-3xl overflow-hidden flex items-center border-2 border-white/5">
           <div className="absolute inset-0 bg-gradient-to-r from-purple-900/30 via-blue-900/10 to-red-900/30" />
           {lines.map((line, i) => (
             <motion.div
@@ -978,36 +1090,35 @@ export default function App() {
               initial={{ opacity: 0, scaleY: 0 }}
               animate={{ opacity: 1, scaleY: 1 }}
               transition={{ delay: i * 0.15 }}
-              className="absolute h-full w-0.5 group cursor-help"
+              className="absolute h-full w-1 group cursor-help"
               style={{ 
                 backgroundColor: line.color,
                 left: `${line.pos}%`,
-                boxShadow: `0 0 15px ${line.color}`
+                boxShadow: `0 0 20px ${line.color}`
               }}
             >
-              <div className="absolute -top-10 left-1/2 -translate-x-1/2 flex flex-col items-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
-                <div className="bg-gray-800 text-white text-[8px] font-black px-2 py-1 rounded-lg border border-gray-700 whitespace-nowrap shadow-xl">
+              <div className="absolute -top-12 left-1/2 -translate-x-1/2 flex flex-col items-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-20">
+                <div className="bg-gray-800 text-white text-[10px] font-black px-3 py-1.5 rounded-xl border border-gray-700 whitespace-nowrap shadow-2xl">
                   {line.n} ({line.label})
                 </div>
-                <div className="w-0.5 h-2 bg-gray-700" />
+                <div className="w-1 h-3 bg-gray-700" />
               </div>
               
-              {/* Permanent label below */}
-              <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center">
-                <p className="text-[7px] font-black text-white/60 uppercase tracking-tighter whitespace-nowrap">{line.n.split(' → ')[0]}</p>
-                <p className="text-[6px] font-bold text-white/30">{line.label}</p>
+              <div className="absolute -bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center">
+                <p className="text-[9px] font-black text-white/60 uppercase tracking-tighter whitespace-nowrap">{line.n.split(' → ')[0]}</p>
+                <p className="text-[8px] font-bold text-white/30">{line.label}</p>
               </div>
             </motion.div>
           ))}
         </div>
-        <div className="flex justify-between mt-12 px-2">
+        <div className="flex justify-between mt-16 px-4">
           <div className="flex flex-col items-start">
-            <span className="text-[8px] text-gray-600 font-black uppercase tracking-widest">Violet</span>
-            <span className="text-[10px] text-gray-400 font-black">400nm</span>
+            <span className="text-[10px] text-gray-600 font-black uppercase tracking-widest">Violet</span>
+            <span className="text-[12px] text-gray-400 font-black">400nm</span>
           </div>
           <div className="flex flex-col items-end">
-            <span className="text-[8px] text-gray-600 font-black uppercase tracking-widest">Red</span>
-            <span className="text-[10px] text-gray-400 font-black">700nm</span>
+            <span className="text-[10px] text-gray-600 font-black uppercase tracking-widest">Red</span>
+            <span className="text-[12px] text-gray-400 font-black">700nm</span>
           </div>
         </div>
       </div>
@@ -1074,12 +1185,17 @@ export default function App() {
   );
 
   const ElectrolyteDrawing = ({ state }: { state: 'solid' | 'molten' | 'aqueous' }) => {
-    const ions = [...Array(12)].map((_, i) => ({
-      id: i,
-      type: i % 2 === 0 ? 'cation' : 'anion',
-      label: i % 2 === 0 ? 'M⁺' : 'X⁻',
-      color: i % 2 === 0 ? 'bg-blue-500' : 'bg-rose-500'
-    }));
+    const ions = [...Array(12)].map((_, i) => {
+      const row = Math.floor(i / 4);
+      const col = i % 4;
+      const isCation = (row + col) % 2 === 0;
+      return {
+        id: i,
+        type: isCation ? 'cation' : 'anion',
+        label: isCation ? 'M⁺' : 'X⁻',
+        color: isCation ? 'bg-blue-500' : 'bg-rose-500'
+      };
+    });
 
     const waterIons = [...Array(8)].map((_, i) => ({
       id: `w-${i}`,
@@ -1173,45 +1289,73 @@ export default function App() {
 
   const TitrationCurve = () => {
     const [flaskType, setFlaskType] = useState<'acid' | 'base'>('base');
+    const [acidStrength, setAcidStrength] = useState<'strong' | 'weak'>('strong');
+    const [baseStrength, setBaseStrength] = useState<'strong' | 'weak'>('strong');
     const [volumeAdded, setVolumeAdded] = useState(0);
     const [isAdding, setIsAdding] = useState(false);
     const timerRef = useRef<any>(null);
 
-    const calculatePH = (v: number, type: 'acid' | 'base') => {
+    const calculatePH = (v: number, type: 'acid' | 'base', aStr: 'strong' | 'weak', bStr: 'strong' | 'weak') => {
       const c1 = 0.1; 
       const v1 = 25;  
       const c2 = 0.1; 
       
       const moles1 = (c1 * v1) / 1000;
       const moles2 = (c2 * v) / 1000;
-      
-      if (type === 'base') { 
+      const totalV = (v1 + v) / 1000;
+
+      const Ka = 1.8e-5;
+      const Kb = 1.8e-5;
+      const Kw = 1e-14;
+
+      if (type === 'base') { // Acid in burette, Base in flask
+        if (v === 0) {
+          if (bStr === 'strong') return 13;
+          return 14 + Math.log10(Math.sqrt(Kb * c1));
+        }
         if (moles2 < moles1) {
-          const remainingOH = moles1 - moles2;
-          const totalV = (v1 + v) / 1000;
-          const ohConc = remainingOH / totalV;
-          return 14 + Math.log10(ohConc);
+          if (bStr === 'strong') {
+            const remainingOH = moles1 - moles2;
+            return 14 + Math.log10(remainingOH / totalV);
+          } else {
+            const molesBH = moles2;
+            const molesB = moles1 - moles2;
+            const pOH = -Math.log10(Kb) + Math.log10(molesBH / molesB);
+            return 14 - pOH;
+          }
         } else if (Math.abs(moles2 - moles1) < 1e-9) {
+          if (aStr === 'strong' && bStr === 'strong') return 7;
+          if (aStr === 'strong' && bStr === 'weak') return -Math.log10(Math.sqrt((Kw / Kb) * (moles1 / totalV)));
+          if (aStr === 'weak' && bStr === 'strong') return 14 + Math.log10(Math.sqrt((Kw / Ka) * (moles1 / totalV)));
           return 7;
         } else {
           const excessH = moles2 - moles1;
-          const totalV = (v1 + v) / 1000;
-          const hConc = excessH / totalV;
-          return -Math.log10(hConc);
+          if (aStr === 'strong') return -Math.log10(excessH / totalV);
+          return -Math.log10(Math.sqrt(Ka * (excessH / totalV)));
         }
-      } else { 
+      } else { // Base in burette, Acid in flask
+        if (v === 0) {
+          if (aStr === 'strong') return 1;
+          return -Math.log10(Math.sqrt(Ka * c1));
+        }
         if (moles2 < moles1) {
-          const remainingH = moles1 - moles2;
-          const totalV = (v1 + v) / 1000;
-          const hConc = remainingH / totalV;
-          return -Math.log10(hConc);
+          if (aStr === 'strong') {
+            const remainingH = moles1 - moles2;
+            return -Math.log10(remainingH / totalV);
+          } else {
+            const molesA = moles2;
+            const molesHA = moles1 - moles2;
+            return -Math.log10(Ka) + Math.log10(molesA / molesHA);
+          }
         } else if (Math.abs(moles2 - moles1) < 1e-9) {
+          if (aStr === 'strong' && bStr === 'strong') return 7;
+          if (aStr === 'weak' && bStr === 'strong') return 14 + Math.log10(Math.sqrt((Kw / Ka) * (moles1 / totalV)));
+          if (aStr === 'strong' && bStr === 'weak') return -Math.log10(Math.sqrt((Kw / Kb) * (moles1 / totalV)));
           return 7;
         } else {
           const excessOH = moles2 - moles1;
-          const totalV = (v1 + v) / 1000;
-          const ohConc = excessOH / totalV;
-          return 14 + Math.log10(ohConc);
+          if (bStr === 'strong') return 14 + Math.log10(excessOH / totalV);
+          return 14 + Math.log10(Math.sqrt(Kb * (excessOH / totalV)));
         }
       }
     };
@@ -1219,13 +1363,10 @@ export default function App() {
     const chartData = useMemo(() => {
       const points = [];
       for (let i = 0; i <= 50; i += 0.5) {
-        points.push({
-          volume: i,
-          ph: calculatePH(i, flaskType)
-        });
+        points.push({ volume: i, ph: calculatePH(i, flaskType, acidStrength, baseStrength) });
       }
       return points;
-    }, [flaskType]);
+    }, [flaskType, acidStrength, baseStrength]);
 
     const handleAddSolution = () => {
       if (isAdding) {
@@ -1253,12 +1394,10 @@ export default function App() {
     };
 
     useEffect(() => {
-      return () => {
-        if (timerRef.current) clearInterval(timerRef.current);
-      };
+      return () => { if (timerRef.current) clearInterval(timerRef.current); };
     }, []);
 
-    const currentPH = calculatePH(volumeAdded, flaskType);
+    const currentPH = calculatePH(volumeAdded, flaskType, acidStrength, baseStrength);
     
     const getPHColor = (ph: number) => {
       if (ph < 6.5) return 'text-rose-500';
@@ -1270,11 +1409,8 @@ export default function App() {
       if (active && payload && payload.length) {
         const ph = payload[0].value;
         const vol = payload[0].payload.volume;
-        let state = "Neutral";
-        let color = "text-purple-500";
-        if (ph < 6.5) { state = "Acidic"; color = "text-rose-500"; }
-        else if (ph > 7.5) { state = "Basic"; color = "text-blue-500"; }
-        
+        let state = ph < 6.5 ? "Acidic" : ph > 7.5 ? "Basic" : "Neutral";
+        let color = ph < 6.5 ? "text-rose-500" : ph > 7.5 ? "text-blue-500" : "text-purple-500";
         return (
           <div className="bg-white p-3 border-2 border-gray-100 rounded-xl shadow-xl">
             <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Volume: {vol} ml</p>
@@ -1287,10 +1423,68 @@ export default function App() {
     };
 
     return (
-      <div className="space-y-6">
+      <div className="space-y-8">
+        {/* Top: Configuration Toggles */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-gray-50 p-6 rounded-[2rem] border-2 border-gray-100">
+          <div className="space-y-3">
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Titration Setup</p>
+            <div className="flex bg-white p-1 rounded-xl border-2 border-gray-100">
+              <button
+                onClick={() => { setFlaskType('base'); reset(); }}
+                className={`flex-1 py-2 rounded-lg text-[10px] font-black uppercase transition-all ${flaskType === 'base' ? 'bg-indigo-500 text-white' : 'text-gray-400'}`}
+              >
+                Acid into Base
+              </button>
+              <button
+                onClick={() => { setFlaskType('acid'); reset(); }}
+                className={`flex-1 py-2 rounded-lg text-[10px] font-black uppercase transition-all ${flaskType === 'acid' ? 'bg-indigo-500 text-white' : 'text-gray-400'}`}
+              >
+                Base into Acid
+              </button>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Acid Strength</p>
+            <div className="flex bg-white p-1 rounded-xl border-2 border-gray-100">
+              <button
+                onClick={() => { setAcidStrength('strong'); reset(); }}
+                className={`flex-1 py-2 rounded-lg text-[10px] font-black uppercase transition-all ${acidStrength === 'strong' ? 'bg-rose-500 text-white' : 'text-gray-400'}`}
+              >
+                Strong
+              </button>
+              <button
+                onClick={() => { setAcidStrength('weak'); reset(); }}
+                className={`flex-1 py-2 rounded-lg text-[10px] font-black uppercase transition-all ${acidStrength === 'weak' ? 'bg-rose-500 text-white' : 'text-gray-400'}`}
+              >
+                Weak
+              </button>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Base Strength</p>
+            <div className="flex bg-white p-1 rounded-xl border-2 border-gray-100">
+              <button
+                onClick={() => { setBaseStrength('strong'); reset(); }}
+                className={`flex-1 py-2 rounded-lg text-[10px] font-black uppercase transition-all ${baseStrength === 'strong' ? 'bg-blue-500 text-white' : 'text-gray-400'}`}
+              >
+                Strong
+              </button>
+              <button
+                onClick={() => { setBaseStrength('weak'); reset(); }}
+                className={`flex-1 py-2 rounded-lg text-[10px] font-black uppercase transition-all ${baseStrength === 'weak' ? 'bg-blue-500 text-white' : 'text-gray-400'}`}
+              >
+                Weak
+              </button>
+            </div>
+          </div>
+        </div>
+
         <div className="flex flex-col lg:flex-row gap-8 items-start">
-          <div className="w-full lg:w-1/3 flex flex-col items-center justify-center bg-gray-50 rounded-3xl p-6 border-2 border-gray-100 min-h-[400px]">
-            <div className="relative w-32 h-80">
+          {/* Visual Representation */}
+          <div className="w-full lg:w-1/4 flex flex-col items-center justify-center bg-gray-50 rounded-3xl p-6 border-2 border-gray-100 min-h-[400px]">
+            <div className="relative w-32 h-80 scale-90 sm:scale-100">
               <div className="absolute top-0 left-1/2 -translate-x-1/2 w-6 h-48 border-2 border-gray-300 rounded-b-lg bg-white/50 overflow-hidden">
                 <motion.div 
                   className={`absolute bottom-0 w-full ${flaskType === 'base' ? 'bg-rose-400/40' : 'bg-blue-400/40'}`}
@@ -1340,13 +1534,14 @@ export default function App() {
             <div className="mt-4 text-center">
               <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Flask Content</p>
               <p className={`text-sm font-black ${flaskType === 'acid' ? 'text-rose-500' : 'text-blue-500'}`}>
-                {flaskType === 'acid' ? 'Acid (HCl)' : 'Base (NaOH)'}
+                {flaskType === 'acid' ? `${acidStrength === 'strong' ? 'Strong' : 'Weak'} Acid` : `${baseStrength === 'strong' ? 'Strong' : 'Weak'} Base`}
               </p>
             </div>
           </div>
 
+          {/* Chart & Stats */}
           <div className="flex-1 w-full space-y-6">
-            <div className="bg-white p-4 rounded-3xl border-2 border-gray-100 h-[300px]">
+            <div className="bg-white p-6 rounded-3xl border-2 border-gray-100 h-[350px]">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
@@ -1369,7 +1564,7 @@ export default function App() {
                     type="monotone" 
                     dataKey="ph" 
                     stroke="#8b5cf6" 
-                    strokeWidth={3} 
+                    strokeWidth={4} 
                     dot={false}
                     activeDot={{ r: 6, stroke: '#fff', strokeWidth: 2 }}
                   />
@@ -1378,70 +1573,48 @@ export default function App() {
                     type="monotone" 
                     dataKey="ph" 
                     stroke="transparent"
-                    dot={{ r: 6, fill: currentPH < 6.5 ? '#f43f5e' : currentPH > 7.5 ? '#3b82f6' : '#a855f7', stroke: '#fff', strokeWidth: 2 }}
+                    dot={{ r: 8, fill: currentPH < 6.5 ? '#f43f5e' : currentPH > 7.5 ? '#3b82f6' : '#a855f7', stroke: '#fff', strokeWidth: 3 }}
                   />
                 </LineChart>
               </ResponsiveContainer>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <div className="bg-gray-50 p-4 rounded-2xl border-2 border-gray-100">
+              <div className="bg-gray-50 p-6 rounded-2xl border-2 border-gray-100">
                 <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Current pH</p>
                 <div className="flex items-baseline gap-2">
-                  <span className={`text-3xl font-black ${getPHColor(currentPH)}`}>{currentPH.toFixed(2)}</span>
+                  <span className={`text-4xl font-black ${getPHColor(currentPH)}`}>{currentPH.toFixed(2)}</span>
                   <span className={`text-[10px] font-black uppercase tracking-widest ${getPHColor(currentPH)}`}>
                     {currentPH < 6.5 ? 'Acidic' : currentPH > 7.5 ? 'Basic' : 'Neutral'}
                   </span>
                 </div>
               </div>
-              <div className="bg-gray-50 p-4 rounded-2xl border-2 border-gray-100">
+              <div className="bg-gray-50 p-6 rounded-2xl border-2 border-gray-100">
                 <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Volume Added</p>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-3xl font-black text-gray-800">{volumeAdded.toFixed(1)}</span>
+                  <span className="text-4xl font-black text-gray-800">{volumeAdded.toFixed(1)}</span>
                   <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">ml</span>
                 </div>
               </div>
             </div>
 
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap gap-4">
               <button
                 onClick={handleAddSolution}
-                className={`flex-1 flex items-center justify-center gap-2 px-6 py-4 rounded-2xl font-black uppercase tracking-widest transition-all
+                className={`flex-1 flex items-center justify-center gap-3 px-8 py-5 rounded-2xl font-black uppercase tracking-widest transition-all
                   ${isAdding 
                     ? 'bg-rose-500 text-white shadow-[0_6px_0_0_#be123c] active:shadow-none active:translate-y-1' 
                     : 'bg-emerald-500 text-white shadow-[0_6px_0_0_#047857] hover:bg-emerald-400 active:shadow-none active:translate-y-1'}
                 `}
               >
-                {isAdding ? <><XCircle size={18} /> Stop</> : <><RefreshCw size={18} /> Add Burette Solution</>}
+                {isAdding ? <><XCircle size={20} /> Stop Adding</> : <><RefreshCw size={20} /> Add Burette Solution</>}
               </button>
               <button
                 onClick={reset}
-                className="px-6 py-4 bg-white border-2 border-gray-200 rounded-2xl font-black text-xs uppercase tracking-widest text-gray-600 hover:border-purple-400 shadow-[0_6px_0_0_#e5e7eb] active:shadow-none active:translate-y-1 transition-all"
+                className="px-8 py-5 bg-white border-2 border-gray-200 rounded-2xl font-black text-xs uppercase tracking-widest text-gray-600 hover:border-indigo-400 shadow-[0_6px_0_0_#e5e7eb] active:shadow-none active:translate-y-1 transition-all"
               >
                 Reset
               </button>
-            </div>
-
-            <div className="bg-purple-50 p-4 rounded-2xl border-2 border-purple-100">
-              <p className="text-[10px] font-black text-purple-400 uppercase tracking-widest mb-3">Setup Configuration</p>
-              <div className="flex flex-col sm:flex-row gap-2">
-                <button
-                  onClick={() => { setFlaskType('base'); reset(); }}
-                  className={`flex-1 py-2 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all
-                    ${flaskType === 'base' ? 'bg-purple-500 text-white shadow-md' : 'bg-white text-purple-400 border-2 border-purple-100'}
-                  `}
-                >
-                  Acid in Burette / Base in Flask
-                </button>
-                <button
-                  onClick={() => { setFlaskType('acid'); reset(); }}
-                  className={`flex-1 py-2 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all
-                    ${flaskType === 'acid' ? 'bg-purple-500 text-white shadow-md' : 'bg-white text-purple-400 border-2 border-purple-100'}
-                  `}
-                >
-                  Base in Burette / Acid in Flask
-                </button>
-              </div>
             </div>
           </div>
         </div>
@@ -1734,12 +1907,98 @@ export default function App() {
     const [atomicTo, setAtomicTo] = useState(1);
     const [selectedSolubilitySalt, setSelectedSolubilitySalt] = useState<string | null>(null);
     const [electrolyteState, setElectrolyteState] = useState<'solid' | 'molten' | 'aqueous'>('solid');
+    const leChatelierReactions: Record<string, any> = {
+      haber: {
+        id: 'haber',
+        name: 'Haber Process',
+        equation: (
+          <div className="flex justify-center items-center gap-4 text-white font-black text-2xl md:text-4xl tracking-tight text-center">
+            <span className="drop-shadow-md">N<sub>2</sub>(g)</span>
+            <span className="text-emerald-400">+</span>
+            <span className="drop-shadow-md">3H<sub>2</sub>(g)</span>
+            <span className="text-emerald-400 mx-2">⇌</span>
+            <span className="drop-shadow-md">2NH<sub>3</sub>(g)</span>
+          </div>
+        ),
+        deltaH: -92,
+        species: [
+          { id: 'n2', label: 'N₂', color: '#10b981', tailwind: 'bg-emerald-500', coeff: 1, type: 'reactant' },
+          { id: 'h2', label: 'H₂', color: '#3b82f6', tailwind: 'bg-blue-500', coeff: 3, type: 'reactant' },
+          { id: 'nh3', label: 'NH₃', color: '#f59e0b', tailwind: 'bg-orange-500', coeff: 2, type: 'product' }
+        ],
+        calculateQc: (c: any) => (c.nh3 * c.nh3) / (c.n2 * Math.pow(c.h2, 3)),
+        baseKc: 0.0001,
+        tempEffect: 'exothermic',
+        kcScale: 10000,
+        expression: (
+          <div className="flex flex-col items-center font-black italic text-sm">
+            <div className="pb-1 border-b border-white/50">[NH₃]²</div>
+            <div className="pt-1">[N₂][H₂]³</div>
+          </div>
+        )
+      },
+      no2: {
+        id: 'no2',
+        name: 'NO₂ Equilibrium',
+        equation: (
+          <div className="flex justify-center items-center gap-4 text-white font-black text-2xl md:text-4xl tracking-tight text-center">
+            <span className="drop-shadow-md">N<sub>2</sub>O<sub>4</sub>(g)</span>
+            <span className="text-emerald-400 mx-2">⇌</span>
+            <span className="drop-shadow-md">2NO<sub>2</sub>(g)</span>
+          </div>
+        ),
+        deltaH: 57,
+        species: [
+          { id: 'n2o4', label: 'N₂O₄', color: '#8b5cf6', tailwind: 'bg-purple-500', coeff: 1, type: 'reactant' },
+          { id: 'no2', label: 'NO₂', color: '#b45309', tailwind: 'bg-amber-600', coeff: 2, type: 'product' }
+        ],
+        calculateQc: (c: any) => (c.no2 * c.no2) / c.n2o4,
+        baseKc: 0.1,
+        tempEffect: 'endothermic',
+        kcScale: 10,
+        expression: (
+          <div className="flex flex-col items-center font-black italic text-sm">
+            <div className="pb-1 border-b border-white/50">[NO₂]²</div>
+            <div className="pt-1">[N₂O₄]</div>
+          </div>
+        )
+      },
+      hi: {
+        id: 'hi',
+        name: 'HI Equilibrium',
+        equation: (
+          <div className="flex justify-center items-center gap-4 text-white font-black text-2xl md:text-4xl tracking-tight text-center">
+            <span className="drop-shadow-md">H<sub>2</sub>(g)</span>
+            <span className="text-emerald-400">+</span>
+            <span className="drop-shadow-md">I<sub>2</sub>(g)</span>
+            <span className="text-emerald-400 mx-2">⇌</span>
+            <span className="drop-shadow-md">2HI(g)</span>
+          </div>
+        ),
+        deltaH: -9,
+        species: [
+          { id: 'h2', label: 'H₂', color: '#3b82f6', tailwind: 'bg-blue-500', coeff: 1, type: 'reactant' },
+          { id: 'i2', label: 'I₂', color: '#a855f7', tailwind: 'bg-purple-500', coeff: 1, type: 'reactant' },
+          { id: 'hi', label: 'HI', color: '#ec4899', tailwind: 'bg-pink-500', coeff: 2, type: 'product' }
+        ],
+        calculateQc: (c: any) => (c.hi * c.hi) / (c.h2 * c.i2),
+        baseKc: 50,
+        tempEffect: 'exothermic',
+        kcScale: 1,
+        expression: (
+          <div className="flex flex-col items-center font-black italic text-sm">
+            <div className="pb-1 border-b border-white/50">[HI]²</div>
+            <div className="pt-1">[H₂][I₂]</div>
+          </div>
+        )
+      }
+    };
+
     const [leChatelierState, setLeChatelierState] = useState({
-      n2: 40,
-      h2: 60,
-      nh3: 20,
-      temp: 50, // 0 to 100
-      pressure: 1.0, // 0.5 to 2.0
+      reactionId: 'haber' as 'haber' | 'no2' | 'hi',
+      concentrations: { n2: 40, h2: 60, nh3: 20, n2o4: 50, no2: 30, i2: 40, hi: 50 } as Record<string, number>,
+      temp: 50,
+      pressure: 1.0,
       history: [] as any[],
       kc: 1.0
     });
@@ -1747,51 +2006,45 @@ export default function App() {
     useEffect(() => {
       const interval = setInterval(() => {
         setLeChatelierState(prev => {
-          // K_c is only affected by temperature
-          // Exothermic: high T shifts left, K_c decreases
-          const tempFactor = Math.pow(0.2, (prev.temp - 50) / 50);
-          const targetKc = 0.0001 * tempFactor;
-
-          // Current reaction quotient Q_c = [NH3]^2 / ([N2] * [H2]^3)
-          // We use the current concentrations to calculate Q_c
-          const currentQc = (prev.nh3 * prev.nh3) / (prev.n2 * Math.pow(prev.h2, 3));
+          const reaction = leChatelierReactions[prev.reactionId];
           
-          // Reaction rate logic
-          // We want Q_c to move towards targetKc
-          // If Q_c < targetKc, reaction shifts right (N2, H2 decrease, NH3 increases)
-          // If Q_c > targetKc, reaction shifts left (N2, H2 increase, NH3 decreases)
+          let tempFactor;
+          if (reaction.tempEffect === 'exothermic') {
+            tempFactor = Math.pow(0.2, (prev.temp - 50) / 50);
+          } else {
+            tempFactor = Math.pow(5, (prev.temp - 50) / 50);
+          }
+          const targetKc = reaction.baseKc * tempFactor;
+          const currentQc = reaction.calculateQc(prev.concentrations);
           
           const diff = targetKc - currentQc;
-          // Scaling factor to make the movement visible but smooth
-          // Note: [H2]^3 can be very large, so we need a very small multiplier
-          const shift = diff * 10000; 
+          const multipliers: Record<string, number> = { haber: 10000, no2: 10, hi: 0.1 };
+          const shift = diff * (multipliers[prev.reactionId] || 1); 
           
-          // Limit the shift to prevent wild oscillations
           const maxShift = 0.5;
           const clampedShift = Math.max(-maxShift, Math.min(maxShift, shift));
 
-          const nextNH3 = Math.max(1, prev.nh3 + (2 * clampedShift));
-          const nextN2 = Math.max(1, prev.n2 - (1 * clampedShift));
-          const nextH2 = Math.max(1, prev.h2 - (3 * clampedShift));
+          const nextConcentrations = { ...prev.concentrations };
+          reaction.species.forEach((s: any) => {
+            const change = s.type === 'product' ? (s.coeff * clampedShift) : (-s.coeff * clampedShift);
+            nextConcentrations[s.id] = Math.max(0.1, nextConcentrations[s.id] + change);
+          });
 
-          const newHistory = [...prev.history, {
-            time: Date.now(),
-            n2: Math.round(nextN2 * 10) / 10,
-            h2: Math.round(nextH2 * 10) / 10,
-            nh3: Math.round(nextNH3 * 10) / 10
-          }].slice(-40);
+          const historyPoint: any = { time: Date.now() };
+          reaction.species.forEach((s: any) => {
+            historyPoint[s.id] = Math.round(nextConcentrations[s.id] * 10) / 10;
+          });
+
+          const newHistory = [...prev.history, historyPoint].slice(-40);
 
           return {
             ...prev,
-            n2: nextN2,
-            h2: nextH2,
-            nh3: nextNH3,
-            kc: targetKc * 10000, // Scale for display purposes
+            concentrations: nextConcentrations,
+            kc: targetKc * reaction.kcScale,
             history: newHistory
           };
         });
       }, 100);
-
       return () => clearInterval(interval);
     }, []);
 
@@ -2739,8 +2992,8 @@ export default function App() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <div className="space-y-4">
+            <div className="space-y-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {(() => {
                   const data: Record<string, { v: number, i: number, b: number, nb: number, note?: string }> = {
                     'NH3': { v: 5 + 3*1, i: 8 + 3*2, b: 6, nb: 2 },
@@ -2770,7 +3023,7 @@ export default function App() {
                         </div>
                       ))}
                       {d.note && (
-                        <div className="p-3 bg-amber-50 border border-amber-100 rounded-xl flex items-center gap-3">
+                        <div className="md:col-span-2 p-3 bg-amber-50 border border-amber-100 rounded-xl flex items-center gap-3">
                           <Info size={16} className="text-amber-500" />
                           <p className="text-[10px] font-bold text-amber-700">{d.note}</p>
                         </div>
@@ -2780,7 +3033,9 @@ export default function App() {
                 })()}
               </div>
 
-              <div className="flex flex-col justify-center space-y-6">
+              <LewisVisuals formula={lewisExample} />
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div className="bg-emerald-50 p-6 rounded-[2rem] border-2 border-emerald-100 relative overflow-hidden">
                   <div className="absolute top-0 right-0 p-4 opacity-10">
                     <FlaskConical size={40} className="text-emerald-600" />
@@ -2810,8 +3065,6 @@ export default function App() {
                     </div>
                   </div>
                 </div>
-
-                <LewisVisuals formula={lewisExample} />
 
                 <div className="bg-white border-2 border-gray-100 p-6 rounded-[2rem]">
                   <h4 className="text-xs font-black text-gray-800 uppercase tracking-widest mb-4 flex items-center gap-2">
@@ -2869,7 +3122,7 @@ export default function App() {
               </div>
             </div>
 
-            <div className="grid lg:grid-cols-2 gap-12">
+            <div className="grid lg:grid-cols-2 gap-12 mb-12">
               <div className="space-y-6">
                 <AtomicTransitionDrawing view={atomicTransitionView} from={atomicFrom} to={atomicTo} />
                 
@@ -2903,8 +3156,6 @@ export default function App() {
                     </div>
                   </div>
                 </div>
-
-                <EmissionSpectrum />
               </div>
 
               <div className="space-y-6">
@@ -2955,6 +3206,11 @@ export default function App() {
                   </div>
                 </div>
               </div>
+            </div>
+
+            <div className="space-y-8">
+              <HydrogenSeriesDiagram />
+              <EmissionSpectrum />
             </div>
           </motion.div>
 
@@ -3332,8 +3588,16 @@ export default function App() {
                   <p className="text-emerald-500 font-bold text-xs uppercase tracking-widest mt-1">Equilibrium Dynamics</p>
                 </div>
               </div>
-              <div className="text-[10px] font-black text-emerald-600 uppercase tracking-widest bg-emerald-50 px-4 py-2 rounded-2xl border-2 border-emerald-100">
-                Haber Process Simulation
+              <div className="flex flex-wrap gap-2">
+                {Object.values(leChatelierReactions).map((r: any) => (
+                  <button
+                    key={r.id}
+                    onClick={() => setLeChatelierState(prev => ({ ...prev, reactionId: r.id, history: [] }))}
+                    className={`px-4 py-2 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all ${leChatelierState.reactionId === r.id ? 'bg-emerald-500 text-white shadow-[0_4px_0_0_#059669]' : 'bg-white text-gray-400 border-2 border-gray-100 hover:border-emerald-200'}`}
+                  >
+                    {r.name}
+                  </button>
+                ))}
               </div>
             </div>
 
@@ -3343,19 +3607,13 @@ export default function App() {
               </div>
               
               <div className="relative z-10 flex flex-col items-center">
-                <div className="flex justify-center items-center gap-4 text-white font-black text-2xl md:text-4xl tracking-tight text-center">
-                  <span className="drop-shadow-md">N<sub>2</sub>(g)</span>
-                  <span className="text-emerald-400">+</span>
-                  <span className="drop-shadow-md">3H<sub>2</sub>(g)</span>
-                  <span className="text-emerald-400 mx-2">⇌</span>
-                  <span className="drop-shadow-md">2NH<sub>3</sub>(g)</span>
-                </div>
+                {leChatelierReactions[leChatelierState.reactionId].equation}
                 <div className="mt-6 flex flex-wrap justify-center gap-4">
                   <span className="px-4 py-1.5 bg-gray-800/50 rounded-full text-[10px] font-bold text-gray-400 uppercase tracking-widest border border-gray-700">
-                    ΔH = -92 kJ mol⁻¹
+                    ΔH = {leChatelierReactions[leChatelierState.reactionId].deltaH} kJ mol⁻¹
                   </span>
-                  <span className="px-4 py-1.5 bg-emerald-500/20 rounded-full text-[10px] font-bold text-emerald-400 uppercase tracking-widest border border-emerald-500/30">
-                    Exothermic
+                  <span className={`px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border ${leChatelierReactions[leChatelierState.reactionId].tempEffect === 'exothermic' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-orange-500/20 text-orange-400 border-orange-500/30'}`}>
+                    {leChatelierReactions[leChatelierState.reactionId].tempEffect === 'exothermic' ? 'Exothermic' : 'Endothermic'}
                   </span>
                 </div>
               </div>
@@ -3369,27 +3627,26 @@ export default function App() {
                   <p className="text-[10px] font-black uppercase tracking-widest">Concentration Dials</p>
                 </div>
                 <div className="space-y-4">
-                  {[
-                    { id: 'n2', label: 'N₂', color: 'bg-emerald-500', value: leChatelierState.n2 },
-                    { id: 'h2', label: 'H₂', color: 'bg-blue-500', value: leChatelierState.h2 },
-                    { id: 'nh3', label: 'NH₃', color: 'bg-orange-500', value: leChatelierState.nh3 }
-                  ].map((species) => (
-                    <div key={species.id} className="space-y-2">
+                  {leChatelierReactions[leChatelierState.reactionId].species.map((species: any) => (
+                    <div key={species.id} className="bg-white p-4 rounded-2xl border-2 border-gray-100 shadow-sm space-y-2">
                       <div className="flex justify-between items-center">
-                        <span className="text-[10px] font-black text-gray-600 uppercase tracking-tighter">{species.label} Concentration</span>
-                        <span className="text-[10px] font-black text-gray-400">{Math.round(species.value)} mol/dm³</span>
+                        <span className="text-[10px] font-black text-gray-600 uppercase tracking-tighter">{species.label}</span>
+                        <span className="text-[10px] font-black text-gray-400">{leChatelierState.concentrations[species.id].toFixed(1)} mol/dm³</span>
                       </div>
                       <input 
                         type="range"
                         min="5"
                         max="120"
-                        value={species.value}
+                        value={leChatelierState.concentrations[species.id]}
                         onChange={(e) => {
                           const newVal = parseFloat(e.target.value);
-                          setLeChatelierState(prev => ({ ...prev, [species.id]: newVal }));
+                          setLeChatelierState(prev => ({ 
+                            ...prev, 
+                            concentrations: { ...prev.concentrations, [species.id]: newVal } 
+                          }));
                         }}
-                        className={`w-full h-2 rounded-lg appearance-none cursor-pointer bg-gray-200 accent-emerald-500`}
-                        style={{ accentColor: species.id === 'n2' ? '#10b981' : species.id === 'h2' ? '#3b82f6' : '#f59e0b' }}
+                        className="w-full h-2 rounded-lg appearance-none cursor-pointer bg-gray-200"
+                        style={{ accentColor: species.color }}
                       />
                     </div>
                   ))}
@@ -3402,9 +3659,9 @@ export default function App() {
                   <Wind size={16} />
                   <p className="text-[10px] font-black uppercase tracking-widest">System Pressure</p>
                 </div>
-                <div className="space-y-6">
-                  <div className="bg-white p-4 rounded-2xl border-2 border-gray-100 shadow-sm">
-                    <div className="flex justify-between items-center mb-4">
+                <div className="space-y-4">
+                  <div className="bg-white p-4 rounded-2xl border-2 border-gray-100 shadow-sm space-y-2">
+                    <div className="flex justify-between items-center mb-2">
                       <span className="text-[10px] font-black text-gray-600 uppercase tracking-widest">Total Pressure</span>
                       <span className="text-[10px] font-black text-emerald-600 bg-emerald-50 px-2 py-1 rounded-lg border border-emerald-100">
                         {leChatelierState.pressure.toFixed(2)} atm
@@ -3420,12 +3677,14 @@ export default function App() {
                         const newVal = parseFloat(e.target.value);
                         setLeChatelierState(prev => {
                           const ratio = newVal / prev.pressure;
+                          const nextConcentrations = { ...prev.concentrations };
+                          Object.keys(nextConcentrations).forEach(key => {
+                            nextConcentrations[key] *= ratio;
+                          });
                           return {
                             ...prev,
                             pressure: newVal,
-                            n2: prev.n2 * ratio,
-                            h2: prev.h2 * ratio,
-                            nh3: prev.nh3 * ratio
+                            concentrations: nextConcentrations
                           };
                         });
                       }}
@@ -3436,8 +3695,8 @@ export default function App() {
                       <span className="text-[8px] font-bold text-gray-400 uppercase">High</span>
                     </div>
                   </div>
-                  <p className="text-[9px] font-bold text-gray-400 text-center italic leading-relaxed">
-                    Increasing pressure scales all concentrations up immediately.
+                  <p className="text-[9px] font-bold text-gray-400 text-center italic leading-relaxed px-2">
+                    Increasing pressure scales all concentrations up immediately. Equilibrium shifts only if gas moles differ.
                   </p>
                 </div>
               </div>
@@ -3448,9 +3707,9 @@ export default function App() {
                   <Thermometer size={16} />
                   <p className="text-[10px] font-black uppercase tracking-widest">System Temperature</p>
                 </div>
-                <div className="space-y-6">
-                  <div className="bg-white p-4 rounded-2xl border-2 border-gray-100 shadow-sm">
-                    <div className="flex justify-between items-center mb-4">
+                <div className="space-y-4">
+                  <div className="bg-white p-4 rounded-2xl border-2 border-gray-100 shadow-sm space-y-2">
+                    <div className="flex justify-between items-center mb-2">
                       <span className="text-[10px] font-black text-gray-600 uppercase tracking-widest">Temperature</span>
                       <span className="text-[10px] font-black text-orange-600 bg-orange-50 px-2 py-1 rounded-lg border border-orange-100">
                         {Math.round(leChatelierState.temp)} °C
@@ -3472,7 +3731,7 @@ export default function App() {
                       <span className="text-[8px] font-bold text-gray-400 uppercase">Heat</span>
                     </div>
                   </div>
-                  <p className="text-[9px] font-black text-orange-500 text-center uppercase tracking-tighter leading-relaxed">
+                  <p className="text-[9px] font-black text-orange-500 text-center uppercase tracking-tighter leading-relaxed px-2">
                     Temperature is the only factor that changes the equilibrium constant (K꜀).
                   </p>
                 </div>
@@ -3494,13 +3753,18 @@ export default function App() {
                     <LineChart data={leChatelierState.history}>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
                       <XAxis hide dataKey="time" />
-                      <YAxis domain={[0, 160]} hide />
+                      <YAxis 
+                        domain={[0, (dataMax: number) => Math.ceil(dataMax * 1.2 / 10) * 10]} 
+                        tick={{fontSize: 10, fontWeight: 'bold', fill: '#94a3b8'}}
+                        axisLine={false}
+                        tickLine={false}
+                      />
                       <Tooltip 
                         content={({ active, payload }) => {
                           if (active && payload && payload.length) {
-                            // Calculate current Qc for the tooltip
                             const data = payload[0].payload;
-                            const qc = (data.nh3 * data.nh3) / (data.n2 * Math.pow(data.h2, 3)) * 10000;
+                            const reaction = leChatelierReactions[leChatelierState.reactionId];
+                            const qc = reaction.calculateQc(data) * reaction.kcScale;
                             return (
                               <div className="bg-white border-2 border-gray-100 rounded-2xl p-4 shadow-xl">
                                 <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-2">Equilibrium State</p>
@@ -3513,11 +3777,11 @@ export default function App() {
                                   ))}
                                   <div className="mt-2 pt-2 border-t border-gray-100 space-y-1">
                                     <div className="flex items-center justify-between gap-4">
-                                      <span className="text-[10px] font-bold text-emerald-600">Target K꜀ (×10⁻⁴):</span>
+                                      <span className="text-[10px] font-bold text-emerald-600">K꜀:</span>
                                       <span className="text-[10px] font-black text-emerald-600">{leChatelierState.kc.toFixed(2)}</span>
                                     </div>
                                     <div className="flex items-center justify-between gap-4">
-                                      <span className="text-[10px] font-bold text-blue-600">Current Q꜀ (×10⁻⁴):</span>
+                                      <span className="text-[10px] font-bold text-blue-600">Q꜀:</span>
                                       <span className="text-[10px] font-black text-blue-600">{qc.toFixed(2)}</span>
                                     </div>
                                   </div>
@@ -3528,56 +3792,76 @@ export default function App() {
                           return null;
                         }}
                       />
-                      <Line type="monotone" dataKey="n2" stroke="#10b981" strokeWidth={4} dot={false} name="[N₂]" isAnimationActive={false} />
-                      <Line type="monotone" dataKey="h2" stroke="#3b82f6" strokeWidth={4} dot={false} name="[H₂]" isAnimationActive={false} />
-                      <Line type="monotone" dataKey="nh3" stroke="#f59e0b" strokeWidth={4} dot={false} name="[NH₃]" isAnimationActive={false} />
+                      {leChatelierReactions[leChatelierState.reactionId].species.map((s: any) => (
+                        <Line 
+                          key={s.id}
+                          type="monotone" 
+                          dataKey={s.id} 
+                          stroke={s.color} 
+                          strokeWidth={4} 
+                          dot={false} 
+                          name={`[${s.label}]`} 
+                          isAnimationActive={false} 
+                        />
+                      ))}
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
 
                 <div className="flex flex-wrap justify-center gap-6 md:gap-8 mt-6">
-                  <div className="flex items-center gap-3">
-                    <div className="w-4 h-1.5 bg-emerald-500 rounded-full" />
-                    <span className="text-[11px] font-black text-gray-500 uppercase tracking-widest">[N₂]</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-4 h-1.5 bg-blue-500 rounded-full" />
-                    <span className="text-[11px] font-black text-gray-500 uppercase tracking-widest">[H₂]</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-4 h-1.5 bg-orange-500 rounded-full" />
-                    <span className="text-[11px] font-black text-gray-500 uppercase tracking-widest">[NH₃]</span>
-                  </div>
+                  {leChatelierReactions[leChatelierState.reactionId].species.map((s: any) => (
+                    <div key={s.id} className="flex items-center gap-3">
+                      <div className="w-4 h-1.5 rounded-full" style={{ backgroundColor: s.color }} />
+                      <span className="text-[11px] font-black text-gray-500 uppercase tracking-widest">[{s.label}]</span>
+                    </div>
+                  ))}
                 </div>
               </div>
 
               {/* Kc Display */}
               <div className="flex flex-col gap-6">
-                <div className="flex-1 bg-emerald-500 rounded-[2.5rem] p-8 text-white shadow-xl shadow-emerald-100 flex flex-col items-center justify-center text-center relative overflow-hidden">
-                  <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
-                    <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
-                      <path d="M0 100 C 20 0 50 0 100 100" fill="none" stroke="white" strokeWidth="0.5" />
-                    </svg>
-                  </div>
-                  <p className="text-[10px] font-black uppercase tracking-[0.3em] mb-4 opacity-80">Equilibrium Constant (×10⁻⁴)</p>
-                  <motion.div 
-                    key={leChatelierState.kc}
-                    initial={{ scale: 0.8, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    className="text-6xl font-black tracking-tighter mb-2"
-                  >
-                    {leChatelierState.kc.toFixed(2)}
-                  </motion.div>
-                  <div className="text-2xl font-black opacity-90">K<sub>c</sub></div>
+                {(() => {
+                  const reaction = leChatelierReactions[leChatelierState.reactionId];
+                  const currentQc = reaction.calculateQc(leChatelierState.concentrations) * reaction.kcScale;
+                  const diff = currentQc - leChatelierState.kc;
+                  const isAtEquilibrium = Math.abs(diff) < (leChatelierState.kc * 0.05);
                   
-                  <div className="mt-8 pt-6 border-t border-white/20 w-full flex flex-col items-center">
-                    <p className="text-[9px] font-bold uppercase tracking-widest opacity-70 mb-3">Expression (Scaled)</p>
-                    <div className="flex flex-col items-center font-black italic text-sm">
-                      <div className="pb-1 border-b border-white/50">[NH₃]²</div>
-                      <div className="pt-1">[N₂][H₂]³</div>
+                  return (
+                    <div className={`flex-1 rounded-[2.5rem] p-8 text-white shadow-xl flex flex-col items-center justify-center text-center relative overflow-hidden transition-colors duration-500 ${isAtEquilibrium ? 'bg-emerald-500 shadow-emerald-100' : 'bg-rose-500 shadow-rose-100'}`}>
+                      <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
+                        <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
+                          <path d="M0 100 C 20 0 50 0 100 100" fill="none" stroke="white" strokeWidth="0.5" />
+                        </svg>
+                      </div>
+                      <p className="text-[10px] font-black uppercase tracking-[0.3em] mb-4 opacity-80">Equilibrium Constant</p>
+                      
+                      <div className="flex flex-col items-center gap-1 mb-4">
+                        <motion.div 
+                          key={leChatelierState.kc}
+                          initial={{ scale: 0.8, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          className="text-5xl font-black tracking-tighter"
+                        >
+                          {leChatelierState.kc.toFixed(2)}
+                        </motion.div>
+                        <div className="text-xl font-black opacity-90">K<sub>c</sub></div>
+                      </div>
+
+                      <div className="bg-white/20 px-4 py-2 rounded-xl backdrop-blur-sm mb-6 w-full">
+                        <p className="text-[10px] font-black uppercase tracking-widest mb-1">Reaction Quotient</p>
+                        <p className="text-xl font-black">{currentQc.toFixed(2)} (Q<sub>c</sub>)</p>
+                        <p className="text-[10px] font-black mt-1">
+                          {isAtEquilibrium ? 'Q = K (Equilibrium)' : currentQc > leChatelierState.kc ? 'Q > K (Shift Left)' : 'Q < K (Shift Right)'}
+                        </p>
+                      </div>
+                      
+                      <div className="mt-auto pt-6 border-t border-white/20 w-full flex flex-col items-center">
+                        <p className="text-[9px] font-bold uppercase tracking-widest opacity-70 mb-3">Expression</p>
+                        {reaction.expression}
+                      </div>
                     </div>
-                  </div>
-                </div>
+                  );
+                })()}
               </div>
             </div>
           </motion.div>
@@ -4460,11 +4744,11 @@ export default function App() {
     const d = visuals[formula] || visuals['NH3'];
 
     return (
-      <div className="space-y-6 mt-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
         <div className="bg-gray-50 p-6 rounded-[2.5rem] border-2 border-gray-100 flex flex-col items-center">
           <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Dot-Cross Structure</p>
           <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm w-full flex justify-center">
-            <div className="w-48 h-48">
+            <div className="w-40 h-40">
               {React.cloneElement(d.dotCross as React.ReactElement, { className: "w-full h-full" })}
             </div>
           </div>
@@ -4472,7 +4756,7 @@ export default function App() {
         <div className="bg-gray-50 p-6 rounded-[2.5rem] border-2 border-gray-100 flex flex-col items-center">
           <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Displayed Formula</p>
           <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm w-full flex justify-center">
-            <div className="w-48 h-48">
+            <div className="w-40 h-40">
               {React.cloneElement(d.displayed as React.ReactElement, { className: "w-full h-full" })}
             </div>
           </div>

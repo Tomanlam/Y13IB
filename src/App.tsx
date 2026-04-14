@@ -75,6 +75,8 @@ export default function App() {
   const [isQRModalOpen, setIsQRModalOpen] = useState(false);
   const [sessionStats, setSessionStats] = useState<SessionStats>({});
   const [s11Temp, setS11Temp] = useState(25); // Celsius
+  const [s12Z, setS12Z] = useState(6); // Carbon
+  const [s12A, setS12A] = useState(12);
 
   const allConcepts = useMemo(() => units.flatMap(unit => unit.concepts), []);
   const [randomConcept, setRandomConcept] = useState(() => 
@@ -3944,6 +3946,192 @@ export default function App() {
     </div>
   );
 
+  const S12Graphics = ({ index }: { index: number }) => {
+    if (index === 0) {
+      return (
+        <div className="mt-4 grid grid-cols-3 gap-2">
+          {[
+            { name: 'Proton', charge: '+1', mass: '1', color: 'bg-red-500' },
+            { name: 'Neutron', charge: '0', mass: '1', color: 'bg-gray-400' },
+            { name: 'Electron', charge: '-1', mass: '1/1836', color: 'bg-blue-500' }
+          ].map((p) => (
+            <div key={p.name} className="bg-gray-50 p-3 rounded-xl border border-gray-100 text-center">
+              <div className={`w-6 h-6 ${p.color} rounded-full mx-auto mb-2 shadow-sm`} />
+              <p className="text-[10px] font-black text-gray-800 uppercase mb-1">{p.name}</p>
+              <div className="space-y-0.5">
+                <p className="text-[8px] font-bold text-gray-400 uppercase">Charge: <span className="text-gray-700">{p.charge}</span></p>
+                <p className="text-[8px] font-bold text-gray-400 uppercase">Mass: <span className="text-gray-700">{p.mass}</span></p>
+              </div>
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    if (index === 8) {
+      const elements: Record<number, string> = { 1: 'H', 2: 'He', 3: 'Li', 4: 'Be', 5: 'B', 6: 'C', 7: 'N', 8: 'O', 9: 'F', 10: 'Ne' };
+      const symbol = elements[s12Z] || '?';
+      
+      return (
+        <div className="mt-4 bg-blue-50 p-6 rounded-2xl border border-blue-100">
+          <div className="flex items-center justify-between gap-8">
+            <div className="flex-1 space-y-4">
+              <div className="space-y-1">
+                <div className="flex justify-between">
+                  <span className="text-[8px] font-black text-blue-600 uppercase tracking-widest">Atomic Number (Z)</span>
+                  <span className="text-xs font-black text-blue-600">{s12Z}</span>
+                </div>
+                <input 
+                  type="range" min="1" max="10" value={s12Z} 
+                  onChange={(e) => {
+                    const z = parseInt(e.target.value);
+                    setS12Z(z);
+                    if (s12A < z * 2) setS12A(z * 2);
+                  }}
+                  className="w-full h-1.5 bg-blue-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                />
+              </div>
+              <div className="space-y-1">
+                <div className="flex justify-between">
+                  <span className="text-[8px] font-black text-blue-600 uppercase tracking-widest">Mass Number (A)</span>
+                  <span className="text-xs font-black text-blue-600">{s12A}</span>
+                </div>
+                <input 
+                  type="range" min={s12Z} max={s12Z * 3} value={s12A} 
+                  onChange={(e) => setS12A(parseInt(e.target.value))}
+                  className="w-full h-1.5 bg-blue-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                />
+              </div>
+            </div>
+            
+            <div className="bg-white p-4 rounded-2xl border-2 border-blue-200 shadow-sm w-24 h-32 flex flex-col items-center justify-center relative">
+              <span className="absolute top-2 left-3 text-xs font-black text-gray-400">{s12A}</span>
+              <span className="absolute bottom-2 left-3 text-xs font-black text-gray-400">{s12Z}</span>
+              <span className="text-4xl font-black text-gray-800">{symbol}</span>
+              <div className="mt-2 text-[8px] font-black text-blue-500 uppercase tracking-widest">
+                {s12A - s12Z} Neutrons
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    if (index === 12) {
+      return (
+        <div className="mt-4 grid grid-cols-2 gap-4">
+          {[
+            { name: 'Carbon-12', p: 6, n: 6, abundance: '98.9%' },
+            { name: 'Carbon-14', p: 6, n: 8, abundance: 'Trace' }
+          ].map((iso) => (
+            <div key={iso.name} className="bg-gray-50 p-4 rounded-2xl border border-gray-100">
+              <p className="text-[10px] font-black text-gray-800 uppercase mb-3 text-center">{iso.name}</p>
+              <div className="flex justify-center gap-1 flex-wrap max-w-[60px] mx-auto mb-3">
+                {[...Array(iso.p)].map((_, i) => <div key={`p-${i}`} className="w-1.5 h-1.5 bg-red-500 rounded-full" />)}
+                {[...Array(iso.n)].map((_, i) => <div key={`n-${i}`} className="w-1.5 h-1.5 bg-gray-400 rounded-full" />)}
+              </div>
+              <div className="flex justify-between text-[8px] font-bold text-gray-400 uppercase">
+                <span>P: {iso.p}</span>
+                <span>N: {iso.n}</span>
+              </div>
+              <div className="mt-2 pt-2 border-t border-gray-200 text-center">
+                <span className="text-[8px] font-black text-emerald-500 uppercase">{iso.abundance}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    if (index === 15) {
+      return (
+        <div className="mt-4 bg-emerald-50 p-4 rounded-2xl border border-emerald-100">
+          <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-3">Ar Calculation Example (Mg)</p>
+          <div className="space-y-2">
+            <div className="flex justify-between text-[10px] font-bold text-gray-600">
+              <span>²⁴Mg (78.99%)</span>
+              <span>24 × 0.7899 = 18.96</span>
+            </div>
+            <div className="flex justify-between text-[10px] font-bold text-gray-600">
+              <span>²⁵Mg (10.00%)</span>
+              <span>25 × 0.1000 = 2.50</span>
+            </div>
+            <div className="flex justify-between text-[10px] font-bold text-gray-600">
+              <span>²⁶Mg (11.01%)</span>
+              <span>26 × 0.1101 = 2.86</span>
+            </div>
+            <div className="pt-2 border-t border-emerald-200 flex justify-between font-black text-emerald-600">
+              <span className="text-xs">Relative Atomic Mass (Ar)</span>
+              <span className="text-xs">24.32</span>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    if (index === 16) {
+      return (
+        <div className="mt-4 bg-gray-900 p-6 rounded-2xl border border-gray-800 relative overflow-hidden h-40">
+          <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(#fff 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
+          
+          <svg viewBox="0 0 200 100" className="w-full h-full relative z-10">
+            {/* Path */}
+            <path d="M 10 50 L 60 50 Q 100 50 100 10 Q 100 -30 140 -30" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="10" strokeLinecap="round" />
+            
+            {/* Ionization */}
+            <motion.circle 
+              r="3" fill="#facc15"
+              animate={{ cx: [10, 40], cy: [50, 50], opacity: [0, 1, 1] }}
+              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+            />
+            <Zap size={10} x={35} y={45} className="text-yellow-400 animate-pulse" />
+            
+            {/* Acceleration & Deflection */}
+            <motion.circle 
+              r="3" fill="#60a5fa"
+              animate={{ 
+                cx: [40, 60, 80, 100, 120, 150], 
+                cy: [50, 50, 45, 30, 20, 15],
+                opacity: [0, 1, 1, 1, 1, 0]
+              }}
+              transition={{ duration: 2, repeat: Infinity, ease: "linear", delay: 1 }}
+            />
+            
+            {/* Heavier Ion (less deflection) */}
+            <motion.circle 
+              r="4" fill="#f87171"
+              animate={{ 
+                cx: [40, 60, 90, 130, 170], 
+                cy: [50, 50, 52, 55, 58],
+                opacity: [0, 1, 1, 1, 0]
+              }}
+              transition={{ duration: 2, repeat: Infinity, ease: "linear", delay: 1.2 }}
+            />
+
+            {/* Labels */}
+            <text x="10" y="70" className="fill-gray-500 text-[6px] font-bold uppercase">Ionise</text>
+            <text x="60" y="70" className="fill-gray-500 text-[6px] font-bold uppercase">Accelerate</text>
+            <text x="110" y="30" className="fill-gray-500 text-[6px] font-bold uppercase">Deflect</text>
+            <text x="160" y="80" className="fill-gray-500 text-[6px] font-bold uppercase">Detect</text>
+          </svg>
+
+          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-4">
+            <div className="flex items-center gap-1">
+              <div className="w-1.5 h-1.5 bg-blue-400 rounded-full" />
+              <span className="text-[6px] font-black text-white uppercase">Light</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <div className="w-1.5 h-1.5 bg-red-400 rounded-full" />
+              <span className="text-[6px] font-black text-white uppercase">Heavy</span>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    return null;
+  };
+
   const S11Graphics = ({ index }: { index: number }) => {
     const kelvin = Math.round(s11Temp + 273.15);
     const speed = Math.max(0.1, (s11Temp + 273) / 300);
@@ -4083,7 +4271,7 @@ export default function App() {
     const Dot = ({ cx, cy, color = "#10b981" }: { cx: number, cy: number, color?: string }) => (
       <circle cx={cx} cy={cy} r="1.5" fill={color} />
     );
-    const Cross = ({ x, y, color = "#94a3b8" }: { x: number, y: number, color?: string }) => (
+    const Cross = ({ x, y, color = "#94a3b8" }: { x: number, y: number, color?: string, key?: any }) => (
       <text x={x} y={y + 3} textAnchor="middle" className="font-black text-[10px]" fill={color}>x</text>
     );
 
@@ -4272,17 +4460,21 @@ export default function App() {
     const d = visuals[formula] || visuals['NH3'];
 
     return (
-      <div className="grid grid-cols-2 gap-4 mt-6">
-        <div className="bg-gray-50 p-4 rounded-2xl border-2 border-gray-100 flex flex-col items-center">
-          <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-2">Dot-Cross Structure</p>
-          <div className="bg-white p-2 rounded-xl border border-gray-100 shadow-sm">
-            {d.dotCross}
+      <div className="space-y-6 mt-8">
+        <div className="bg-gray-50 p-6 rounded-[2.5rem] border-2 border-gray-100 flex flex-col items-center">
+          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Dot-Cross Structure</p>
+          <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm w-full flex justify-center">
+            <div className="w-48 h-48">
+              {React.cloneElement(d.dotCross as React.ReactElement, { className: "w-full h-full" })}
+            </div>
           </div>
         </div>
-        <div className="bg-gray-50 p-4 rounded-2xl border-2 border-gray-100 flex flex-col items-center">
-          <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-2">Displayed Formula</p>
-          <div className="bg-white p-2 rounded-xl border border-gray-100 shadow-sm">
-            {d.displayed}
+        <div className="bg-gray-50 p-6 rounded-[2.5rem] border-2 border-gray-100 flex flex-col items-center">
+          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Displayed Formula</p>
+          <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm w-full flex justify-center">
+            <div className="w-48 h-48">
+              {React.cloneElement(d.displayed as React.ReactElement, { className: "w-full h-full" })}
+            </div>
           </div>
         </div>
       </div>
@@ -4328,6 +4520,7 @@ export default function App() {
                   )}
                 </p>
                 {selectedUnit.id === 1 && <S11Graphics index={i} />}
+                {selectedUnit.id === 2 && <S12Graphics index={i} />}
               </div>
             </div>
           ))}

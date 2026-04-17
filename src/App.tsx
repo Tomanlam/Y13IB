@@ -46,7 +46,8 @@ import {
   QrCode,
   Layers,
   Activity,
-  Box
+  Box,
+  Search
 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Cell } from 'recharts';
 import { units, Unit, Question, Vocab } from './data';
@@ -120,8 +121,16 @@ const BLOCK_COLORS = {
 
 const ElectronicConfiguration = () => {
   const [z, setZ] = useState(1);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showSearch, setShowSearch] = useState(false);
   
   const currentElement = ELEMENTS_DATA.find(e => e.z === z) || ELEMENTS_DATA[0];
+
+  const filteredElements = ELEMENTS_DATA.filter(e => 
+    e.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    e.symbol.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    e.z.toString() === searchQuery
+  );
   
   const getDistribution = (atomicNumber: number) => {
     const dist: Record<string, number> = {};
@@ -174,6 +183,75 @@ const ElectronicConfiguration = () => {
 
   return (
     <div className="space-y-8">
+      {/* Search & Selector Header */}
+      <div className="flex flex-col gap-4">
+        <div className="flex items-center justify-between">
+          <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Select Element (Z={z})</label>
+          <button 
+            onClick={() => setShowSearch(!showSearch)}
+            className="flex items-center gap-1.5 bg-gray-100 px-3 py-1.5 rounded-full text-[10px] font-black text-gray-600 uppercase tracking-widest hover:bg-emerald-100 hover:text-emerald-600 transition-all"
+          >
+            <Search size={12} />
+            {showSearch ? 'Close Search' : 'Search by Name'}
+          </button>
+        </div>
+
+        {showSearch && (
+          <div className="relative">
+            <input 
+              type="text"
+              autoFocus
+              placeholder="Search elements..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-gray-50 border-2 border-gray-100 rounded-2xl px-5 py-3 text-sm font-bold focus:border-emerald-400 focus:outline-none transition-colors"
+            />
+            {searchQuery && (
+              <div className="absolute top-full left-0 right-0 mt-2 bg-white border-2 border-gray-100 rounded-2xl shadow-xl max-h-60 overflow-y-auto z-30 p-2 space-y-1">
+                {filteredElements.length > 0 ? (
+                  filteredElements.map(e => (
+                    <button
+                      key={e.z}
+                      onClick={() => {
+                        setZ(e.z);
+                        setSearchQuery('');
+                        setShowSearch(false);
+                      }}
+                      className="w-full flex items-center justify-between p-3 hover:bg-emerald-50 rounded-xl transition-colors text-left"
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="w-8 h-8 flex items-center justify-center bg-gray-100 rounded-lg text-[10px] font-black text-gray-500">{e.z}</span>
+                        <div>
+                          <p className="font-black text-gray-800 text-sm leading-none">{e.name}</p>
+                          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">{e.block}-block</p>
+                        </div>
+                      </div>
+                      <span className="text-sm font-black text-emerald-500">{e.symbol}</span>
+                    </button>
+                  ))
+                ) : (
+                  <div className="p-4 text-center text-gray-400 font-bold text-xs italic">No matching elements</div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        <div className="flex items-center gap-4 bg-gray-50 p-4 rounded-[2rem] border-2 border-gray-100">
+          <input 
+            type="range" 
+            min="1" 
+            max="30" 
+            value={z} 
+            onChange={(e) => setZ(parseInt(e.target.value))}
+            className="flex-1 h-2 bg-emerald-100 rounded-full appearance-none cursor-pointer accent-emerald-500"
+          />
+          <div className="w-14 h-14 bg-white border-2 border-emerald-200 rounded-2xl flex items-center justify-center shadow-sm">
+            <span className="text-2xl font-black text-emerald-600">{z}</span>
+          </div>
+        </div>
+      </div>
+
       {/* Periodic Table Mini-Map */}
       <div className="bg-white p-6 rounded-[2rem] border-2 border-gray-100 shadow-sm">
         <div className="flex items-center justify-between mb-4">
@@ -385,14 +463,24 @@ export default function App() {
   const [activeCategory, setActiveCategory] = useState<'structure' | 'reactivity'>('structure');
   const [isQRModalOpen, setIsQRModalOpen] = useState(false);
   const [sessionStats, setSessionStats] = useState<SessionStats>({});
+  const [error, setError] = useState<Error | null>(null);
   const [s11Temp, setS11Temp] = useState(25); // Celsius
   const [s12Z, setS12Z] = useState(6); // Carbon
   const [s12A, setS12A] = useState(12);
 
   const allConcepts = useMemo(() => units.flatMap(unit => unit.concepts), []);
-  const [randomConcept, setRandomConcept] = useState(() => 
-    allConcepts[Math.floor(Math.random() * allConcepts.length)]
-  );
+  const [randomConcept, setRandomConcept] = useState(() => {
+    if (allConcepts.length > 0) {
+      return allConcepts[Math.floor(Math.random() * allConcepts.length)];
+    }
+    return null;
+  });
+
+  useEffect(() => {
+    if (!randomConcept && allConcepts.length > 0) {
+      setRandomConcept(allConcepts[Math.floor(Math.random() * allConcepts.length)]);
+    }
+  }, [allConcepts, randomConcept]);
 
   const refreshConcept = () => {
     let nextConcept;
@@ -428,12 +516,35 @@ export default function App() {
   }, [mode, quizSubMode, timeLeft, isAnswerChecked]);
 
   const startQuiz = (unit: Unit) => {
+    if (!unit) {
+      console.error("Attempted to start quiz with null unit");
+      return;
+    }
     setSelectedUnit(unit);
     setMode('quiz-select');
+    // Scroll to top
+    window.scrollTo(0, 0);
   };
 
-  const startQuizWithMode = (unit: Unit, subMode: QuizSubMode) => {
+  const startQuizWithMode = (unit: Unit | null, subMode: QuizSubMode) => {
+    if (!unit) {
+      console.error("Critical: startQuizWithMode called without unit");
+      setMode('dashboard');
+      return;
+    }
+    
+    setSelectedUnit(unit);
     setQuizSubMode(subMode);
+    
+    // Clear previous state to ensure fresh start
+    setSelectedOption(null);
+    setIsAnswerChecked(false);
+    setCurrentQuestionIndex(0);
+    setScore(0);
+    setHearts(5);
+    setQuizProgress(0);
+    setTimeLeft(30);
+
     const shuffled = [...unit.questions].sort(() => 0.5 - Math.random());
     
     if (subMode === 'quick') {
@@ -445,13 +556,8 @@ export default function App() {
       setQuizQuestions(shuffled);
     }
 
-    setCurrentQuestionIndex(0);
-    setScore(0);
-    setQuizProgress(0);
-    setSelectedOption(null);
-    setIsAnswerChecked(false);
-    setHearts(5);
     setMode('quiz');
+    window.scrollTo({ top: 0, behavior: 'instant' });
   };
 
   const startRevision = (unit: Unit) => {
@@ -3480,339 +3586,6 @@ export default function App() {
   };
 
   const QuickFacts = () => {
-  const ElectronicConfiguration = () => {
-    const [z, setZ] = useState(1);
-
-    const elements = [
-      { z: 1, symbol: 'H', name: 'Hydrogen', block: 's', period: 1, group: 1 },
-      { z: 2, symbol: 'He', name: 'Helium', block: 's', period: 1, group: 18 },
-      { z: 3, symbol: 'Li', name: 'Lithium', block: 's', period: 2, group: 1 },
-      { z: 4, symbol: 'Be', name: 'Beryllium', block: 's', period: 2, group: 2 },
-      { z: 5, symbol: 'B', name: 'Boron', block: 'p', period: 2, group: 13 },
-      { z: 6, symbol: 'C', name: 'Carbon', block: 'p', period: 2, group: 14 },
-      { z: 7, symbol: 'N', name: 'Nitrogen', block: 'p', period: 2, group: 15 },
-      { z: 8, symbol: 'O', name: 'Oxygen', block: 'p', period: 2, group: 16 },
-      { z: 9, symbol: 'F', name: 'Fluorine', block: 'p', period: 2, group: 17 },
-      { z: 10, symbol: 'Ne', name: 'Neon', block: 'p', period: 2, group: 18 },
-      { z: 11, symbol: 'Na', name: 'Sodium', block: 's', period: 3, group: 1 },
-      { z: 12, symbol: 'Mg', name: 'Magnesium', block: 's', period: 3, group: 2 },
-      { z: 13, symbol: 'Al', name: 'Aluminium', block: 'p', period: 3, group: 13 },
-      { z: 14, symbol: 'Si', name: 'Silicon', block: 'p', period: 3, group: 14 },
-      { z: 15, symbol: 'P', name: 'Phosphorus', block: 'p', period: 3, group: 15 },
-      { z: 16, symbol: 'S', name: 'Sulfur', block: 'p', period: 3, group: 16 },
-      { z: 17, symbol: 'Cl', name: 'Chlorine', block: 'p', period: 3, group: 17 },
-      { z: 18, symbol: 'Ar', name: 'Argon', block: 'p', period: 3, group: 18 },
-      { z: 19, symbol: 'K', name: 'Potassium', block: 's', period: 4, group: 1 },
-      { z: 20, symbol: 'Ca', name: 'Calcium', block: 's', period: 4, group: 2 },
-      { z: 21, symbol: 'Sc', name: 'Scandium', block: 'd', period: 4, group: 3 },
-      { z: 22, symbol: 'Ti', name: 'Titanium', block: 'd', period: 4, group: 4 },
-      { z: 23, symbol: 'V', name: 'Vanadium', block: 'd', period: 4, group: 5 },
-      { z: 24, symbol: 'Cr', name: 'Chromium', block: 'd', period: 4, group: 6 },
-      { z: 25, symbol: 'Mn', name: 'Manganese', block: 'd', period: 4, group: 7 },
-      { z: 26, symbol: 'Fe', name: 'Iron', block: 'd', period: 4, group: 8 },
-      { z: 27, symbol: 'Co', name: 'Cobalt', block: 'd', period: 4, group: 9 },
-      { z: 28, symbol: 'Ni', name: 'Nickel', block: 'd', period: 4, group: 10 },
-      { z: 29, symbol: 'Cu', name: 'Copper', block: 'd', period: 4, group: 11 },
-      { z: 30, symbol: 'Zn', name: 'Zinc', block: 'd', period: 4, group: 12 },
-    ];
-
-    const currentElement = elements.find(e => e.z === z) || elements[0];
-
-    const orbitalGroups = [
-      { id: '1s', label: '1s', boxes: 1, block: 's', energy: 1 },
-      { id: '2s', label: '2s', boxes: 1, block: 's', energy: 2 },
-      { id: '2p', label: '2p', boxes: 3, block: 'p', energy: 3 },
-      { id: '3s', label: '3s', boxes: 1, block: 's', energy: 4 },
-      { id: '3p', label: '3p', boxes: 3, block: 'p', energy: 5 },
-      { id: '4s', label: '4s', boxes: 1, block: 's', energy: 6 },
-      { id: '3d', label: '3d', boxes: 5, block: 'd', energy: 7 },
-    ];
-
-    const getDistribution = (atomicNumber: number) => {
-      const dist: Record<string, number> = {};
-      let remaining = atomicNumber;
-
-      // Exceptions
-      if (atomicNumber === 24) { // Cr: [Ar] 4s1 3d5
-        dist['1s'] = 2; dist['2s'] = 2; dist['2p'] = 6; dist['3s'] = 2; dist['3p'] = 6;
-        dist['4s'] = 1; dist['3d'] = 5;
-        return dist;
-      }
-      if (atomicNumber === 29) { // Cu: [Ar] 4s1 3d10
-        dist['1s'] = 2; dist['2s'] = 2; dist['2p'] = 6; dist['3s'] = 2; dist['3p'] = 6;
-        dist['4s'] = 1; dist['3d'] = 10;
-        return dist;
-      }
-
-      for (const og of orbitalGroups) {
-        const cap = og.boxes * 2;
-        const fill = Math.min(remaining, cap);
-        dist[og.id] = fill;
-        remaining -= fill;
-        if (remaining <= 0) break;
-      }
-      return dist;
-    };
-
-    const distribution = getDistribution(z);
-
-    const getBoxElectrons = (orbitalId: string, boxIndex: number, totalElectrons: number) => {
-      const og = orbitalGroups.find(o => o.id === orbitalId)!;
-      const spins: number[] = [];
-      
-      // Hund's Rule: Fill each box with one electron first
-      if (totalElectrons > boxIndex) spins.push(1); // Spin up
-      // Then pair them up
-      if (totalElectrons > og.boxes + boxIndex) spins.push(-1); // Spin down
-      
-      return spins;
-    };
-
-    const blockColors = {
-      s: { bg: 'bg-rose-500', text: 'text-rose-600', light: 'bg-rose-100', border: 'border-rose-500/50', glow: 'bg-rose-500/10', accent: 'text-rose-400', muted: 'text-rose-300', bgLight: 'bg-rose-50' },
-      p: { bg: 'bg-blue-500', text: 'text-blue-600', light: 'bg-blue-100', border: 'border-blue-500/50', glow: 'bg-blue-500/10', accent: 'text-blue-400', muted: 'text-blue-300', bgLight: 'bg-blue-50' },
-      d: { bg: 'bg-amber-500', text: 'text-amber-600', light: 'bg-amber-100', border: 'border-amber-500/50', glow: 'bg-amber-500/10', accent: 'text-amber-400', muted: 'text-amber-300', bgLight: 'bg-amber-50' },
-      f: { bg: 'bg-emerald-500', text: 'text-emerald-600', light: 'bg-emerald-100', border: 'border-emerald-500/50', glow: 'bg-emerald-500/10', accent: 'text-emerald-400', muted: 'text-emerald-300', bgLight: 'bg-emerald-50' }
-    };
-
-    const fullConfig = orbitalGroups
-      .filter(og => distribution[og.id] > 0)
-      .map(og => `${og.label}${distribution[og.id]}`)
-      .join(' ');
-
-    const getCondensedConfig = () => {
-      if (z <= 2) return fullConfig;
-      if (z <= 10) return `[He] ${orbitalGroups.slice(1).filter(og => distribution[og.id] > 0).map(og => `${og.label}${distribution[og.id]}`).join(' ')}`;
-      if (z <= 18) return `[Ne] ${orbitalGroups.slice(3).filter(og => distribution[og.id] > 0).map(og => `${og.label}${distribution[og.id]}`).join(' ')}`;
-      return `[Ar] ${orbitalGroups.slice(5).filter(og => distribution[og.id] > 0).map(og => `${og.label}${distribution[og.id]}`).join(' ')}`;
-    };
-
-    const PeriodicTable = () => {
-      const grid = Array(4).fill(null).map(() => Array(18).fill(null));
-      elements.forEach(el => {
-        const row = el.period - 1;
-        const col = el.group - 1;
-        grid[row][col] = el;
-      });
-
-      return (
-        <div className="grid grid-cols-[repeat(18,minmax(0,1fr))] gap-1 w-full max-w-2xl mx-auto p-4 bg-gray-50 rounded-2xl border border-gray-100">
-          {grid.map((row, rIdx) => (
-            row.map((el, cIdx) => {
-              const colors = el ? blockColors[el.block as keyof typeof blockColors] : null;
-              const isSelected = el?.z === z;
-              return (
-                <button 
-                  key={`${rIdx}-${cIdx}`} 
-                  onClick={() => el && setZ(el.z)}
-                  disabled={!el}
-                  className={`aspect-square rounded-sm flex flex-col items-center justify-center transition-all duration-200
-                    ${el 
-                      ? isSelected 
-                        ? `${colors?.bg} text-white shadow-lg scale-110 z-10 ring-2 ring-offset-1 ring-gray-800`
-                        : el.z < z 
-                          ? `${colors?.bg} text-white opacity-40 hover:opacity-100`
-                          : `${colors?.light} ${colors?.muted} hover:bg-white hover:shadow-md hover:scale-105 hover:z-10`
-                      : 'bg-transparent cursor-default'}
-                  `}
-                >
-                  <span className="text-[6px] font-black leading-none">{el?.symbol}</span>
-                  <span className="text-[4px] font-bold opacity-60 leading-none mt-0.5">{el?.z}</span>
-                </button>
-              );
-            })
-          ))}
-        </div>
-      );
-    };
-
-    const currentColors = blockColors[currentElement.block as keyof typeof blockColors];
-
-    return (
-      <div className="space-y-8">
-        {/* Periodic Table Selection Section */}
-        <div className="bg-white p-8 rounded-[3rem] border-2 border-gray-100 shadow-sm space-y-6">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-4">
-              <div className={`w-16 h-16 rounded-3xl ${currentColors.light} flex items-center justify-center ${currentColors.text} font-black text-2xl shadow-inner`}>
-                {currentElement.symbol}
-              </div>
-              <div>
-                <h3 className="text-xl font-black text-gray-800 tracking-tight lowercase">{currentElement.name}</h3>
-                <div className="flex gap-3 mt-1">
-                  <p className="text-[10px] font-bold text-gray-400 tracking-widest lowercase">z = {z}</p>
-                  <p className={`text-[10px] font-black px-2 py-0.5 rounded-full ${currentColors.light} ${currentColors.text} lowercase tracking-widest`}>{currentElement.block}-block</p>
-                </div>
-              </div>
-            </div>
-            <div className="hidden md:block text-right">
-              <p className="text-[10px] font-black text-gray-400 tracking-widest lowercase">period {currentElement.period}</p>
-              <p className="text-[10px] font-black text-gray-400 tracking-widest lowercase">group {currentElement.group}</p>
-            </div>
-          </div>
-          
-          <PeriodicTable />
-          
-          <div className="flex justify-center gap-8 pt-2">
-            {['s', 'p', 'd'].map(block => (
-              <div key={block} className="flex items-center gap-2">
-                <div className={`w-3 h-3 rounded-full ${blockColors[block as keyof typeof blockColors].bg}`} />
-                <span className="text-[10px] font-black text-gray-400 lowercase">{block}-block</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Left Column: Orbital Diagram */}
-          <div className="bg-gray-900 p-8 rounded-[2.5rem] border-4 border-gray-800 shadow-2xl space-y-8">
-            <div className="flex items-center justify-between">
-              <h4 className="text-[10px] font-black text-gray-500 tracking-widest">electron-in-box diagram</h4>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-[8px] font-black text-emerald-500 tracking-widest">energy ascending</span>
-              </div>
-            </div>
-
-            <div className="flex flex-col-reverse gap-4">
-              {orbitalGroups.map((og) => {
-                const fill = distribution[og.id] || 0;
-                const maxEnergy = orbitalGroups.reduce((max, o) => distribution[o.id] > 0 ? Math.max(max, o.energy) : max, 0);
-                if (fill === 0 && og.energy > maxEnergy + 1) return null;
-                const colors = blockColors[og.block as keyof typeof blockColors];
-
-                return (
-                  <motion.div 
-                    key={og.id} 
-                    layout
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    className="flex items-center gap-4"
-                  >
-                      <div className="w-8 text-right">
-                        <span className="text-xs font-black text-gray-500 font-mono">{og.label}</span>
-                      </div>
-                      <div className="flex gap-2">
-                        {[...Array(og.boxes)].map((_, bIdx) => {
-                          const spins = getBoxElectrons(og.id, bIdx, fill);
-                          return (
-                            <div 
-                              key={bIdx} 
-                              className={`w-10 h-10 border-2 rounded-lg flex items-center justify-center relative transition-all duration-300
-                                ${fill > 0 ? `${colors.border} ${colors.glow}` : 'border-gray-800 bg-gray-800/50'}
-                              `}
-                            >
-                              <AnimatePresence>
-                                {spins.includes(1) && (
-                                  <motion.div 
-                                    key={`${og.id}-${bIdx}-up`}
-                                    initial={{ y: 10, opacity: 0, scale: 0.5 }}
-                                    animate={{ y: 0, opacity: 1, scale: 1 }}
-                                    exit={{ y: 10, opacity: 0, scale: 0.5 }}
-                                    className={`absolute left-1/4 ${colors.accent}`}
-                                  >
-                                    <ChevronUp size={20} strokeWidth={4} />
-                                  </motion.div>
-                                )}
-                                {spins.includes(-1) && (
-                                  <motion.div 
-                                    key={`${og.id}-${bIdx}-down`}
-                                    initial={{ y: -10, opacity: 0, scale: 0.5 }}
-                                    animate={{ y: 0, opacity: 1, scale: 1 }}
-                                    exit={{ y: -10, opacity: 0, scale: 0.5 }}
-                                    className={`absolute right-1/4 ${colors.accent}`}
-                                  >
-                                    <ChevronDown size={20} strokeWidth={4} />
-                                  </motion.div>
-                                )}
-                              </AnimatePresence>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </motion.div>
-                  );
-                })}
-            </div>
-          </div>
-
-          {/* Right Column: Config & Periodic Table */}
-          <div className="space-y-8">
-            {/* Written Configuration */}
-            <div className="bg-white p-8 rounded-[2.5rem] border-2 border-gray-100 shadow-sm space-y-6">
-              <div>
-                <p className="text-[10px] font-black text-gray-400 tracking-widest mb-3 lowercase">full configuration</p>
-                <div className="flex flex-wrap gap-2">
-                  {orbitalGroups.filter(og => distribution[og.id] > 0).map(og => {
-                    const colors = blockColors[og.block as keyof typeof blockColors];
-                    return (
-                      <div key={og.id} className={`px-3 py-1 rounded-lg ${colors.bgLight} ${colors.text} font-mono font-black text-sm`}>
-                        {og.label}<sup>{distribution[og.id]}</sup>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div>
-                <p className="text-[10px] font-black text-gray-400 tracking-widest mb-3 lowercase">condensed configuration</p>
-                <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100 font-mono font-black text-gray-800">
-                  {getCondensedConfig().split(' ').map((part, i) => {
-                    if (part.startsWith('[')) return <span key={i} className="text-gray-400 mr-2">{part}</span>;
-                    const match = part.match(/(\d[spd])(\d+)/);
-                    if (match) {
-                      const og = orbitalGroups.find(o => o.label === match[1])!;
-                      const colors = blockColors[og.block as keyof typeof blockColors];
-                      return (
-                        <span key={i} className={`${colors.bg.replace('bg-', 'text-')} mr-2`}>
-                          {match[1]}<sup>{match[2]}</sup>
-                        </span>
-                      );
-                    }
-                    return <span key={i} className="mr-2">{part}</span>;
-                  })}
-                </div>
-              </div>
-            </div>
-
-            {/* Periodic Table Highlight */}
-            <div className="bg-white p-8 rounded-[2.5rem] border-2 border-gray-100 shadow-sm">
-              <p className="text-[10px] font-black text-gray-400 tracking-widest mb-6 lowercase">periodic table position</p>
-              <PeriodicTable />
-              <div className="mt-6 flex justify-center gap-4">
-                {Object.entries(blockColors).map(([block, colors]) => (
-                  <div key={block} className="flex items-center gap-1.5">
-                    <div className={`w-2 h-2 rounded-full ${colors.bg}`} />
-                    <span className="text-[8px] font-black text-gray-400 lowercase">{block} block</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Principles Note */}
-            <div className="bg-indigo-50 p-6 rounded-3xl border-2 border-indigo-100">
-              <div className="flex items-center gap-3 mb-3">
-                <Info size={18} className="text-indigo-600" />
-                <h5 className="text-xs font-black text-indigo-700 tracking-tight lowercase">key principles applied</h5>
-              </div>
-              <ul className="space-y-2">
-                {[
-                  { name: 'Aufbau', desc: 'Electrons fill lowest energy orbitals first.' },
-                  { name: 'Pauli', desc: 'Max 2 electrons per orbital with opposite spins.' },
-                  { name: 'Hund', desc: 'Fill degenerate orbitals singly first.' }
-                ].map(p => (
-                  <li key={p.name} className="flex items-start gap-2">
-                    <span className="text-[10px] font-black text-indigo-600 mt-0.5">•</span>
-                    <p className="text-[10px] font-bold text-gray-600"><span className="text-indigo-700">{p.name}:</span> {p.desc}</p>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
     const [hoveredRule, setHoveredRule] = useState<string | null>(null);
     const [hoveredApparatus, setHoveredApparatus] = useState<string | null>(null);
     const [hoveredMoleEq, setHoveredMoleEq] = useState<number | null>(null);
@@ -5955,8 +5728,22 @@ export default function App() {
     );
   };
 
-  const Dashboard = () => (
-    <div className="min-h-screen bg-gray-50 pb-20">
+  const Dashboard = () => {
+    // Safety check for randomConcept - always try to recover
+    if (!randomConcept) {
+      if (allConcepts.length > 0) {
+        setRandomConcept(allConcepts[Math.floor(Math.random() * allConcepts.length)]);
+      }
+      return (
+        <div className="min-h-screen bg-gray-50 p-8 flex flex-col items-center justify-center gap-4">
+          <RefreshCw className="text-emerald-500 animate-spin" size={48} />
+          <p className="font-black uppercase text-gray-400 tracking-widest">Warming Up Knowledge...</p>
+        </div>
+      );
+    }
+    
+    return (
+      <div className="min-h-screen bg-gray-50 pb-20">
       <AnimatePresence>
         {isY13Open && <Y13Splash onClose={() => setIsY13Open(false)} />}
       </AnimatePresence>
@@ -6104,7 +5891,8 @@ export default function App() {
         </div>
       </main>
     </div>
-  );
+    );
+  };
 
   const QuizSelectView = () => (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6">
@@ -6167,6 +5955,19 @@ export default function App() {
 
   const QuizView = () => {
     const currentQuestion = quizQuestions[currentQuestionIndex];
+    
+    if (!currentQuestion) {
+      return (
+        <div className="min-h-screen bg-white flex flex-col items-center justify-center p-8 gap-4">
+          <h2 className="text-2xl font-black text-gray-800 uppercase tracking-tight">Oops! Something went wrong</h2>
+          <p className="text-gray-500 font-bold">We couldn't load the question. Please try again.</p>
+          <button onClick={() => setMode('dashboard')} className="bg-emerald-500 text-white px-8 py-3 rounded-2xl font-black uppercase tracking-widest shadow-[0_4px_0_0_#059669] active:shadow-none active:translate-y-1 transition-all">
+            Return Home
+          </button>
+        </div>
+      );
+    }
+    
     const isCorrect = selectedOption === currentQuestion.correctAnswer;
 
     return (

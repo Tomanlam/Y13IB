@@ -493,7 +493,7 @@ export default function App() {
   // Splash screen timeout
   useEffect(() => {
     if (mode === 'splash') {
-      const timer = setTimeout(() => setMode('dashboard'), 3000);
+      const timer = setTimeout(() => navigateTo('dashboard'), 3000);
       return () => clearTimeout(timer);
     }
   }, [mode]);
@@ -505,7 +505,7 @@ export default function App() {
         setTimeLeft(prev => {
           if (prev <= 1) {
             clearInterval(timer);
-            setMode('result');
+            navigateTo('result');
             return 0;
           }
           return prev - 1;
@@ -515,21 +515,21 @@ export default function App() {
     }
   }, [mode, quizSubMode, timeLeft, isAnswerChecked]);
 
-  const startQuiz = (unit: Unit) => {
-    if (!unit) {
-      console.error("Attempted to start quiz with null unit");
-      return;
-    }
-    setSelectedUnit(unit);
-    setMode('quiz-select');
-    // Scroll to top
+  const navigateTo = (newMode: AppMode) => {
+    setMode(newMode);
     window.scrollTo(0, 0);
+  };
+
+  const startQuiz = (unit: Unit) => {
+    if (!unit) return;
+    setSelectedUnit(unit);
+    navigateTo('quiz-select');
   };
 
   const startQuizWithMode = (unit: Unit | null, subMode: QuizSubMode) => {
     if (!unit) {
       console.error("Critical: startQuizWithMode called without unit");
-      setMode('dashboard');
+      navigateTo('dashboard');
       return;
     }
     
@@ -556,18 +556,17 @@ export default function App() {
       setQuizQuestions(shuffled);
     }
 
-    setMode('quiz');
-    window.scrollTo({ top: 0, behavior: 'instant' });
+    navigateTo('quiz');
   };
 
   const startRevision = (unit: Unit) => {
     setSelectedUnit(unit);
-    setMode('revision');
+    navigateTo('revision');
   };
 
   const startVocab = (unit: Unit) => {
     setSelectedUnit(unit);
-    setMode('vocab');
+    navigateTo('vocab');
   };
 
   const handleOptionSelect = (option: string) => {
@@ -606,7 +605,7 @@ export default function App() {
 
   const nextQuestion = () => {
     if (hearts <= 0) {
-      setMode('result');
+      navigateTo('result');
       return;
     }
     const nextIndex = currentQuestionIndex + 1;
@@ -625,7 +624,7 @@ export default function App() {
         setIsAnswerChecked(false);
       } else {
         setQuizProgress(100);
-        setMode('result');
+        navigateTo('result');
       }
     }
   };
@@ -3875,12 +3874,7 @@ export default function App() {
     };
 
     return (
-      <motion.div 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="min-h-screen bg-gray-50 pb-32"
-      >
+      <div className="min-h-screen bg-gray-50 pb-32">
         <header className="bg-white border-b-2 border-gray-200 p-6 sticky top-0 z-10">
           <div className="max-w-2xl mx-auto flex justify-between items-center">
             <div>
@@ -5724,7 +5718,7 @@ export default function App() {
             <RedoxBalancing />
           </motion.div>
         </main>
-      </motion.div>
+      </div>
     );
   };
 
@@ -5944,7 +5938,7 @@ export default function App() {
         </div>
 
         <button
-          onClick={() => setMode('dashboard')}
+          onClick={() => navigateTo('dashboard')}
           className="w-full mt-8 text-gray-400 font-bold uppercase tracking-widest hover:text-gray-600 transition-colors"
         >
           Go Back
@@ -5961,7 +5955,7 @@ export default function App() {
         <div className="min-h-screen bg-white flex flex-col items-center justify-center p-8 gap-4">
           <h2 className="text-2xl font-black text-gray-800 uppercase tracking-tight">Oops! Something went wrong</h2>
           <p className="text-gray-500 font-bold">We couldn't load the question. Please try again.</p>
-          <button onClick={() => setMode('dashboard')} className="bg-emerald-500 text-white px-8 py-3 rounded-2xl font-black uppercase tracking-widest shadow-[0_4px_0_0_#059669] active:shadow-none active:translate-y-1 transition-all">
+          <button onClick={() => navigateTo('dashboard')} className="bg-emerald-500 text-white px-8 py-3 rounded-2xl font-black uppercase tracking-widest shadow-[0_4px_0_0_#059669] active:shadow-none active:translate-y-1 transition-all">
             Return Home
           </button>
         </div>
@@ -7056,7 +7050,7 @@ export default function App() {
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.6 }}
-              onClick={() => setMode('dashboard')}
+              onClick={() => navigateTo('dashboard')}
               className="bg-emerald-500 text-white px-12 py-4 rounded-2xl font-black text-xl uppercase tracking-widest shadow-[0_6px_0_0_#059669] active:shadow-none active:translate-y-1 transition-all"
             >
               Back to Dashboard
@@ -7073,7 +7067,7 @@ export default function App() {
         <header className="bg-white border-b-2 border-gray-200 p-4 sticky top-0 z-10">
           <div className={`${isReviewMode ? 'max-w-6xl' : 'max-w-2xl'} mx-auto flex items-center justify-between transition-all duration-300`}>
             <div className="flex items-center gap-4">
-              <button onClick={() => setMode('dashboard')} className="text-gray-400 hover:text-gray-600">
+              <button onClick={() => navigateTo('dashboard')} className="text-gray-400 hover:text-gray-600">
                 <ChevronLeft size={32} />
               </button>
               <div>
@@ -8111,7 +8105,7 @@ export default function App() {
 
       const [qIndex, setQIndex] = useState(0);
       const [step, setStep] = useState(0); // 0: known, 1: known mole, 2: unknown mole, 3: unknown quantity
-      const [mode, setMode] = useState<'example' | 'practice'>('example');
+      const [playMode, setPlayMode] = useState<'example' | 'practice'>('example');
       const [practiceInput, setPracticeInput] = useState("");
       const [practiceFeedback, setPracticeFeedback] = useState<'none' | 'correct' | 'wrong'>('none');
       const [showCalculator, setShowCalculator] = useState(false);
@@ -8222,14 +8216,14 @@ export default function App() {
                 {/* Mode Toggle */}
                 <div className="flex bg-gray-100 p-1 rounded-2xl border-2 border-gray-200">
                   <button
-                    onClick={() => { setMode('example'); setStep(0); }}
-                    className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${mode === 'example' ? 'bg-white text-orange-600 shadow-sm' : 'text-gray-400'}`}
+                    onClick={() => { setPlayMode('example'); setStep(0); }}
+                    className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${playMode === 'example' ? 'bg-white text-orange-600 shadow-sm' : 'text-gray-400'}`}
                   >
                     Example
                   </button>
                   <button
-                    onClick={() => { setMode('practice'); setStep(0); }}
-                    className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${mode === 'practice' ? 'bg-white text-emerald-600 shadow-sm' : 'text-gray-400'}`}
+                    onClick={() => { setPlayMode('practice'); setStep(0); }}
+                    className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${playMode === 'practice' ? 'bg-white text-emerald-600 shadow-sm' : 'text-gray-400'}`}
                   >
                     Practice
                   </button>
@@ -11483,18 +11477,62 @@ export default function App() {
 
   return (
     <div className="font-sans selection:bg-emerald-200">
-      <AnimatePresence mode="wait">
-        {mode === 'splash' && <SplashScreen key="splash" />}
-        {mode === 'dashboard' && <Dashboard key="dashboard" />}
-        {mode === 'facts' && <QuickFacts key="facts" />}
-        {mode === 'quiz-select' && <QuizSelectView key="quiz-select" />}
-        {mode === 'quiz' && <QuizView key="quiz" />}
-        {mode === 'result' && <ResultView key="result" />}
-        {mode === 'revision' && <RevisionView key="revision" />}
-        {mode === 'vocab' && <VocabView key="vocab" />}
-        {mode === 'user-stats' && <UserDashboardView key="user-stats" />}
-        {mode === 'about' && <AboutView key="about" />}
-        {mode === 'playground' && <PlaygroundView key="playground" />}
+      <AnimatePresence mode="popLayout" initial={false}>
+        {mode === 'splash' && (
+          <motion.div key="splash" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} className="w-full">
+            <SplashScreen />
+          </motion.div>
+        )}
+        {mode === 'dashboard' && (
+          <motion.div key="dashboard" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} className="w-full">
+            <Dashboard />
+          </motion.div>
+        )}
+        {mode === 'facts' && (
+          <motion.div key="facts" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} className="w-full">
+            <QuickFacts />
+          </motion.div>
+        )}
+        {mode === 'quiz-select' && (
+          <motion.div key="quiz-select" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} className="w-full">
+            <QuizSelectView />
+          </motion.div>
+        )}
+        {mode === 'quiz' && (
+          <motion.div key="quiz" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} className="w-full">
+            <QuizView />
+          </motion.div>
+        )}
+        {mode === 'result' && (
+          <motion.div key="result" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} className="w-full">
+            <ResultView />
+          </motion.div>
+        )}
+        {mode === 'revision' && (
+          <motion.div key="revision" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} className="w-full">
+            <RevisionView />
+          </motion.div>
+        )}
+        {mode === 'vocab' && (
+          <motion.div key="vocab" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} className="w-full">
+            <VocabView />
+          </motion.div>
+        )}
+        {mode === 'user-stats' && (
+          <motion.div key="user-stats" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} className="w-full">
+            <UserDashboardView />
+          </motion.div>
+        )}
+        {mode === 'about' && (
+          <motion.div key="about" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} className="w-full">
+            <AboutView />
+          </motion.div>
+        )}
+        {mode === 'playground' && (
+          <motion.div key="playground" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} className="w-full">
+            <PlaygroundView />
+          </motion.div>
+        )}
       </AnimatePresence>
 
       {/* Bottom Nav for Dashboard, User Stats, and About */}
@@ -11502,35 +11540,35 @@ export default function App() {
         <nav className="fixed bottom-0 left-0 right-0 bg-white border-t-2 border-gray-200 p-4 z-20">
           <div className="max-w-2xl mx-auto flex justify-around items-center">
             <button 
-              onClick={() => setMode('dashboard')}
-              className={`flex flex-col items-center gap-1 transition-colors ${mode === 'dashboard' ? 'text-emerald-500' : 'text-gray-400 hover:text-emerald-400'}`}
+              onClick={() => navigateTo('dashboard')}
+              className={`flex flex-col items-center gap-1 transition-colors ${mode === 'dashboard' ? 'text-emerald-500' : 'text-gray-500 hover:text-emerald-400'}`}
             >
               <Home size={28} fill={mode === 'dashboard' ? "currentColor" : "none"} />
               <span className="text-[10px] font-black uppercase">Home</span>
             </button>
             <button 
-              onClick={() => setMode('facts')}
+              onClick={() => navigateTo('facts')}
               className={`flex flex-col items-center gap-1 transition-colors ${mode === 'facts' ? 'text-emerald-500' : 'text-gray-400 hover:text-emerald-400'}`}
             >
               <BookOpen size={28} fill={mode === 'facts' ? "currentColor" : "none"} />
               <span className="text-[10px] font-black uppercase">Quick Facts</span>
             </button>
             <button 
-              onClick={() => setMode('playground')}
+              onClick={() => navigateTo('playground')}
               className={`flex flex-col items-center gap-1 transition-colors ${mode === 'playground' ? 'text-emerald-500' : 'text-gray-400 hover:text-emerald-400'}`}
             >
               <FlaskConical size={28} fill={mode === 'playground' ? "currentColor" : "none"} />
               <span className="text-[10px] font-black uppercase">Playground</span>
             </button>
             <button 
-              onClick={() => setMode('user-stats')}
+              onClick={() => navigateTo('user-stats')}
               className={`flex flex-col items-center gap-1 transition-colors ${mode === 'user-stats' ? 'text-emerald-500' : 'text-gray-400 hover:text-emerald-400'}`}
             >
               <Trophy size={28} fill={mode === 'user-stats' ? "currentColor" : "none"} />
-              <span className="text-[10px] font-black uppercase">Dashboard</span>
+              <span className="text-[10px] font-black uppercase">Stats</span>
             </button>
             <button 
-              onClick={() => setMode('about')}
+              onClick={() => navigateTo('about')}
               className={`flex flex-col items-center gap-1 transition-colors ${mode === 'about' ? 'text-emerald-500' : 'text-gray-400 hover:text-emerald-400'}`}
             >
               <Info size={28} fill={mode === 'about' ? "currentColor" : "none"} />
